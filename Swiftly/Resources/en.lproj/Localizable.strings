@@ -1,0 +1,35 @@
+/* 
+  Localizable.strings
+  Swiftly
+
+  Created by Quentin Bereau on 1/30/12.
+  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+*/
+
+"login_description"                     = "Thanks for downloading Swiftly!\n\nPlease enter your phone number so we can create or activate your account on this phone.";
+"login_choose_country"                  = "Select your country";
+"login_enter_phone"                     = "Enter your phone number";
+"login_error_phone"                     = "Please enter a phone number";
+"login_sms_instruction"                 = "You'll receive a code via SMS in a few seconds.";
+"login_received_code"                   = "Received code: ";
+"login_resend_code"                     = "Resend code";
+"login_code_not_validated"              = "The code you entered was not correct";
+"login_account_validated_title"         = "Account validated!";
+"login_account_validated_description"   = "You can now use Swiftly";
+
+
+"menu_albums"                           = "Albums";
+"menu_activities"                       = "Activities";
+"menu_share"                            = "Share";
+"menu_people"                           = "People";
+"menu_settings"                         = "Settings";
+
+
+"albums_title"                          = "Albums";
+"albums_shared_albums_header"           = "Shared Albums";
+"albums_other_albums_header"            = "Other Albums";
+"albums_quick_share"                    = "Quick Share";
+
+"all"                                   = "All";
+"images"                                = "Images";
+"videos"                                = "Videos";
