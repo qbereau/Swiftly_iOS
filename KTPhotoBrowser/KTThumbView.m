@@ -29,12 +29,24 @@
      forControlEvents:UIControlEventTouchUpInside];
       
       [self setClipsToBounds:YES];
+       
+       longPressGR_ = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+       longPressGR_.minimumPressDuration = 1.0;
+       [self addGestureRecognizer:longPressGR_];
 
       // If the thumbnail needs to be scaled, it should mantain its aspect
       // ratio.
       [[self imageView] setContentMode:UIViewContentModeScaleAspectFill];
    }
    return self;
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture
+{
+    if (controller_)
+    {
+        [controller_ didLongPressThumbAtIndex:[self tag]];
+    }
 }
 
 - (void)didTouch:(id)sender 

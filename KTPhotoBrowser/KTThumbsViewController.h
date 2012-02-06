@@ -12,13 +12,14 @@
 
 @class KTThumbsView;
 
-@interface KTThumbsViewController : UIViewController <KTThumbsViewDataSource>
+@interface KTThumbsViewController : UIViewController <KTThumbsViewDataSource, UIActionSheetDelegate>
 {
 @private
-   id <KTPhotoBrowserDataSource> dataSource_;
-   KTThumbsView *scrollView_;
-   BOOL viewDidAppearOnce_;
-   BOOL navbarWasTranslucent_;
+    id <KTPhotoBrowserDataSource> dataSource_;
+    KTThumbsView *scrollView_;
+    BOOL viewDidAppearOnce_;
+    BOOL navbarWasTranslucent_;
+    UIActionSheet *actionSheet_;
 }
 
 @property (nonatomic, retain) id <KTPhotoBrowserDataSource> dataSource;
@@ -44,5 +45,7 @@
  * Used internally. Called when the thumbnail is touched by the user.
  */
 - (void)didSelectThumbAtIndex:(NSUInteger)index;
+
+- (void)didLongPressThumbAtIndex:(NSUInteger)index;
 
 @end

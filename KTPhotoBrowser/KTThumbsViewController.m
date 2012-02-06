@@ -122,6 +122,30 @@
    [newController release];
 }
 
+- (void)didLongPressThumbAtIndex:(NSUInteger)index
+{
+    if (!actionSheet_)
+    {
+        actionSheet_ = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"filter_thumb_title", @"view all files")
+                                                  delegate:self
+                                         cancelButtonTitle:NSLocalizedString(@"Cancel", @"Cancel button text.")
+                                    destructiveButtonTitle:nil
+                                         otherButtonTitles:[NSString stringWithFormat:NSLocalizedString(@"filter_thumb", @"view files shared by..."), @"Quentin Bereau"], NSLocalizedString(@"filter_thumb_all", @"view all files"), nil];
+        [actionSheet_ showInView:[UIApplication sharedApplication].keyWindow];
+        [actionSheet_ release];
+    }
+}
+
+
+#pragma mark -
+#pragma mark UIActionSheetDelegate
+
+// Called when a button is clicked. The view will be automatically dismissed after this call returns
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex 
+{
+    NSLog(@"blabla");
+    actionSheet_ = nil;
+}
 
 #pragma mark -
 #pragma mark KTThumbsViewDataSource

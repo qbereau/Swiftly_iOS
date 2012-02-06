@@ -7,7 +7,11 @@
 //
 
 #import "KTPhotoScrollViewController.h"
+#import "SWWebImagesDataSource.h"
 
 @interface SWPhotoScrollViewController : KTPhotoScrollViewController
+
+
+- (void)updateExportPhotoButtonState;
 
 @end

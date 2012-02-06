@@ -32,6 +32,13 @@
     return self;
 }
 
+- (BOOL)isMediaOpenAtIndex:(NSInteger)index
+{
+    if (index % 2 == 0)
+        return YES;
+    return NO;
+}
+
 #pragma mark - KTPhotoBrowserDataSource
 
 - (NSInteger)numberOfPhotos {

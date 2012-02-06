@@ -33,3 +33,36 @@
 "all"                                   = "All";
 "images"                                = "Images";
 "videos"                                = "Videos";
+"cancel"                                = "Cancel";
+"delete_file"                           = "Delete file";
+"unlink_file"                           = "Unlink file";
+"edit"                                  = "Edit";
+"yes"                                   = "Yes";
+"no"                                    = "No";
+
+"edit_album"                            = "Edit Album";
+"album_name"                            = "Album name";
+"linked_people"                         = "People linked to this album";
+"album_settings"                        = "Album settings";
+"media_settings"                        = "Media settings";
+"security"                              = "Security";
+"settings"                              = "Settings";
+"media_settings_save_files"             = "Allow people to save and forward my files";
+"album_settings_allow_share_people"     = "Allow people to add additional persons to this album";
+"album_settings_allow_add_files"        = "Allow people to add their own files";
+"media_settings_save_files"             = "Allow people to save and forward my files";
+"album_settings_lock"                   = "Lock this album";
+"album_settings_lock_description"       = "This will only lock this album on your account.";
+"add_remove_people"                     = "Add / Remove people";
+"delete_my_medias"                      = "Delete my files";
+"unlink_from_album"                     = "Unlink myself from this album";
+"delete_album"                          = "Delete this album";
+
+"confirmation"                          = "Confirmation";
+"delete_my_medias_warning"              = "This will delete your files.\nThey won't be accessible to anyone.\n\nDo you want to continue?";
+"unlink_from_album_warning"             = "You won't be able to access this album anymore.\n\nDo you want to continue?";
+"delete_album_warning"                  = "This will delete this album including your files.\n\nDo you want to continue?";
+
+"filter_thumb_title"                    = "View files...";
+"filter_thumb"                          = "Shared by %@";
+"filter_thumb_all"                      = "View all files";

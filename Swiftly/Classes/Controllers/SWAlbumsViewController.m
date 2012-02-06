@@ -24,6 +24,9 @@
 {
     [super viewDidLoad];
     
+    UIBarButtonItem* btnUnlock = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"] style:UIBarButtonItemStylePlain target:self action:@selector(unlockAlbums:)];
+    self.navigationItem.leftBarButtonItem = btnUnlock;
+    
     self.navigationItem.title = NSLocalizedString(@"albums_title", @"Albums");
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -37,6 +40,11 @@
     album2.thumbnail = [UIImage imageNamed:@"pic2.png"];
     
     self.albums = [NSMutableArray arrayWithObjects:album1, album2, nil];
+}
+
+- (void)unlockAlbums:(UIButton*)sender
+{
+    NSLog(@"unlock...");
 }
 
 - (void)viewDidUnload
@@ -101,7 +109,7 @@
 {
     if (section == 0)
         return [self.albums count];
-    return 1;
+    return 2;
 }
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
@@ -136,8 +144,12 @@
     else if (indexPath.section == 1)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:@"CellSharedAlbum"];
-        cell.textLabel.text = NSLocalizedString(@"albums_quick_share", @"quick share");
         cell.imageView.image = [UIImage imageNamed:@"pic3.png"]; // hack, should come from server
+        
+        if (indexPath.row == 0)
+            cell.textLabel.text = NSLocalizedString(@"albums_quick_share", @"quick share");
+        else if (indexPath.row == 1)
+            cell.textLabel.text = @"My Medias";
     }
     
     return cell;

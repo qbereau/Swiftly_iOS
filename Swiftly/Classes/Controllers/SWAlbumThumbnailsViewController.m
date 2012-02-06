@@ -42,7 +42,7 @@
     self.medias = [SWWebImagesDataSource new];
     [self setDataSource:self.medias];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemEdit target:self action:@selector(editAlbum:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"edit", @"edit") style:UIBarButtonItemStylePlain target:self action:@selector(editAlbum:)];
     
     
     UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:
@@ -71,12 +71,17 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+    } else {
+        return YES;
+    }
 }
 
 - (void)editAlbum:(UIBarButtonItem*)button
 {
-    NSLog(@"edit");
+    SWAlbumEditViewController* newController = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    [[self navigationController] pushViewController:newController animated:YES];
 }
 
 - (void)changeMediaType:(id)sender

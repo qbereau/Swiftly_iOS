@@ -357,18 +357,23 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)setCurrentIndex:(NSInteger)newIndex
 {
-   currentIndex_ = newIndex;
+    currentIndex_ = newIndex;
    
-   [self loadPhoto:currentIndex_];
-   [self loadPhoto:currentIndex_ + 1];
-   [self loadPhoto:currentIndex_ - 1];
-   [self unloadPhoto:currentIndex_ + 2];
-   [self unloadPhoto:currentIndex_ - 2];
+    [self loadPhoto:currentIndex_];
+    [self loadPhoto:currentIndex_ + 1];
+    [self loadPhoto:currentIndex_ - 1];
+    [self unloadPhoto:currentIndex_ + 2];
+    [self unloadPhoto:currentIndex_ - 2];
    
-   [self setTitleWithCurrentPhotoIndex];
-   [self toggleNavButtons];
+    [self setTitleWithCurrentPhotoIndex];
+    [self toggleNavButtons];
+    [self update];
 }
 
+- (void)update
+{
+    
+}
 
 #pragma mark -
 #pragma mark Rotation Magic

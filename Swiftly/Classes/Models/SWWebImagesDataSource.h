@@ -16,4 +16,7 @@
 
 @property (nonatomic, strong) NSArray*  images;
 
+
+- (BOOL)isMediaOpenAtIndex:(NSInteger)index;
+
 @end

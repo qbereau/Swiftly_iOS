@@ -47,9 +47,16 @@
     UIImage *segmentSelected    = [[UIImage imageNamed:@"segcontrol_sel"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)];
     UIImage *segmentUnselected  = [[UIImage imageNamed:@"segcontrol_unsel"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)];
     
+    UIImage *segmentSelectedLandscape    = [[UIImage imageNamed:@"segcontrol_sel_landscape"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)];
+    UIImage *segmentUnselectedLandscape  = [[UIImage imageNamed:@"segcontrol_unsel_landscape"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 10, 0, 10)];
+    
     UIImage *segmentSelectedUnselected   = [UIImage imageNamed:@"segcontrol_left_sel_right_unsel"];
     UIImage *segUnselectedSelected       = [UIImage imageNamed:@"segcontrol_left_unsel_right_sel"];
     UIImage *segmentUnselectedUnselected = [UIImage imageNamed:@"segcontrol_left_unsel_right_unsel"];
+    
+    UIImage *segmentSelectedUnselectedLandscape   = [UIImage imageNamed:@"segcontrol_left_sel_right_unsel_landscape"];
+    UIImage *segUnselectedSelectedLandscape       = [UIImage imageNamed:@"segcontrol_left_unsel_right_sel_landscape"];
+    UIImage *segmentUnselectedUnselectedLandscape = [UIImage imageNamed:@"segcontrol_left_unsel_right_unsel_landscape"];
     
     [[UISegmentedControl appearance] setBackgroundImage:segmentUnselected 
                                                forState:UIControlStateNormal 
@@ -57,6 +64,13 @@
     [[UISegmentedControl appearance] setBackgroundImage:segmentSelected 
                                                forState:UIControlStateSelected 
                                              barMetrics:UIBarMetricsDefault];
+    
+    [[UISegmentedControl appearance] setBackgroundImage:segmentUnselectedLandscape 
+                                               forState:UIControlStateNormal 
+                                             barMetrics:UIBarMetricsLandscapePhone];
+    [[UISegmentedControl appearance] setBackgroundImage:segmentSelectedLandscape 
+                                               forState:UIControlStateSelected 
+                                             barMetrics:UIBarMetricsLandscapePhone];
     
     [[UISegmentedControl appearance] setDividerImage:segmentUnselectedUnselected 
                                  forLeftSegmentState:UIControlStateNormal 
@@ -70,6 +84,19 @@
                                  forLeftSegmentState:UIControlStateNormal 
                                    rightSegmentState:UIControlStateSelected 
                                           barMetrics:UIBarMetricsDefault];
+    
+    [[UISegmentedControl appearance] setDividerImage:segmentUnselectedUnselectedLandscape 
+                                 forLeftSegmentState:UIControlStateNormal 
+                                   rightSegmentState:UIControlStateNormal 
+                                          barMetrics:UIBarMetricsLandscapePhone];
+    [[UISegmentedControl appearance] setDividerImage:segmentSelectedUnselectedLandscape 
+                                 forLeftSegmentState:UIControlStateSelected 
+                                   rightSegmentState:UIControlStateNormal 
+                                          barMetrics:UIBarMetricsLandscapePhone];
+    [[UISegmentedControl appearance] setDividerImage:segUnselectedSelectedLandscape 
+                                 forLeftSegmentState:UIControlStateNormal 
+                                   rightSegmentState:UIControlStateSelected 
+                                          barMetrics:UIBarMetricsLandscapePhone];
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

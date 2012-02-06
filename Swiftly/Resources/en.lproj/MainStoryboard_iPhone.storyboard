@@ -436,10 +436,13 @@
         <image name="swiftly_logo.png" width="248" height="219"/>
     </resources>
     <classes>
+        <class className="KTThumbsViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/KTThumbsViewController.h"/>
+        </class>
         <class className="SWActivitiesViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWActivitiesViewController.h"/>
         </class>
-        <class className="SWAlbumThumbnailsViewController" superclassName="UIViewController">
+        <class className="SWAlbumThumbnailsViewController" superclassName="KTThumbsViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWAlbumThumbnailsViewController.h"/>
         </class>
         <class className="SWAlbumsViewController" superclassName="SWTableViewController">

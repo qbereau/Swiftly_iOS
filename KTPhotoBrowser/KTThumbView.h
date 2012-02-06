@@ -10,10 +10,11 @@
 
 @class KTThumbsViewController;
 
-@interface KTThumbView : UIButton 
+@interface KTThumbView : UIButton <UIGestureRecognizerDelegate> 
 {
 @private
-   KTThumbsViewController *controller_;
+    KTThumbsViewController *controller_;
+    UILongPressGestureRecognizer *longPressGR_;
 }
 
 @property (nonatomic, assign) KTThumbsViewController *controller;

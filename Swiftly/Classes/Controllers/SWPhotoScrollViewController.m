@@ -21,11 +21,43 @@
     
     UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"comments"] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
     self.navigationItem.rightBarButtonItem = btnComments;
+    
+    [self updateExportPhotoButtonState];
 }
 
 - (void)comments:(UIBarButtonItem*)button
 {
-    NSLog(@"..");
+    NSLog(@"[SWPhotoScrollViewController#comments] Launch comments view controller");
+}
+
+- (void)trashPhoto 
+{
+    NSLog(@"[SWPhotoScrollViewController#trashPhoto] Should add 'Delete file' button only if user is owner of file");
+    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
+                                                             delegate:self
+                                                    cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
+                                               destructiveButtonTitle:NSLocalizedString(@"delete_file", @"Delete file button text.")
+                                                    otherButtonTitles:NSLocalizedString(@"unlink_file", @"Unlink file"), nil];
+    [actionSheet showInView:[self view]];
+}
+
+- (void)update 
+{
+    [super update];
+
+    [self updateExportPhotoButtonState];
+}
+
+- (void)updateExportPhotoButtonState
+{
+    // Check if the button exportPhoto should be here or not
+    for (UIBarButtonItem* bbi in toolbar_.items)
+    {
+        if (bbi.action == @selector(exportPhoto))
+        {
+            [bbi setEnabled:[((SWWebImagesDataSource*)dataSource_) isMediaOpenAtIndex:currentIndex_]];
+        }
+    }
 }
 
 @end

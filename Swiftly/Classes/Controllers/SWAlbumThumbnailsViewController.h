@@ -11,6 +11,7 @@
 #import "KTThumbsViewController.h"
 #import "SWWebImagesDataSource.h"
 #import "SWPhotoScrollViewController.h"
+#import "SWAlbumEditViewController.h"
 
 @interface SWAlbumThumbnailsViewController : KTThumbsViewController
 {
