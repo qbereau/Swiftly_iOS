@@ -63,9 +63,14 @@
     NSLog(@"delete");
 }
 
-- (void)exportImageAtIndex:(NSInteger)index
+- (void)forwardImageAtIndex:(NSInteger)index
 {
-    NSLog(@"export");
+    NSLog(@"forward");
+}
+
+- (void)saveImageAtIndex:(NSInteger)index
+{
+    NSLog(@"save");
 }
 
 - (void)showCommentsAtIndex:(NSInteger)index

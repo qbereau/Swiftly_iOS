@@ -9,10 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "SWAlbum.h"
 #import "SWAlbumThumbnailsViewController.h"
-#import "SWTableViewController.h"
 #import "SWTableViewCell.h"
+#import "SWPromptView.h"
 
-@interface SWAlbumsViewController : SWTableViewController
+@interface SWAlbumsViewController : UITableViewController
 {
     NSMutableArray*                 _albums;
 }

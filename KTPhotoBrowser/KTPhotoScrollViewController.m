@@ -18,6 +18,13 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 #define BUTTON_DELETEPHOTO 0
 #define BUTTON_CANCEL 1
 
+#define ACTIONSHEET_TRASH 0
+#define ACTIONSHEET_EXPORT 1
+
+#define BUTTON_EXPORT_SAVE_PHOTO 0
+#define BUTTON_EXPORT_FORWARD_PHOTO 1
+#define BUTTON_EXPORT_CANCEL 2
+
 @interface KTPhotoScrollViewController (KTPrivate)
 - (void)setCurrentIndex:(NSInteger)newIndex;
 - (void)toggleChrome:(BOOL)hide;
@@ -117,7 +124,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
    }
    
    UIBarButtonItem *exportButton = nil;
-   if ([dataSource_ respondsToSelector:@selector(exportImageAtIndex:)])
+   if ([dataSource_ respondsToSelector:@selector(forwardImageAtIndex:)])
    {
       exportButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction 
                                                                    target:self
@@ -575,21 +582,26 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)trashPhoto 
 {
-   UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:nil
+   actionSheet_ = [[UIActionSheet alloc] initWithTitle:nil
                                                             delegate:self
-                                                   cancelButtonTitle:NSLocalizedString(@"Cancel", @"Cancel button text.")
-                                              destructiveButtonTitle:NSLocalizedString(@"Delete Photo", @"Delete Photo button text.")
+                                                   cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
+                                              destructiveButtonTitle:NSLocalizedString(@"delete_file", @"Delete Photo button text.")
                                                    otherButtonTitles:nil];
-   [actionSheet showInView:[self view]];
-   [actionSheet release];
+    [actionSheet_ setTag:ACTIONSHEET_TRASH];
+    [actionSheet_ showInView:[self view]];
+    [actionSheet_ release];
 }
 
-- (void) exportPhoto
+- (void)exportPhoto
 {
-   if ([dataSource_ respondsToSelector:@selector(exportImageAtIndex:)])
-      [dataSource_ exportImageAtIndex:currentIndex_];
-   
-   [self startChromeDisplayTimer];
+    actionSheet_ = [[UIActionSheet alloc] initWithTitle:nil
+                                               delegate:self
+                                      cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
+                                 destructiveButtonTitle:nil
+                                      otherButtonTitles:NSLocalizedString(@"save_file", @"save file"), NSLocalizedString(@"forward_file", @"forward file"), nil];
+    [actionSheet_ setTag:ACTIONSHEET_EXPORT];
+    [actionSheet_ showInView:[self view]];
+    [actionSheet_ release];
 }
 
 
@@ -599,10 +611,29 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 // Called when a button is clicked. The view will be automatically dismissed after this call returns
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex 
 {
-   if (buttonIndex == BUTTON_DELETEPHOTO) {
-      [self deleteCurrentPhoto];
-   }
-   [self startChromeDisplayTimer];
+    if ([actionSheet_ tag] == ACTIONSHEET_TRASH)
+    {
+        if (buttonIndex == BUTTON_DELETEPHOTO) {
+            [self deleteCurrentPhoto];
+        }
+        [self startChromeDisplayTimer];
+    }
+    else if ([actionSheet_ tag] == ACTIONSHEET_EXPORT)
+    {
+        if (buttonIndex == BUTTON_EXPORT_SAVE_PHOTO)
+        {
+            if ([dataSource_ respondsToSelector:@selector(saveImageAtIndex:)])
+                [dataSource_ saveImageAtIndex:currentIndex_];
+        }
+        else if (buttonIndex == BUTTON_EXPORT_FORWARD_PHOTO)
+        {
+            if ([dataSource_ respondsToSelector:@selector(forwardImageAtIndex:)])
+                [dataSource_ forwardImageAtIndex:currentIndex_];        
+        }
+        
+        [self startChromeDisplayTimer];
+    }
+
 }
 
 @end

@@ -1,0 +1,229 @@
+//
+//  SWCommmentsViewController.m
+//  Swiftly
+//
+//  Created by Quentin Bereau on 2/7/12.
+//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//
+
+#import "SWCommmentsViewController.h"
+
+
+@implementation SWCommmentsViewController
+
+@synthesize tableView = _tableView;
+@synthesize toolbar = _toolbar;
+@synthesize scrollView = _scrollView;
+@synthesize comments = _comments;
+
+- (void)didReceiveMemoryWarning
+{
+    // Releases the view if it doesn't have a superview.
+    [super didReceiveMemoryWarning];
+    
+    // Release any cached data, images, etc that aren't in use.
+}
+
+#pragma mark - View lifecycle
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    self.navigationItem.title = NSLocalizedString(@"comments", @"Comments");
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
+    
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    
+    self.view.autoresizesSubviews = YES;
+    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
+    self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;    
+    [self.view addSubview:self.scrollView];
+    
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.scrollView.frame.size.width, self.scrollView.frame.size.height - 45) style:UITableViewStylePlain];
+    self.tableView.backgroundColor = [UIColor clearColor];
+    self.tableView.dataSource = self;
+    self.tableView.delegate = self;
+    self.tableView.backgroundView = nil;
+    self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.scrollView addSubview:self.tableView];
+
+    // --
+    
+    UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, (deviceOrientation == UIDeviceOrientationPortrait) ? 210 : 180, 30)];
+    textField.borderStyle = UITextBorderStyleRoundedRect;
+    textField.textColor = [UIColor whiteColor];
+    textField.font = [UIFont systemFontOfSize:17.0];
+    textField.placeholder = NSLocalizedString(@"enter_comment", @"<enter your comment>");
+    textField.backgroundColor = [UIColor blackColor];
+    textField.keyboardType = UIKeyboardTypeDefault;
+    textField.returnKeyType = UIReturnKeyDone;
+    textField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    textField.delegate = self;
+    
+    UIButton* btnSend = [UIButton buttonWithType:UIButtonTypeCustom];
+    [btnSend setTitle:NSLocalizedString(@"send", @"send") forState:UIControlStateNormal];
+    btnSend.titleLabel.shadowColor = [UIColor blackColor];
+    btnSend.titleLabel.shadowOffset = CGSizeMake(1, 1);
+    [btnSend setFrame:CGRectMake( (deviceOrientation == UIDeviceOrientationPortrait) ? 230 : 210, 30, 80, 30)];
+    [btnSend setBackgroundImage:[[UIImage imageNamed:@"rounded_button"] stretchableImageWithLeftCapWidth:4 topCapHeight:4] forState:UIControlStateNormal];
+    [btnSend addTarget:self action:@selector(send:) forControlEvents:UIControlEventTouchUpInside];
+    btnSend.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
+    
+    self.toolbar = [UIToolbar new];
+    self.toolbar.barStyle = UIBarStyleDefault;
+    [self.toolbar sizeToFit];
+    self.toolbar.frame = CGRectMake(0, (deviceOrientation == UIDeviceOrientationPortrait) ? 415 : 435, 320, 50);
+    self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+
+    UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:textField];
+    UIBarButtonItem *btnItem = [[UIBarButtonItem alloc] initWithCustomView:btnSend];
+    [self.toolbar setItems:[NSArray arrayWithObjects:textFieldItem, btnItem, nil]];
+    [self.scrollView addSubview:self.toolbar];
+
+    self.comments = [[NSArray alloc] initWithObjects:@"Test 1", @"Another test with some veryyyyyyy long text to see how stretching works....", @"blabal", @".....", @"other tests...", nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification 
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+}
+
+- (void)send:(UIButton*)sender
+{
+    NSLog(@"send message!");
+}
+
+- (void)viewDidUnload
+{
+    [super viewDidUnload];
+    // Release any retained subviews of the main view.
+    // e.g. self.myOutlet = nil;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    
+    [self.tableView reloadData];
+    CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height);
+    [self.tableView setContentOffset:bottomOffset animated:NO];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+}
+
+- (void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    // Return YES for supported orientations
+    return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+}
+
+#pragma mark - Table view data source
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [self.comments count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    CGFloat h = [SWCommentTableViewCell cellHeightWithText:[self.comments objectAtIndex:indexPath.row]];
+    if (indexPath.row == [self.comments count])
+        self.tableView.contentSize = CGSizeMake(self.tableView.contentSize.width, self.tableView.contentSize.height + 500);
+    return h;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    SWCommentTableViewCell* cell = [tv dequeueReusableCellWithIdentifier:@"CommentCell"];
+    if (!cell)
+    {
+        cell = [[SWCommentTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"CommentCell"];
+        cell.opaque = NO;
+    }
+
+    cell.thumbCommenter.image = [UIImage imageNamed:@"user@2x.png"];
+    cell.commenter.text = @"Quentin Bereau";
+    cell.commented.text = @"01 January, 12:39pm";
+    cell.comment.text = [self.comments objectAtIndex:indexPath.row];
+
+    return cell;
+}
+
+#pragma mark - Table view delegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+
+}
+
+#pragma mark - UITextView Delegates
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    return YES;
+}
+
+#pragma mark - Notifications
+- (void)keyboardWillShow:(NSNotification *)aNotification {
+    [self moveTextViewForKeyboard:aNotification up:YES];
+}
+
+- (void)keyboardWillHide:(NSNotification *)aNotification {
+    [self moveTextViewForKeyboard:aNotification up:NO]; 
+}
+
+- (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up
+{
+    NSDictionary* userInfo = [aNotification userInfo];
+    
+    // Get animation info from userInfo
+    NSTimeInterval animationDuration;
+    UIViewAnimationCurve animationCurve;
+    
+    CGRect keyboardEndFrame;
+    
+    [[userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] getValue:&animationCurve];
+    [[userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] getValue:&animationDuration];
+    
+    
+    [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] getValue:&keyboardEndFrame];
+    
+    
+    // Animate up or down
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:animationDuration];
+    [UIView setAnimationCurve:animationCurve];
+    
+    CGRect keyboardFrame = [self.view convertRect:keyboardEndFrame toView:nil];
+    [self.scrollView setContentOffset:CGPointMake(0, (up ? keyboardFrame.size.height : 0)) animated:YES];
+    
+    [UIView commitAnimations];
+}
+
+@end

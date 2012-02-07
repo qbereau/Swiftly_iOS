@@ -44,7 +44,8 @@
 
 - (void)unlockAlbums:(UIButton*)sender
 {
-    NSLog(@"unlock...");
+    SWPromptView* pv = [[SWPromptView alloc] initWithTitle:NSLocalizedString(@"enter_album_lock", @"enter your album lock") delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", @"cancel") okButtonTitle:NSLocalizedString(@"ok", @"ok")];
+    [pv show];
 }
 
 - (void)viewDidUnload
@@ -114,7 +115,7 @@
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UILabel* v = (UILabel*)[super tableView:tableView viewForHeaderInSection:section];
+    UILabel* v = (UILabel*)[tableView tableHeaderView];
     
     if (section == 0)
         v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"albums_shared_albums_header", @"shared albums")];
@@ -153,6 +154,16 @@
     }
     
     return cell;
+}
+
+#pragma mark - SWPrompt
+- (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex != [alertView cancelButtonIndex])
+    {
+        NSString *entered = [(SWPromptView *)alertView enteredText];
+        NSLog(@"%@", [NSString stringWithFormat:@"You typed: %@", entered]);
+    }
 }
 
 @end

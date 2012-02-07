@@ -125,6 +125,7 @@
 
         self.backgroundView = [[UIImageView alloc] initWithImage:[ [UIImage imageNamed:@"table_view_cell_unselected.png"] stretchableImageWithLeftCapWidth:0.0 topCapHeight:0.0] ];
     }
+
 }
 
 - (void)layoutSubviews

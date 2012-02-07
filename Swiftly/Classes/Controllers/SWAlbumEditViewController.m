@@ -17,7 +17,7 @@
 {
     self = [super initWithStyle:style];
     if (self) {
-        // Custom initialization
+
     }
     return self;
 }
@@ -38,11 +38,10 @@
 
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done:)];
     
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
-    self.tableView.backgroundView = nil;
-    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.contentInset = UIEdgeInsetsMake(10, 0, 0, 0);
     self.tableView.dataSource = self;
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     self.people = [NSArray arrayWithObjects:@"Steve Jobs", @"Bill Gates", @"Woz", nil];
     
@@ -100,7 +99,9 @@
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
 {
-    UILabel* v = (UILabel*)[super tableView:tableView viewForHeaderInSection:section];
+    UILabel* v = [[UILabel alloc] initWithFrame:CGRectZero];
+    v.textColor = [UIColor whiteColor];
+    v.font = [UIFont boldSystemFontOfSize:14.0];
     v.backgroundColor = [UIColor clearColor];
     
     switch (section)
@@ -127,11 +128,6 @@
     
     return v;
 }
-
-/*- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    return 78.0;
-}*/
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {

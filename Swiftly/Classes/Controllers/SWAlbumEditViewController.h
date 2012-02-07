@@ -8,10 +8,10 @@
 
 #import <UIKit/UIKit.h>
 #import "UIAlertView+Blocks.h"
-#import "SWTableViewController.h"
+#import "SWTableView.h"
 #import "SWTableViewCell.h"
 
-@interface SWAlbumEditViewController : SWTableViewController <UITextFieldDelegate>
+@interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate>
 {
     NSArray*            _people;
 }

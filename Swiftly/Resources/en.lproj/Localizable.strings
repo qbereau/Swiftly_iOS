@@ -34,11 +34,22 @@
 "images"                                = "Images";
 "videos"                                = "Videos";
 "cancel"                                = "Cancel";
+"ok"                                    = "OK";
 "delete_file"                           = "Delete file";
 "unlink_file"                           = "Unlink file";
 "edit"                                  = "Edit";
 "yes"                                   = "Yes";
 "no"                                    = "No";
+"back"                                  = "Back";
+"send"                                  = "Send";
+
+"menu_comments"                         = "Comments (%d)";
+"enter_comment"                         = "<enter your comment>";
+"delete_file"                           = "Delete File";
+"save_file"                             = "Save File";
+"forward_file"                          = "Forward File";
+
+"enter_album_lock"                      = "Enter your Album Lock";
 
 "edit_album"                            = "Edit Album";
 "album_name"                            = "Album name";
@@ -66,3 +77,9 @@
 "filter_thumb_title"                    = "View files...";
 "filter_thumb"                          = "Shared by %@";
 "filter_thumb_all"                      = "View all files";
+
+"comments"                              = "Comments";
+
+"activities_in_progress"                = "In Progress";
+"activities_recent"                     = "Recent";
+"waiting_to_upload"                     = "Waiting to upload";

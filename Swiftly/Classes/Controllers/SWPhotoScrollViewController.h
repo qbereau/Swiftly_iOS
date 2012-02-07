@@ -8,6 +8,7 @@
 
 #import "KTPhotoScrollViewController.h"
 #import "SWWebImagesDataSource.h"
+#import "SWCommmentsViewController.h"
 
 @interface SWPhotoScrollViewController : KTPhotoScrollViewController
 

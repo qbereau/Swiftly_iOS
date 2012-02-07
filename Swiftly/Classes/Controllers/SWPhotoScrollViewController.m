@@ -19,7 +19,7 @@
 {
     [super loadView];
     
-    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"comments"] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
+    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), 5] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
     self.navigationItem.rightBarButtonItem = btnComments;
     
     [self updateExportPhotoButtonState];
@@ -27,7 +27,9 @@
 
 - (void)comments:(UIBarButtonItem*)button
 {
-    NSLog(@"[SWPhotoScrollViewController#comments] Launch comments view controller");
+    SWCommmentsViewController* newController = [[SWCommmentsViewController alloc] init];
+    newController.navigationItem.hidesBackButton = NO;
+    [[self navigationController] pushViewController:newController animated:YES];
 }
 
 - (void)trashPhoto 

@@ -68,6 +68,13 @@
 		1978066414E03F77007582CC /* table_view_cell_grouped_top@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978066014E03F77007582CC /* table_view_cell_grouped_top@2x.png */; };
 		1978066714E04033007582CC /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978066514E04033007582CC /* lock.png */; };
 		1978066814E04033007582CC /* lock@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978066614E04033007582CC /* lock@2x.png */; };
+		1978066B14E11EC3007582CC /* SWCommmentsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978066A14E11EC3007582CC /* SWCommmentsViewController.m */; };
+		1978066E14E135BD007582CC /* SWCommentTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978066D14E135BD007582CC /* SWCommentTableViewCell.m */; };
+		1978067114E13A49007582CC /* user.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978066F14E13A49007582CC /* user.png */; };
+		1978067214E13A49007582CC /* user@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978067014E13A49007582CC /* user@2x.png */; };
+		1978067514E1704B007582CC /* SWPromptView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067414E1704B007582CC /* SWPromptView.m */; };
+		1978067814E17D4F007582CC /* SWTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067714E17D4F007582CC /* SWTableView.m */; };
+		1978067B14E185D3007582CC /* SWActivityTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067A14E185D3007582CC /* SWActivityTableViewCell.m */; };
 		1998327F14D96F110083E5C3 /* activities.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998327D14D96F110083E5C3 /* activities.png */; };
 		1998328014D96F110083E5C3 /* activities@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998327E14D96F110083E5C3 /* activities@2x.png */; };
 		1998328314D96F770083E5C3 /* SWShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1998328214D96F770083E5C3 /* SWShareViewController.m */; };
@@ -85,7 +92,6 @@
 		199832B114D9A64F0083E5C3 /* table_view_cell_unselected@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 199832AF14D9A64F0083E5C3 /* table_view_cell_unselected@2x.png */; };
 		199832B714D9A8FA0083E5C3 /* linen.png in Resources */ = {isa = PBXBuildFile; fileRef = 199832B614D9A8FA0083E5C3 /* linen.png */; };
 		199832BC14D9AD880083E5C3 /* SWTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 199832BB14D9AD880083E5C3 /* SWTableViewCell.m */; };
-		199832C214D9AF680083E5C3 /* SWTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 199832C114D9AF680083E5C3 /* SWTableViewController.m */; };
 		199832CA14D9B5F80083E5C3 /* pic1.png in Resources */ = {isa = PBXBuildFile; fileRef = 199832C714D9B5F80083E5C3 /* pic1.png */; };
 		199832CB14D9B5F80083E5C3 /* pic2.png in Resources */ = {isa = PBXBuildFile; fileRef = 199832C814D9B5F80083E5C3 /* pic2.png */; };
 		199832CC14D9B5F80083E5C3 /* pic3.png in Resources */ = {isa = PBXBuildFile; fileRef = 199832C914D9B5F80083E5C3 /* pic3.png */; };
@@ -218,6 +224,18 @@
 		1978066014E03F77007582CC /* table_view_cell_grouped_top@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "table_view_cell_grouped_top@2x.png"; sourceTree = "<group>"; };
 		1978066514E04033007582CC /* lock.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock.png; sourceTree = "<group>"; };
 		1978066614E04033007582CC /* lock@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock@2x.png"; sourceTree = "<group>"; };
+		1978066914E11EC3007582CC /* SWCommmentsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWCommmentsViewController.h; sourceTree = "<group>"; };
+		1978066A14E11EC3007582CC /* SWCommmentsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWCommmentsViewController.m; sourceTree = "<group>"; };
+		1978066C14E135BD007582CC /* SWCommentTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWCommentTableViewCell.h; sourceTree = "<group>"; };
+		1978066D14E135BD007582CC /* SWCommentTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWCommentTableViewCell.m; sourceTree = "<group>"; };
+		1978066F14E13A49007582CC /* user.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = user.png; sourceTree = "<group>"; };
+		1978067014E13A49007582CC /* user@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "user@2x.png"; sourceTree = "<group>"; };
+		1978067314E1704B007582CC /* SWPromptView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWPromptView.h; sourceTree = "<group>"; };
+		1978067414E1704B007582CC /* SWPromptView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWPromptView.m; sourceTree = "<group>"; };
+		1978067614E17D4F007582CC /* SWTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWTableView.h; sourceTree = "<group>"; };
+		1978067714E17D4F007582CC /* SWTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTableView.m; sourceTree = "<group>"; };
+		1978067914E185D3007582CC /* SWActivityTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWActivityTableViewCell.h; sourceTree = "<group>"; };
+		1978067A14E185D3007582CC /* SWActivityTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWActivityTableViewCell.m; sourceTree = "<group>"; };
 		1998327C14D9520F0083E5C3 /* SWActivitiesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWActivitiesViewController.h; sourceTree = "<group>"; };
 		1998327D14D96F110083E5C3 /* activities.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = activities.png; sourceTree = "<group>"; };
 		1998327E14D96F110083E5C3 /* activities@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "activities@2x.png"; sourceTree = "<group>"; };
@@ -241,8 +259,6 @@
 		199832B614D9A8FA0083E5C3 /* linen.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = linen.png; sourceTree = "<group>"; };
 		199832BA14D9AD880083E5C3 /* SWTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWTableViewCell.h; sourceTree = "<group>"; };
 		199832BB14D9AD880083E5C3 /* SWTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTableViewCell.m; sourceTree = "<group>"; };
-		199832C014D9AF680083E5C3 /* SWTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWTableViewController.h; sourceTree = "<group>"; };
-		199832C114D9AF680083E5C3 /* SWTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTableViewController.m; sourceTree = "<group>"; };
 		199832C714D9B5F80083E5C3 /* pic1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pic1.png; sourceTree = "<group>"; };
 		199832C814D9B5F80083E5C3 /* pic2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pic2.png; sourceTree = "<group>"; };
 		199832C914D9B5F80083E5C3 /* pic3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pic3.png; sourceTree = "<group>"; };
@@ -444,6 +460,8 @@
 		1950B80A14D6B4FC00302BF2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				1978066F14E13A49007582CC /* user.png */,
+				1978067014E13A49007582CC /* user@2x.png */,
 				1978066514E04033007582CC /* lock.png */,
 				1978066614E04033007582CC /* lock@2x.png */,
 				1978065D14E03F77007582CC /* table_view_cell_grouped_bottom@2x.png */,
@@ -551,14 +569,14 @@
 				1998328814D96FD30083E5C3 /* SWPeopleViewController.m */,
 				1998328A14D96FF20083E5C3 /* SWSettingsViewController.h */,
 				1998328B14D96FF20083E5C3 /* SWSettingsViewController.m */,
-				199832C014D9AF680083E5C3 /* SWTableViewController.h */,
-				199832C114D9AF680083E5C3 /* SWTableViewController.m */,
 				199832CD14D9BB800083E5C3 /* SWAlbumThumbnailsViewController.h */,
 				199832CE14D9BB800083E5C3 /* SWAlbumThumbnailsViewController.m */,
 				1998332614DACDFC0083E5C3 /* SWPhotoScrollViewController.h */,
 				1998332714DACDFD0083E5C3 /* SWPhotoScrollViewController.m */,
 				191BC35214DC2D810017F9A3 /* SWAlbumEditViewController.h */,
 				191BC35314DC2D810017F9A3 /* SWAlbumEditViewController.m */,
+				1978066914E11EC3007582CC /* SWCommmentsViewController.h */,
+				1978066A14E11EC3007582CC /* SWCommmentsViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -581,6 +599,14 @@
 				1950B84B14D6E2CB00302BF2 /* SWRoundedRectView.m */,
 				199832BA14D9AD880083E5C3 /* SWTableViewCell.h */,
 				199832BB14D9AD880083E5C3 /* SWTableViewCell.m */,
+				1978066C14E135BD007582CC /* SWCommentTableViewCell.h */,
+				1978066D14E135BD007582CC /* SWCommentTableViewCell.m */,
+				1978067314E1704B007582CC /* SWPromptView.h */,
+				1978067414E1704B007582CC /* SWPromptView.m */,
+				1978067614E17D4F007582CC /* SWTableView.h */,
+				1978067714E17D4F007582CC /* SWTableView.m */,
+				1978067914E185D3007582CC /* SWActivityTableViewCell.h */,
+				1978067A14E185D3007582CC /* SWActivityTableViewCell.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -754,6 +780,8 @@
 				1978066414E03F77007582CC /* table_view_cell_grouped_top@2x.png in Resources */,
 				1978066714E04033007582CC /* lock.png in Resources */,
 				1978066814E04033007582CC /* lock@2x.png in Resources */,
+				1978067114E13A49007582CC /* user.png in Resources */,
+				1978067214E13A49007582CC /* user@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -789,7 +817,6 @@
 				1998328C14D96FF20083E5C3 /* SWSettingsViewController.m in Sources */,
 				1998329B14D989B20083E5C3 /* SWAlbum.m in Sources */,
 				199832BC14D9AD880083E5C3 /* SWTableViewCell.m in Sources */,
-				199832C214D9AF680083E5C3 /* SWTableViewController.m in Sources */,
 				199832CF14D9BB810083E5C3 /* SWAlbumThumbnailsViewController.m in Sources */,
 				199832E014DA89850083E5C3 /* KTPhotoBrowserGlobal.m in Sources */,
 				199832E114DA89850083E5C3 /* KTPhotoScrollViewController.m in Sources */,
@@ -809,6 +836,11 @@
 				1998332514DA90EB0083E5C3 /* KTThumbView+SDWebImage.m in Sources */,
 				1998332814DACDFE0083E5C3 /* SWPhotoScrollViewController.m in Sources */,
 				191BC35414DC2D810017F9A3 /* SWAlbumEditViewController.m in Sources */,
+				1978066B14E11EC3007582CC /* SWCommmentsViewController.m in Sources */,
+				1978066E14E135BD007582CC /* SWCommentTableViewCell.m in Sources */,
+				1978067514E1704B007582CC /* SWPromptView.m in Sources */,
+				1978067814E17D4F007582CC /* SWTableView.m in Sources */,
+				1978067B14E185D3007582CC /* SWActivityTableViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
