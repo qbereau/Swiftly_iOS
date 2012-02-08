@@ -7,7 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AddressBook/AddressBook.h>
+#import "SWTableViewCell.h"
+#import "SWPerson.h"
 
-@interface SWPeopleViewController : UIViewController
+@interface SWPeopleViewController : UITableViewController
+{
+    NSInteger           _currentMode;
+    NSArray*            _groups;
+    NSArray*            _contacts;
+}
+
+@property (nonatomic, assign) NSInteger         currentMode;
+@property (nonatomic, strong) NSArray*          groups;
+@property (nonatomic, strong) NSArray*          contacts;
+
+- (NSPredicate*)predicateForSection:(NSInteger)idx;
 
 @end

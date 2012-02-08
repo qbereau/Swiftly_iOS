@@ -77,7 +77,10 @@
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
 {
     [super setSelected:selected animated:animated];
-
+    
+    self.textLabel.backgroundColor = [UIColor clearColor];
+    self.detailTextLabel.backgroundColor = [UIColor clearColor];
+    
     self.textLabel.textColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];
     self.detailTextLabel.textColor = [UIColor colorWithRed:0.412 green:0.404 blue:0.447 alpha:1];
     self.textLabel.highlightedTextColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];

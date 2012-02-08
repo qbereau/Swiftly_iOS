@@ -83,3 +83,6 @@
 "activities_in_progress"                = "In Progress";
 "activities_recent"                     = "Recent";
 "waiting_to_upload"                     = "Waiting to upload";
+
+"contacts"                              = "Contacts";
+"groups"                                = "Groups";

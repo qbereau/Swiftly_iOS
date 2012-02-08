@@ -48,7 +48,8 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 @synthesize statusBarStyle = statusBarStyle_;
 @synthesize statusbarHidden = statusbarHidden_;
-
+@synthesize currentIndex = currentIndex_;
+@synthesize startWithIndex = startWithIndex_;
 
 - (void)dealloc 
 {
@@ -108,7 +109,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
    scrollView_ = [newView retain];
    
    [newView release];
-   
+ 
    nextButton_ = [[UIBarButtonItem alloc] 
                   initWithImage:KTLoadImageFromBundle(@"nextIcon.png")
                   style:UIBarButtonItemStylePlain
@@ -198,7 +199,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 - (void)viewDidLoad 
 {
    [super viewDidLoad];
-  
+
    photoCount_ = [dataSource_ numberOfPhotos];
    [self setScrollViewContentSize];
    
@@ -222,17 +223,26 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 - (void)viewWillAppear:(BOOL)animated 
 {
    [super viewWillAppear:animated];
-   
+
    // The first time the view appears, store away the previous controller's values so we can reset on pop.
    UINavigationBar *navbar = [[self navigationController] navigationBar];
+    BOOL firstTime = NO;
    if (!viewDidAppearOnce_) {
       viewDidAppearOnce_ = YES;
+       firstTime = YES;
       navbarWasTranslucent_ = [navbar isTranslucent];
       statusBarStyle_ = [[UIApplication sharedApplication] statusBarStyle];
    }
    // Then ensure translucency. Without it, the view will appear below rather than under it.  
    [navbar setTranslucent:YES];
    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleBlackTranslucent animated:YES];
+
+    if (!firstTime)
+    {
+        [self.view setNeedsLayout];
+        [self layoutScrollViewSubviews];
+    }
+    
 
    // Set the scroll view's content size, auto-scroll to the stating photo,
    // and setup the other display elements.
@@ -372,6 +382,9 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)setCurrentIndex:(NSInteger)newIndex
 {
+    if (newIndex < 0 || newIndex >= photoCount_)
+        return;
+    
     currentIndex_ = newIndex;
    
     [self loadPhoto:currentIndex_];
@@ -438,7 +451,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation 
                                 duration:(NSTimeInterval)duration 
-{
+{   
    // here, our pagingScrollView bounds have not yet been updated for the new interface orientation. So this is a good
    // place to calculate the content offset that we will need in the new orientation
    CGFloat offset = scrollView_.contentOffset.x;
@@ -567,9 +580,10 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView 
 {
-   CGFloat pageWidth = scrollView.frame.size.width;
-   float fractionalPage = scrollView.contentOffset.x / pageWidth;
-   NSInteger page = floor(fractionalPage);
+    CGFloat pageWidth = scrollView.frame.size.width;
+    float fractionalPage = scrollView.contentOffset.x / pageWidth;
+    NSInteger page = floor(fractionalPage);
+    
 	if (page != currentIndex_) {
 		[self setCurrentIndex:page];
 	}

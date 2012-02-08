@@ -45,10 +45,16 @@
 
 @property (nonatomic, assign) UIStatusBarStyle statusBarStyle;
 @property (nonatomic, assign, getter=isStatusbarHidden) BOOL statusbarHidden;
+@property (nonatomic, readonly) NSInteger currentIndex;
+@property (nonatomic, assign) NSUInteger startWithIndex;
 
 - (id)initWithDataSource:(id <KTPhotoBrowserDataSource>)dataSource andStartWithPhotoAtIndex:(NSUInteger)index;
 - (void)toggleChromeDisplay;
 - (void)update;
 - (void)enableScroll:(BOOL)enable;
+- (void)scrollToIndex:(NSInteger)index;
+- (void)setCurrentIndex:(NSInteger)newIndex;
+- (void)layoutScrollViewSubviews;
+- (void)updateToolbarWithOrientation:(UIInterfaceOrientation)interfaceOrientation;
 
 @end

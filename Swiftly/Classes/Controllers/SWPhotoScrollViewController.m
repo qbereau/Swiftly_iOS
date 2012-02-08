@@ -25,8 +25,18 @@
     [self updateExportPhotoButtonState];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    
+}
+
 - (void)comments:(UIBarButtonItem*)button
 {
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:NO];
+    [self setStartWithIndex:self.currentIndex];
+    
     SWCommmentsViewController* newController = [[SWCommmentsViewController alloc] init];
     newController.navigationItem.hidesBackButton = NO;
     [[self navigationController] pushViewController:newController animated:YES];
