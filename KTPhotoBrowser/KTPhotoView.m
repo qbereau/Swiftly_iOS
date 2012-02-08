@@ -20,11 +20,13 @@
 
 @synthesize scroller = scroller_;
 @synthesize index = index_;
+@synthesize moviePlayer = moviePlayer_;
 
 - (void)dealloc 
 {
-   [imageView_ release], imageView_ = nil;
-   [super dealloc];
+    [imageView_ release], imageView_ = nil;
+    [moviePlayer_ release], moviePlayer_ = nil;
+    [super dealloc];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -49,23 +51,51 @@
 
 - (void)setImage:(UIImage *)newImage 
 {
-   [imageView_ setImage:newImage];
+    [imageView_ setImage:newImage];
+}
+
+- (void)setVideoURL:(NSURL*)url
+{
+    if (!moviePlayer_)
+    {
+        moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:url];
+        [self addSubview:moviePlayer_.view];
+    }
+    else
+    {
+        [moviePlayer_ setContentURL:url];
+    }
+    
+    [moviePlayer_ prepareToPlay];
+    [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
+    [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
+    [moviePlayer_.view setFrame:CGRectMake(0, 0, [self bounds].size.width, [self bounds].size.height - ([[UIApplication sharedApplication] isStatusBarHidden] ? 0 : 50))];
+    
+    [self turnOffZoom];
+}
+
+- (void)launch
+{
+    [moviePlayer_ play];
 }
 
 - (void)layoutSubviews 
 {
    [super layoutSubviews];
 
-   if ([self isZoomed] == NO && CGRectEqualToRect([self bounds], [imageView_ frame]) == NO) {
-      [imageView_ setFrame:[self bounds]];
-   }
+    if ([self isZoomed] == NO && CGRectEqualToRect([self bounds], [imageView_ frame]) == NO)
+    {
+       [imageView_ setFrame:[self bounds]];
+    }
+    
+    [moviePlayer_.view setFrame:CGRectMake(0, 0, [self bounds].size.width, [self bounds].size.height - ([[UIApplication sharedApplication] isStatusBarHidden] ? 0 : 50))];
 }
 
 - (void)toggleChromeDisplay
 {
-   if (scroller_) {
-      [scroller_ toggleChromeDisplay];
-   }
+    if (scroller_) {
+        [scroller_ toggleChromeDisplay];
+    }
 }
 
 - (BOOL)isZoomed
@@ -114,25 +144,26 @@
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event 
 {
-   UITouch *touch = [touches anyObject];
-   
-   if ([touch view] == self) {
-      if ([touch tapCount] == 2) {
-         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(toggleChromeDisplay) object:nil];
-         [self zoomToLocation:[touch locationInView:self]];
-      }
-   }
+    UITouch *touch = [touches anyObject];
+
+    if ([touch view] == self) {
+       if ([touch tapCount] == 2) {
+          [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(toggleChromeDisplay) object:nil];
+          [self zoomToLocation:[touch locationInView:self]];
+        }
+    }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-   UITouch *touch = [touches anyObject];
-   
-   if ([touch view] == self) {
-      if ([touch tapCount] == 1) {
-         [self performSelector:@selector(toggleChromeDisplay) withObject:nil afterDelay:0.5];
-      }
-   }
+    UITouch *touch = [touches anyObject];
+    //if ([touch view] == self || [touch view] == moviePlayer_.view) 
+    {
+        if ([touch tapCount] == 1) 
+        {
+            [self performSelector:@selector(toggleChromeDisplay) withObject:nil afterDelay:0.5];
+        }
+    }
 }
 
 

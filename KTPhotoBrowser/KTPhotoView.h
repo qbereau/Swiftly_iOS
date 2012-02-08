@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 @class KTPhotoScrollViewController;
 
@@ -16,13 +17,19 @@
    UIImageView *imageView_;
    KTPhotoScrollViewController *scroller_;
    NSInteger index_;
+    
+    
+    MPMoviePlayerController*        moviePlayer_;
 }
 
 @property (nonatomic, assign) KTPhotoScrollViewController *scroller;
 @property (nonatomic, assign) NSInteger index;
+@property (nonatomic, assign) MPMoviePlayerController* moviePlayer;
 
 - (void)setImage:(UIImage *)newImage;
+- (void)setVideoURL:(NSURL*)url;
 - (void)turnOffZoom;
+- (void)launch;
 
 - (CGPoint)pointToCenterAfterRotation;
 - (CGFloat)scaleToRestoreAfterRotation;

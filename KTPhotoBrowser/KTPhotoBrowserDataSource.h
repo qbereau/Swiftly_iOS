@@ -22,7 +22,9 @@
 - (UIImage *)thumbImageAtIndex:(NSInteger)index;
 
 // …or these, for asynchronous images.
+- (void)mediaAtIndex:(NSInteger)index photoView:(KTPhotoView *)photoView;
 - (void)imageAtIndex:(NSInteger)index photoView:(KTPhotoView *)photoView;
+- (void)videoAtIndex:(NSInteger)index photoView:(KTPhotoView *)photoView;
 - (void)thumbImageAtIndex:(NSInteger)index thumbView:(KTThumbView *)thumbView;
 
 - (void)deleteImageAtIndex:(NSInteger)index;

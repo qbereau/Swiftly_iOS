@@ -49,5 +49,6 @@
 - (id)initWithDataSource:(id <KTPhotoBrowserDataSource>)dataSource andStartWithPhotoAtIndex:(NSUInteger)index;
 - (void)toggleChromeDisplay;
 - (void)update;
+- (void)enableScroll:(BOOL)enable;
 
 @end

@@ -81,6 +81,11 @@ const CGFloat ktkDefaultToolbarHeight = 44;
    return self;
 }
 
+- (void)enableScroll:(BOOL)enable
+{
+    [scrollView_ setUserInteractionEnabled:enable];
+}
+
 - (void)loadView 
 {
    [super loadView];
@@ -332,11 +337,14 @@ const CGFloat ktkDefaultToolbarHeight = 44;
       
       // Set the photo image.
       if (dataSource_) {
-         if ([dataSource_ respondsToSelector:@selector(imageAtIndex:photoView:)] == NO) {
-            UIImage *image = [dataSource_ imageAtIndex:index];
-            [photoView setImage:image];
-         } else {
-            [dataSource_ imageAtIndex:index photoView:photoView];
+         if ([dataSource_ respondsToSelector:@selector(mediaAtIndex:photoView:)]) 
+         {
+             [dataSource_ mediaAtIndex:index photoView:photoView];
+         } 
+         else 
+         {
+             UIImage *image = [dataSource_ imageAtIndex:index];
+             [photoView setImage:image];
          }
       }
       
@@ -379,7 +387,10 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)update
 {
-    
+    id currentPhotoView = [photoViews_ objectAtIndex:currentIndex_];
+    if ([currentPhotoView isKindOfClass:[KTPhotoView class]]) {
+        [(KTPhotoView*)currentPhotoView launch];
+    }
 }
 
 #pragma mark -
@@ -511,6 +522,11 @@ const CGFloat ktkDefaultToolbarHeight = 44;
    if ( ! isChromeHidden_ ) {
       [self startChromeDisplayTimer];
    }
+    
+    id currentPhotoView = [photoViews_ objectAtIndex:currentIndex_];
+    if ([currentPhotoView isKindOfClass:[KTPhotoView class]]) {
+        [(KTPhotoView*)currentPhotoView setNeedsLayout];
+    }    
 }
 
 - (void)hideChrome 

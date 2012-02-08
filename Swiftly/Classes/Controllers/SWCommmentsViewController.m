@@ -61,7 +61,7 @@
     textField.returnKeyType = UIReturnKeyDone;
     textField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     textField.delegate = self;
-    
+
     UIButton* btnSend = [UIButton buttonWithType:UIButtonTypeCustom];
     [btnSend setTitle:NSLocalizedString(@"send", @"send") forState:UIControlStateNormal];
     btnSend.titleLabel.shadowColor = [UIColor blackColor];

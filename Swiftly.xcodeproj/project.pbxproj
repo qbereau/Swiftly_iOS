@@ -75,6 +75,7 @@
 		1978067514E1704B007582CC /* SWPromptView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067414E1704B007582CC /* SWPromptView.m */; };
 		1978067814E17D4F007582CC /* SWTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067714E17D4F007582CC /* SWTableView.m */; };
 		1978067B14E185D3007582CC /* SWActivityTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1978067A14E185D3007582CC /* SWActivityTableViewCell.m */; };
+		1978067D14E266C8007582CC /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1978067C14E266C7007582CC /* MediaPlayer.framework */; };
 		1998327F14D96F110083E5C3 /* activities.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998327D14D96F110083E5C3 /* activities.png */; };
 		1998328014D96F110083E5C3 /* activities@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998327E14D96F110083E5C3 /* activities@2x.png */; };
 		1998328314D96F770083E5C3 /* SWShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1998328214D96F770083E5C3 /* SWShareViewController.m */; };
@@ -236,6 +237,7 @@
 		1978067714E17D4F007582CC /* SWTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTableView.m; sourceTree = "<group>"; };
 		1978067914E185D3007582CC /* SWActivityTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWActivityTableViewCell.h; sourceTree = "<group>"; };
 		1978067A14E185D3007582CC /* SWActivityTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWActivityTableViewCell.m; sourceTree = "<group>"; };
+		1978067C14E266C7007582CC /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		1998327C14D9520F0083E5C3 /* SWActivitiesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWActivitiesViewController.h; sourceTree = "<group>"; };
 		1998327D14D96F110083E5C3 /* activities.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = activities.png; sourceTree = "<group>"; };
 		1998327E14D96F110083E5C3 /* activities@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "activities@2x.png"; sourceTree = "<group>"; };
@@ -333,6 +335,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1978067D14E266C8007582CC /* MediaPlayer.framework in Frameworks */,
 				1950B85014D6E93C00302BF2 /* CoreTelephony.framework in Frameworks */,
 				1950B84E14D6E6FC00302BF2 /* QuartzCore.framework in Frameworks */,
 				1950B7D514D6AFB400302BF2 /* UIKit.framework in Frameworks */,
@@ -412,6 +415,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1978067C14E266C7007582CC /* MediaPlayer.framework */,
 				1950B84F14D6E93C00302BF2 /* CoreTelephony.framework */,
 				1950B84D14D6E6FC00302BF2 /* QuartzCore.framework */,
 				1950B7D414D6AFB400302BF2 /* UIKit.framework */,
