@@ -13,9 +13,7 @@
 
 @implementation SWPeopleViewController
 
-@synthesize groups = _groups;
 @synthesize currentMode = _currentMode;
-@synthesize contacts = _contacts;
 
 - (void)didReceiveMemoryWarning
 {
@@ -42,52 +40,21 @@
     segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
     segmentedControl.selectedSegmentIndex = 0;
     self.navigationItem.titleView = segmentedControl;
-
-    // Data Source
-    NSMutableArray* persons = [NSMutableArray array];
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
-    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
-    for ( int i = 0; i < nPeople; i++ )
-    {
-        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
-        
-        SWPerson* p = [SWPerson new];
-        p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
-        p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
-        
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        NSString *mobileNumber;
-        NSString *mobileLabel;
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
-        {
-            mobileLabel = (__bridge NSString *)ABMultiValueCopyLabelAtIndex(phoneNumbers, i);
-            if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneMobileLabel] || [mobileNumber isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel]) 
-            {
-                p.phoneNumber = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
-                break;
-            }
-        }
-        
-        if (ABPersonHasImageData(ref))
-        {
-            NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
-            p.thumbnail = [UIImage imageWithData:imageData];
-        }
-
-        if (p.firstName || p.lastName)        
-            [persons addObject:p];
-        
-        CFRelease(ref);
-    }
     
-    self.contacts = [persons sortedArrayUsingComparator:^(id a, id b) {
-        NSString* o1 = [(SWPerson*)a lastName];
-        NSString* o2 = [(SWPerson*)b lastName];
-        return [o1 compare:o2];
-    }];
     
-    self.groups = [NSArray arrayWithObjects:@"Family", @"Friends", @"Colleagues", nil];
+    _plvc = [[SWPeopleListViewController alloc] initWithStyle:UITableViewStylePlain];    
+    [self addChildViewController:_plvc];
+    [self.view addSubview:_plvc.view];
+    _plvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 93);
+    [_plvc didMoveToParentViewController:self];
+    
+    _glvc = [[SWGroupListViewController alloc] initWithStyle:UITableViewStylePlain];    
+    [self addChildViewController:_glvc];
+    [self.view addSubview:_glvc.view];
+    _glvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 93);
+    [_glvc didMoveToParentViewController:self];  
+    
+    _glvc.view.hidden = YES;
 }
 
 - (void)addGroup:(id)sender
@@ -102,13 +69,17 @@
     if (self.currentMode == MODE_GROUPS)
     {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"add"] style:UIBarButtonItemStylePlain target:self action:@selector(addGroup:)];
+        
+        _plvc.view.hidden = YES;
+        _glvc.view.hidden = NO;
     }
     else
     {
         self.navigationItem.rightBarButtonItem = nil;
+        
+        _plvc.view.hidden = NO;
+        _glvc.view.hidden = YES;
     }
-    
-    [self.tableView reloadData];
 }
 
 - (void)viewDidUnload
@@ -148,93 +119,20 @@
     }
 }
 
-- (NSPredicate*)predicateForSection:(NSInteger)idx
+/*
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    char c = 'A' + idx;
-    NSString* s = [NSString stringWithFormat:@"%C", c];
-    return [NSPredicate predicateWithFormat:@"predicateContactName BEGINSWITH[cd] %@", s];
-}
-
-#pragma mark - UITableView Delegates
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    if (self.currentMode == MODE_GROUPS)    
-        return 1;
-    
-    return 26;
-}
-
-- (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
-{
-    if (self.currentMode == MODE_CONTACTS)
+    if ([[segue identifier] isEqualToString:@"ShowContact"])
     {
-        UILabel* v = (UILabel*)[tableView tableHeaderView];
-        char c = 'A';
-        v.text = [NSString stringWithFormat:@"   %C", c + section];
-        
-        return v;
+        SWContactViewController* newController = segue.destinationViewController;
+        newController.contact = (SWPerson*)sender;
     }
-    
-    
-    return nil;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    if (self.currentMode == MODE_GROUPS)
-        return 0;
-    
-    return 22;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    if (self.currentMode == MODE_GROUPS)
-        return [self.groups count];
-    
-    NSArray* arr = [self.contacts filteredArrayUsingPredicate:[self predicateForSection:section]];
-    return [arr count];
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (self.currentMode == MODE_GROUPS)    
-        return 78;
-    
-    return 50;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    NSString* cellID = @"ContactCell";
-    if (self.currentMode == MODE_GROUPS)
-        cellID = @"GroupCell";
-    
-    SWTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellID];
-    if (!cell)
+    else if ([segue.identifier isEqualToString:@"ShowGroup"])
     {
-        cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellID];
+        SWGroupEditViewController* newController = segue.destinationViewController;
+        newController.name = (NSString*)sender;
     }
-    
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    
-    if (self.currentMode == MODE_GROUPS)
-    {
-        cell.textLabel.text = [self.groups objectAtIndex:indexPath.row];
-        cell.detailTextLabel.text = @"";
-        cell.imageView.image = nil;
-    }
-    else
-    {
-        NSArray* arr = [self.contacts filteredArrayUsingPredicate:[self predicateForSection:indexPath.section]];
-        
-        SWPerson* p = [arr objectAtIndex:indexPath.row];
-        cell.textLabel.text = [p name];
-        cell.detailTextLabel.text = p.phoneNumber;
-        cell.imageView.image = p.thumbnail;
-    }
-    
-    return cell;
 }
+*/
 
 @end

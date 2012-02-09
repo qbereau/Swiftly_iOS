@@ -10,8 +10,9 @@
 
 @implementation SWAlbumThumbnailsViewController
 
-@synthesize selectedAlbum = _selectedAlbum;
-@synthesize medias = _medias;
+@synthesize selectedAlbum       = _selectedAlbum;
+@synthesize medias              = _medias;
+@synthesize allowAlbumEdition   = _allowAlbumEditition;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -42,9 +43,6 @@
     self.medias = [SWWebImagesDataSource new];
     [self setDataSource:self.medias];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"edit", @"edit") style:UIBarButtonItemStylePlain target:self action:@selector(editAlbum:)];
-    
-    
     UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:
 											[NSArray arrayWithObjects:NSLocalizedString(@"all", @"all"), NSLocalizedString(@"images", @"images"), NSLocalizedString(@"videos", @"videos"), nil]];
     [segmentedControl addTarget:self
@@ -54,6 +52,20 @@
     segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
     segmentedControl.selectedSegmentIndex = 0;
     self.navigationItem.titleView = segmentedControl;
+}
+
+- (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition
+{
+    _allowAlbumEditition = allowAlbumEdition;
+    
+    if (!allowAlbumEdition)
+    {
+        self.navigationItem.rightBarButtonItem = nil;
+    }
+    else
+    {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"edit", @"edit") style:UIBarButtonItemStylePlain target:self action:@selector(editAlbum:)];
+    }
 }
 
 - (void)viewDidUnload

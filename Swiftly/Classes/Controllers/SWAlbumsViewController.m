@@ -95,6 +95,7 @@
             // Shared Album only here...
             SWAlbum* selectedAlbum = [self.albums objectAtIndex:idxPath.row];
             SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
+            albumThumbnailsVC.allowAlbumEdition = YES;
             albumThumbnailsVC.selectedAlbum = selectedAlbum;
         }
     }

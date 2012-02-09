@@ -18,9 +18,12 @@
     SWAlbum*                    _selectedAlbum;
     
     SWWebImagesDataSource*      _medias;
+    
+    BOOL                        _allowAlbumEditition;
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
 @property (nonatomic, strong) SWWebImagesDataSource*    medias;
+@property (nonatomic, assign) BOOL                      allowAlbumEdition;
 
 @end

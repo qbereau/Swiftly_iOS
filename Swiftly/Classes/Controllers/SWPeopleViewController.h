@@ -7,21 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <AddressBook/AddressBook.h>
-#import "SWTableViewCell.h"
-#import "SWPerson.h"
+#import "SWGroupListViewController.h"
+#import "SWPeopleListViewController.h"
 
-@interface SWPeopleViewController : UITableViewController
+@interface SWPeopleViewController : UIViewController
 {
     NSInteger           _currentMode;
-    NSArray*            _groups;
-    NSArray*            _contacts;
+    
+    SWPeopleListViewController*         _plvc;
+    SWGroupListViewController*          _glvc;
 }
 
 @property (nonatomic, assign) NSInteger         currentMode;
-@property (nonatomic, strong) NSArray*          groups;
-@property (nonatomic, strong) NSArray*          contacts;
 
-- (NSPredicate*)predicateForSection:(NSInteger)idx;
+- (void)changeMode:(UISegmentedControl*)sender;
 
 @end

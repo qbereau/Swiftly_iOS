@@ -86,3 +86,11 @@
 
 "contacts"                              = "Contacts";
 "groups"                                = "Groups";
+"group_name"                            = "Group Name";
+"participants"                          = "Participants";
+
+"view_shared_files"                     = "View shared files";
+"share_app"                             = "Share this app";
+"block_person"                          = "Block this person from sharing me new files";
+
+"share_sms"                             = "Hi, check out Swiftly. It's an iPhone app that allows people to privately share their photos and videos. Get it now for free on http://swiftly-app.com";

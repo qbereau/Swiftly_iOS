@@ -41,7 +41,7 @@
 {
     self.detailTextLabel.text = NSLocalizedString(@"waiting_to_upload", @"Waiting to upload");
     self.progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(PROGRESS_VIEW_POS_X, PROGRESS_VIEW_POS_Y, self.frame.size.width - PROGRESS_VIEW_POS_X - 10, 20)];
-    [self addSubview:self.progressView];    
+    [self addSubview:self.progressView];
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
