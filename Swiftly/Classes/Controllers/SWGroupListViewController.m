@@ -37,7 +37,40 @@
 {
     [super viewDidLoad];
 
-    self.groups = [NSArray arrayWithObjects:@"Family", @"Friends", @"Colleagues", nil];
+    // Data
+    SWPerson* qb = [SWPerson new];
+    qb.firstName = @"Quentin";
+    qb.lastName = @"Bereau";
+    qb.phoneNumber = @"079 629 41 79";
+    
+    SWPerson* pb = [SWPerson new];
+    pb.firstName = @"Patrick";
+    pb.lastName = @"Bereau";
+    pb.phoneNumber = @"+41 78 842 41 86";
+    
+    SWPerson* tb = [SWPerson new];
+    tb.firstName = @"Tristan";
+    tb.lastName = @"Bereau";
+    tb.phoneNumber = @"+41 78 744 51 47";
+    
+    SWPerson* pc = [SWPerson new];
+    pc.firstName = @"Paul";
+    pc.lastName = @"Carneiro";
+    pc.phoneNumber = @"+41 79 439 10 72";
+    
+    SWGroup* g1 = [SWGroup new];
+    g1.name = @"Family";
+    g1.contacts = [NSArray arrayWithObjects:qb, pb, tb, nil];
+    
+    SWGroup* g2 = [SWGroup new];
+    g2.name = @"Friends";
+    g2.contacts = [NSArray arrayWithObjects:pc, tb, nil];
+    
+    SWGroup* g3 = [SWGroup new];
+    g3.name = @"Colleagues";
+    g3.contacts = [NSArray arrayWithObjects:qb, pb, pc, nil];
+    
+    self.groups = [NSArray arrayWithObjects:g1, g2, g3, nil];
 }
 
 - (void)viewDidUnload
@@ -117,8 +150,9 @@
     
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
-    cell.textLabel.text = [self.groups objectAtIndex:indexPath.row];
-    cell.detailTextLabel.text = @"";
+    SWGroup* group = [self.groups objectAtIndex:indexPath.row];
+    cell.textLabel.text = group.name;
+    cell.detailTextLabel.text = [group participants];
     cell.imageView.image = nil;
     
     return cell;
@@ -126,12 +160,12 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString* g = [self.groups objectAtIndex:indexPath.row];
+    SWGroup* group = [self.groups objectAtIndex:indexPath.row];
     
-    SWGroupEditViewController* newController = [[SWGroupEditViewController alloc] init];
-    newController.navigationItem.hidesBackButton = NO;
-    newController.name = g;
-    [[self navigationController] pushViewController:newController animated:YES];
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+    SWGroupEditViewController* groupEditViewController = [storyboard instantiateViewControllerWithIdentifier:@"GroupEditViewController"];
+    groupEditViewController.group = group;
+    [[self navigationController] pushViewController:groupEditViewController animated:YES];
 }
 
 @end

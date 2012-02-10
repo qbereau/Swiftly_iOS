@@ -34,6 +34,7 @@
 "images"                                = "Images";
 "videos"                                = "Videos";
 "cancel"                                = "Cancel";
+"done"                                  = "Done";
 "ok"                                    = "OK";
 "delete_file"                           = "Delete file";
 "unlink_file"                           = "Unlink file";
@@ -94,3 +95,12 @@
 "block_person"                          = "Block this person from sharing me new files";
 
 "share_sms"                             = "Hi, check out Swiftly. It's an iPhone app that allows people to privately share their photos and videos. Get it now for free on http://swiftly-app.com";
+
+"help"                                  = "Help";
+"app_settings"                          = "App Settings";
+"app_version"                           = "Version:";
+"delete_account"                        = "Delete my account";
+"delete_account_subtitle"               = "This will also delete all your albums and files";
+"how_do_i"                              = "How do I...?";
+"delete_account_alert_title"            = "Account Deletion";
+"delete_account_alert_message"          = "This will delete all your albums and files.\n Are you sure you want to delete your account?";

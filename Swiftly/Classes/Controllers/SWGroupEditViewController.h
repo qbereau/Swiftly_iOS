@@ -7,17 +7,17 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SWPeopleListViewController.h"
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 #import "SWPerson.h"
+#import "SWGroup.h"
 
-@interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate>
+@interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate>
 {
-    NSString*           _name;
-    NSArray*            _contacts;
+    SWGroup*            _group;
 }
 
-@property (nonatomic, strong) NSString*             name;
-@property (nonatomic, strong) NSArray*              contacts;
+@property (nonatomic, strong) SWGroup*              group;
 
 @end

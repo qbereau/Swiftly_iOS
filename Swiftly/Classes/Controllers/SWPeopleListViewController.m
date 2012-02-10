@@ -8,20 +8,14 @@
 
 #import "SWPeopleListViewController.h"
 
-
 @implementation SWPeopleListViewController
 
-@synthesize contacts = _contacts;
-
-- (id)initWithStyle:(UITableViewStyle)style
-{
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
-        self.tableView = [[SWTableView alloc] initWithFrame:self.view.frame style:style];
-    }
-    return self;
-}
+@synthesize selectedContacts    = _selectedContacts;
+@synthesize contacts            = _contacts;
+@synthesize mode                = _mode;
+@synthesize tableView           = _tableView;
+@synthesize showOnlyUsers       = _showOnlyUsers;
+@synthesize delegate;
 
 - (void)didReceiveMemoryWarning
 {
@@ -33,12 +27,68 @@
 
 #pragma mark - View lifecycle
 
+- (void)loadView
+{
+    [super loadView];
+    
+    self.tableView = [[SWTableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
+    
+    [self.tableView setAutoresizesSubviews:YES];
+    [self.tableView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
+    [self.tableView setDataSource:self];
+    [self.tableView setDelegate:self];
+    
+    [self.view addSubview:self.tableView];
+
+    if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE)
+    {
+        UIToolbar *toolbar = [UIToolbar new];
+        toolbar.barStyle = UIBarStyleDefault;
+        [toolbar sizeToFit];
+        toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+        
+        //Set the frame
+        CGFloat toolbarHeight = [toolbar frame].size.height;
+        [toolbar setFrame:CGRectMake(0, self.view.frame.size.height - toolbarHeight, self.view.frame.size.width, toolbarHeight)];
+        
+        UIBarButtonItem *btnCancel = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"cancel", @"cancel") style:UIBarButtonItemStyleBordered target:self action:@selector(cancel:)];
+        UIBarButtonItem *btnDone = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"done", @"done") style:UIBarButtonItemStyleBordered target:self action:@selector(done:)];
+        UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
+        [toolbar setItems:[NSArray arrayWithObjects:flexibleSpace, btnCancel, flexibleSpace, btnDone, flexibleSpace, nil]];
+        
+        self.tableView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - toolbarHeight);
+        
+        [self.view addSubview:toolbar];        
+    }
+}
+
+- (void)cancel:(UIBarButtonItem*)sender
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)done:(UIBarButtonItem*)sender
+{
+    if ([self.delegate respondsToSelector:@selector(peopleListViewControllerDidSelectContacts:)])
+    {
+        NSArray* arr = [[NSSet setWithArray:self.selectedContacts] allObjects];
+        arr = [arr sortedArrayUsingComparator:^(id a, id b){
+            NSString* o1 = [(SWPerson*)a predicateContactName];
+            NSString* o2 = [(SWPerson*)b predicateContactName];
+            return [o1 compare:o2];
+        }];
+        [self.delegate peopleListViewControllerDidSelectContacts:arr];
+    }
+    
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    self.tableView.dataSource = self;
-    self.tableView.delegate = self; 
+    if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE && !self.selectedContacts)
+        self.selectedContacts = [NSMutableArray array];
     
     // Data Source
     NSMutableArray* persons = [NSMutableArray array];
@@ -83,6 +133,8 @@
         NSString* o2 = [(SWPerson*)b lastName];
         return [o1 compare:o2];
     }];
+    
+    [self.tableView reloadData];
 }
 
 - (void)viewDidUnload
@@ -134,6 +186,16 @@
     return [NSPredicate predicateWithFormat:@"predicateContactName MATCHES '^[0-9].*'"];
 }
 
+- (void)setMode:(NSInteger)mode
+{
+    _mode = mode;
+    
+    if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE)
+    {
+        //self.view.frame = CGRectMake(self.tableView.frame.origin.x, self.tableView.frame.origin.y, self.tableView.frame.size.width, self.tableView.frame.size.height - 150);
+    }
+}
+
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -177,14 +239,22 @@
         cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellID];
     }
     
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    
     NSArray* arr = [self.contacts filteredArrayUsingPredicate:[self predicateForSection:indexPath.section]];
     
     SWPerson* p = [arr objectAtIndex:indexPath.row];
     cell.textLabel.text = [p name];
     cell.detailTextLabel.text = p.phoneNumber;
     cell.imageView.image = [p contactImage];
+    
+    if (self.mode == PEOPLE_LIST_EDIT_MODE)
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    else if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE)
+    {
+        if ([self.selectedContacts containsObject:p])
+            cell.accessoryType = UITableViewCellAccessoryCheckmark;
+        else
+            cell.accessoryType = UITableViewCellAccessoryNone;
+    }
     
     return cell;
 }
@@ -194,10 +264,24 @@
     NSArray* arr = [self.contacts filteredArrayUsingPredicate:[self predicateForSection:indexPath.section]];
     SWPerson* p = [arr objectAtIndex:indexPath.row];
     
-    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
-    SWContactViewController* contactsViewController = [storyboard instantiateViewControllerWithIdentifier:@"ContactViewController"];
-    contactsViewController.contact = p;
-    [[self navigationController] pushViewController:contactsViewController animated:YES];
+    if (self.mode == PEOPLE_LIST_EDIT_MODE)
+    {
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+        SWContactViewController* contactsViewController = [storyboard instantiateViewControllerWithIdentifier:@"ContactViewController"];
+        contactsViewController.contact = p;
+        [[self navigationController] pushViewController:contactsViewController animated:YES];
+        
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+    }
+    else if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE)
+    {
+        if (![self.selectedContacts containsObject:p])
+            [self.selectedContacts addObject:p];
+        else
+            [self.selectedContacts removeObject:p];
+        
+        [self.tableView reloadData];
+    }
 }
 
 @end

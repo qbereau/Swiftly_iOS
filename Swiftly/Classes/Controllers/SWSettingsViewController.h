@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
-@interface SWSettingsViewController : UIViewController
+@interface SWSettingsViewController : UITableViewController
 
 @end

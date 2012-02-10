@@ -10,6 +10,7 @@
 
 @interface SWPerson : NSObject
 {
+    NSNumber*           _objectID;
     NSString*           _firstName;
     NSString*           _lastName;
     NSString*           _phoneNumber;
@@ -19,6 +20,7 @@
     BOOL                _isBlocked;
 }
 
+@property (nonatomic, strong) NSNumber*      objectID;
 @property (nonatomic, strong) NSString*      firstName;
 @property (nonatomic, strong) NSString*      lastName;
 @property (nonatomic, strong) NSString*      phoneNumber;

@@ -10,8 +10,7 @@
 
 @implementation SWGroupEditViewController
 
-@synthesize name = _name;
-@synthesize contacts = _contacts;
+@synthesize group = _group;
 
 - (id)init
 {
@@ -47,38 +46,18 @@
 {
     [super viewDidLoad];
     
-    self.navigationItem.title = self.name;
+    self.navigationItem.title = self.group.name;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(editGroup:)];
     
     self.tableView.dataSource = self;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    
-    
-    
-    // Data
-    SWPerson* p1 = [SWPerson new];
-    p1.firstName = @"Patrick";
-    p1.lastName = @"Bereau";
-    p1.phoneNumber = @"+41 78 842 41 86";
-
-    SWPerson* p2 = [SWPerson new];
-    p2.firstName = @"Quentin";
-    p2.lastName = @"Bereau";
-    p2.phoneNumber = @"00 41 79 629 41 79";
-    
-    SWPerson* p3 = [SWPerson new];
-    p3.firstName = @"Tristan";
-    p3.lastName = @"Bereau";
-    p3.phoneNumber = @"+41 78 744 51 47";
-    
-    self.contacts = [NSArray arrayWithObjects:p1, p2, p3, nil];
 }
 
 - (void)editGroup:(UIBarButtonItem*)sender
 {
-    NSLog(@"..");
+    NSLog(@"[SWGroupEditViewController#editGroup] Save");
 }
 
 - (void)viewDidUnload
@@ -105,7 +84,7 @@
     if (section == 0)
         return 1;
     
-    return [self.contacts count] + 1;
+    return [self.group.contacts count] + 1;
 }
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
@@ -165,20 +144,25 @@
                 break;
             }
         }
-        tf.text = self.name;
+        tf.text = self.group.name;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     else if (indexPath.section == 1)
     {   
-        if (indexPath.row < [self.contacts count])
+        if (indexPath.row < [self.group.contacts count])
         {
-            SWPerson* p = [self.contacts objectAtIndex:indexPath.row];
+            SWPerson* p = [self.group.contacts objectAtIndex:indexPath.row];
             cell.textLabel.text = p.name;
+            cell.imageView.image = p.thumbnail;
+            cell.imageView.frame = CGRectMake(10, 10, 44, 44);
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.textLabel.textAlignment = UITextAlignmentLeft;
+            cell.textLabel.textColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];
         }
         else
         {
             cell.textLabel.text = NSLocalizedString(@"add_remove_people", @"add / remove people");
+            cell.imageView.image = nil;
             cell.textLabel.textAlignment = UITextAlignmentCenter;
             cell.textLabel.textColor = [UIColor colorWithRed:0.300 green:0.431 blue:0.486 alpha:1];
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
@@ -190,9 +174,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 1 && indexPath.row == [self.contacts count])
+    if (indexPath.section == 1 && indexPath.row == [self.group.contacts count])
     {
-        
+        SWPeopleListViewController* plvc = [SWPeopleListViewController new];
+        plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
+        plvc.delegate = self;
+        plvc.selectedContacts = [NSMutableArray arrayWithArray:self.group.contacts];
+        [self presentViewController:plvc animated:YES completion: nil];
     }
 }
 
@@ -201,6 +189,13 @@
 {
     [textField resignFirstResponder];
     return YES;
+}
+
+#pragma mark - SWPeopleListViewController
+- (void)peopleListViewControllerDidSelectContacts:(NSArray*)arr
+{
+    self.group.contacts = arr;
+    [self.tableView reloadData];
 }
 
 @end

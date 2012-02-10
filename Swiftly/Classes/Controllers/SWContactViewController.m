@@ -17,6 +17,7 @@
 @synthesize cellViewFiles = _cellViewFiles;
 @synthesize cellShareApp = _cellShareApp;
 @synthesize cellBlock = _cellBlock;
+@synthesize scroller = _scroller;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -45,11 +46,20 @@
     self.navigationItem.title = [self.contact name];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(editContact:)];
+    self.scroller.alwaysBounceVertical = YES;
+    self.scroller.contentSize = CGSizeMake(self.view.frame.size.width, self.cellBlock.frame.origin.y + self.cellBlock.frame.size.height + 10);
+    
+    if (self.contact.isUser)
+    {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(editContact:)];
+    }
     
     self.lblName.text = [self.contact name];
     self.lblPhoneNumber.text = self.contact.phoneNumber;
     self.thumbnail.image = self.contact.thumbnail;
+    CALayer * l = [self.thumbnail layer];
+    [l setMasksToBounds:YES];
+    [l setCornerRadius:10.0];
     
     [self setupCells];
 }
@@ -69,6 +79,7 @@
     [self setCellShareApp:nil];
     [self setCellBlock:nil];
     [self setLblPhoneNumber:nil];
+    [self setScroller:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -76,7 +87,6 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    // Return YES for supported orientations
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
         return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
     } else {
@@ -86,16 +96,17 @@
 
 - (void)setupCells
 {
-    UIView *bgColorView = [[UIView alloc] init];
-    [bgColorView setBackgroundColor:[UIColor colorWithRed:0.843 green:0.843 blue:0.843 alpha:1]];
+    UIView *bgSelColorView = [UIView new];
+    [bgSelColorView setBackgroundColor:[UIColor colorWithRed:0.843 green:0.843 blue:0.843 alpha:1]];
+    bgSelColorView.layer.cornerRadius = 10;
     
-    self.cellShareApp.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"table_view_cell_grouped_single"]];
+    self.cellShareApp.backgroundView = [self bgCellView];
     self.cellShareApp.accessoryType = UITableViewCellAccessoryNone;
     self.cellShareApp.textLabel.font = [UIFont boldSystemFontOfSize:16];
     self.cellShareApp.textLabel.textColor = [UIColor colorWithRed:0.300 green:0.431 blue:0.486 alpha:1];
     self.cellShareApp.textLabel.textAlignment = UITextAlignmentCenter;
     self.cellShareApp.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellShareApp.selectedBackgroundView = bgColorView;
+    self.cellShareApp.selectedBackgroundView = bgSelColorView;
     
     UIButton *button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
@@ -105,28 +116,28 @@
     [self.cellShareApp.contentView addSubview:button];
     
     
-    self.cellViewFiles.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"table_view_cell_grouped_single"]];
+    self.cellViewFiles.backgroundView = [self bgCellView];
     self.cellViewFiles.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     self.cellViewFiles.textLabel.font = [UIFont boldSystemFontOfSize:16];
     self.cellViewFiles.textLabel.textColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];
     self.cellViewFiles.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellViewFiles.selectedBackgroundView = bgColorView;
+    self.cellViewFiles.selectedBackgroundView = bgSelColorView;
     
     button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
-    button.frame = self.cellBlock.bounds;
+    button.frame = self.cellViewFiles.bounds;
     [button addTarget:self action:@selector(highlightViewFilesCell:) forControlEvents:UIControlEventTouchDown];
     [button addTarget:self action:@selector(viewFiles:) forControlEvents:UIControlEventTouchUpInside];
     [self.cellViewFiles.contentView addSubview:button];
     
 
-    self.cellBlock.backgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"table_view_cell_grouped_single"]];
+    self.cellBlock.backgroundView = [self bgCellView];
     self.cellBlock.accessoryType = UITableViewCellAccessoryNone;
     self.cellBlock.textLabel.numberOfLines = 2;
     self.cellBlock.textLabel.font = [UIFont boldSystemFontOfSize:14];
     self.cellBlock.textLabel.textColor = [UIColor redColor];
     self.cellBlock.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellBlock.selectedBackgroundView = bgColorView;
+    self.cellBlock.selectedBackgroundView = bgSelColorView;
     
     button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
@@ -153,6 +164,14 @@
     }
     
     [self updateBlockContactIndicator];
+}
+
+- (UIView*)bgCellView
+{
+    UIView *bgColorView = [UIView new];
+    [bgColorView setBackgroundColor:[UIColor whiteColor]];
+    bgColorView.layer.cornerRadius = 10;
+    return bgColorView;
 }
 
 - (void)highlightShareAppCell:(UIButton*)sender

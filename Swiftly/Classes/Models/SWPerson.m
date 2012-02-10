@@ -10,6 +10,7 @@
 
 @implementation SWPerson
 
+@synthesize objectID    = _objectID;
 @synthesize firstName   = _firstName;
 @synthesize lastName    = _lastName;
 @synthesize phoneNumber = _phoneNumber;
@@ -32,6 +33,19 @@
     }
     
     return self;
+}
+
+- (BOOL)isEqual:(id)object
+{
+    if (object == self)
+        return YES;
+    if (!object || ![object isKindOfClass:[self class]])
+        return NO;
+    if (!((SWPerson*)object).phoneNumber || [((SWPerson*)object).phoneNumber length] == 0)
+          return NO;
+    if ([((SWPerson*)object).phoneNumber isEqualToString:self.phoneNumber])
+        return YES;
+    return NO;
 }
 
 - (NSString*)name

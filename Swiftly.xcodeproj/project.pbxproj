@@ -70,6 +70,7 @@
 		196400A114E2D0620009EE99 /* SWPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 196400A014E2D0620009EE99 /* SWPerson.m */; };
 		196EC54A14E42EBF00DB3CE9 /* SWPeopleListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC54914E42EBF00DB3CE9 /* SWPeopleListViewController.m */; };
 		196EC54E14E43A8F00DB3CE9 /* SWGroupListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */; };
+		196EC55114E5340800DB3CE9 /* SWGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC55014E5340800DB3CE9 /* SWGroup.m */; };
 		1978065514DFE82D007582CC /* table_view_cell_grouped_single.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */; };
 		1978065A14DFEE2A007582CC /* table_view_cell_grouped_bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */; };
 		1978065B14DFEE2A007582CC /* table_view_cell_grouped_middle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */; };
@@ -245,6 +246,8 @@
 		196EC54914E42EBF00DB3CE9 /* SWPeopleListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWPeopleListViewController.m; sourceTree = "<group>"; };
 		196EC54C14E43A8F00DB3CE9 /* SWGroupListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroupListViewController.h; sourceTree = "<group>"; };
 		196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWGroupListViewController.m; sourceTree = "<group>"; };
+		196EC54F14E5340800DB3CE9 /* SWGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroup.h; sourceTree = "<group>"; };
+		196EC55014E5340800DB3CE9 /* SWGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWGroup.m; sourceTree = "<group>"; };
 		1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_single.png; sourceTree = "<group>"; };
 		1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_bottom.png; sourceTree = "<group>"; };
 		1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_middle.png; sourceTree = "<group>"; };
@@ -643,6 +646,8 @@
 				1998331814DA8D430083E5C3 /* SWWebImagesDataSource.m */,
 				1964009F14E2D0620009EE99 /* SWPerson.h */,
 				196400A014E2D0620009EE99 /* SWPerson.m */,
+				196EC54F14E5340800DB3CE9 /* SWGroup.h */,
+				196EC55014E5340800DB3CE9 /* SWGroup.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -907,6 +912,7 @@
 				194D20A414E40C0800B72A40 /* SWGroupEditViewController.m in Sources */,
 				196EC54A14E42EBF00DB3CE9 /* SWPeopleListViewController.m in Sources */,
 				196EC54E14E43A8F00DB3CE9 /* SWGroupListViewController.m in Sources */,
+				196EC55114E5340800DB3CE9 /* SWGroup.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

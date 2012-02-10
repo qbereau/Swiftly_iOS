@@ -42,16 +42,17 @@
     self.navigationItem.titleView = segmentedControl;
     
     
-    _plvc = [[SWPeopleListViewController alloc] initWithStyle:UITableViewStylePlain];    
+    _plvc = [SWPeopleListViewController new];    
     [self addChildViewController:_plvc];
     [self.view addSubview:_plvc.view];
-    _plvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 93);
+    _plvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
     [_plvc didMoveToParentViewController:self];
     
     _glvc = [[SWGroupListViewController alloc] initWithStyle:UITableViewStylePlain];    
     [self addChildViewController:_glvc];
     [self.view addSubview:_glvc.view];
-    _glvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 93);
+    _glvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
+    _glvc.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [_glvc didMoveToParentViewController:self];  
     
     _glvc.view.hidden = YES;
@@ -118,21 +119,5 @@
         return YES;
     }
 }
-
-/*
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    if ([[segue identifier] isEqualToString:@"ShowContact"])
-    {
-        SWContactViewController* newController = segue.destinationViewController;
-        newController.contact = (SWPerson*)sender;
-    }
-    else if ([segue.identifier isEqualToString:@"ShowGroup"])
-    {
-        SWGroupEditViewController* newController = segue.destinationViewController;
-        newController.name = (NSString*)sender;
-    }
-}
-*/
 
 @end
