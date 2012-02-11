@@ -60,7 +60,9 @@
 
 - (void)addGroup:(id)sender
 {
-    NSLog(@"push group view controller");
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+    SWGroupEditViewController* groupEditViewController = [storyboard instantiateViewControllerWithIdentifier:@"GroupEditViewController"];
+    [[self navigationController] pushViewController:groupEditViewController animated:YES];
 }
 
 - (void)changeMode:(UISegmentedControl*)sender

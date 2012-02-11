@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
 #import <MessageUI/MessageUI.h>
+#import "UIAlertView+Blocks.h"
+#import "SWTableViewCell.h"
 #import "SWAlbumThumbnailsViewController.h"
 #import "SWPerson.h"
 
@@ -24,13 +25,12 @@
 @property (weak, nonatomic) IBOutlet UILabel        *lblPhoneNumber;
 @property (weak, nonatomic) IBOutlet UIImageView    *thumbnail;
 
-@property (weak, nonatomic) IBOutlet UITableViewCell *cellViewFiles;
-@property (weak, nonatomic) IBOutlet UITableViewCell *cellShareApp;
-@property (weak, nonatomic) IBOutlet UITableViewCell *cellBlock;
+@property (weak, nonatomic) IBOutlet SWTableViewCell *cellViewFiles;
+@property (weak, nonatomic) IBOutlet SWTableViewCell *cellShareApp;
+@property (weak, nonatomic) IBOutlet SWTableViewCell *cellBlock;
 @property (weak, nonatomic) IBOutlet UIScrollView *scroller;
 
 - (void)setupCells;
 - (void)updateBlockContactIndicator;
-- (UIView*)bgCellView;
 
 @end

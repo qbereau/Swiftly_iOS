@@ -18,6 +18,4 @@
 @property (nonatomic, assign) CGFloat           progress;
 @property (nonatomic, strong) UIProgressView*   progressView;
 
-- (void)setup;
-
 @end

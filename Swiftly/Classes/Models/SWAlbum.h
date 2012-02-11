@@ -10,22 +10,28 @@
 
 @interface SWAlbum : NSObject
 {
-    int             _objectID;
-    int             _ownerID;
-    BOOL            _canEditMedias;
-    BOOL            _canEditPeople;
-    NSString*       _name;
-    
-    UIImage*        _thumbnail; // tmp, should be a url(string), coming from server
+    NSNumber*                   _objectID;
+    int                         _ownerID;
+    BOOL                        _canEditMedias;
+    BOOL                        _canEditPeople;
+    BOOL                        _canExportMedias;
+    BOOL                        _isLocked;
+    BOOL                        _isOwner;
+    NSString*                   _name;
+    NSArray*                    _participants;
+    UIImage*                    _thumbnail; // tmp, should be a url(string), coming from server
 }
 
 
-@property (nonatomic, assign) int               objectID;
+@property (nonatomic, strong) NSNumber*         objectID;
 @property (nonatomic, assign) int               ownerID;
 @property (nonatomic, assign) BOOL              canEditMedias;
 @property (nonatomic, assign) BOOL              canEditPeople;
+@property (nonatomic, assign) BOOL              canExportMedias;
+@property (nonatomic, assign) BOOL              isLocked;
+@property (nonatomic, assign) BOOL              isOwner;
 @property (nonatomic, strong) NSString*         name;
-
+@property (nonatomic, strong) NSArray*          participants;
 @property (nonatomic, strong) UIImage*          thumbnail;
 
 @end

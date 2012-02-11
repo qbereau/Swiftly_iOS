@@ -18,7 +18,7 @@
     
     if (self = [super initWithTitle:title message:@" " delegate:delegate cancelButtonTitle:cancelButtonTitle otherButtonTitles:okayButtonTitle, nil])
     {
-        UITextField *theTextField = [[UITextField alloc] initWithFrame:CGRectMake(12.0, 45.0, 260.0, 30.0)]; 
+        UITextField *theTextField = [[UITextField alloc] initWithFrame:CGRectMake(12.0, 45.0, 260.0, 28.0)]; 
         theTextField.keyboardType = UIKeyboardTypeNumberPad;
         theTextField.secureTextEntry = YES;
         [theTextField setTextAlignment:UITextAlignmentCenter];

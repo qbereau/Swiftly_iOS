@@ -111,7 +111,7 @@
         cell.opaque = NO;
     }
             
-    cell.textLabel.text = [self.activities objectAtIndex:indexPath.row];
+    cell.title.text = [self.activities objectAtIndex:indexPath.row];
     cell.progress = 0;
     cell.imageView.image = [UIImage imageNamed:@"photoDefault.png"];
     

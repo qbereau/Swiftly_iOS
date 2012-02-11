@@ -46,6 +46,9 @@
 {
     [super viewDidLoad];
     
+    if (!self.group)
+        self.group = [SWGroup new];
+    
     self.navigationItem.title = self.group.name;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
@@ -69,8 +72,11 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+    } else {
+        return YES;
+    }
 }
 
 #pragma mark - UITableView Delegates
@@ -115,13 +121,13 @@
     static NSString *StaticCellIdentifier = @"StaticGroupedCell";
     static NSString *InputCellIdentifier = @"InputGroupedCell";
     
-    UITableViewCell *cell;
+    SWTableViewCell *cell;
     if (indexPath.section == 0 && indexPath.row == 0)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:InputCellIdentifier];
         if (!cell)
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:InputCellIdentifier];        
+            cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:InputCellIdentifier];        
         }
     }
     else
@@ -129,9 +135,13 @@
         cell = [tableView dequeueReusableCellWithIdentifier:StaticCellIdentifier];
         if (!cell)
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:StaticCellIdentifier];        
+            cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:StaticCellIdentifier];        
         }
     }
+    
+    cell.isGrouped = YES;
+    cell.isLink = NO;
+    cell.title.textAlignment = UITextAlignmentLeft;
     
     if (indexPath.section == 0)
     {
@@ -152,19 +162,18 @@
         if (indexPath.row < [self.group.contacts count])
         {
             SWPerson* p = [self.group.contacts objectAtIndex:indexPath.row];
-            cell.textLabel.text = p.name;
+            cell.title.text = p.name;
             cell.imageView.image = p.thumbnail;
             cell.imageView.frame = CGRectMake(10, 10, 44, 44);
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
-            cell.textLabel.textAlignment = UITextAlignmentLeft;
-            cell.textLabel.textColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];
         }
         else
         {
-            cell.textLabel.text = NSLocalizedString(@"add_remove_people", @"add / remove people");
+            cell.isLink = YES;
+            cell.title.text = NSLocalizedString(@"add_remove_people", @"add / remove people");
             cell.imageView.image = nil;
-            cell.textLabel.textAlignment = UITextAlignmentCenter;
-            cell.textLabel.textColor = [UIColor colorWithRed:0.300 green:0.431 blue:0.486 alpha:1];
+            cell.title.textAlignment = UITextAlignmentCenter;
+            cell.title.textColor = [UIColor colorWithRed:0.300 green:0.431 blue:0.486 alpha:1];
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
         }
     }
@@ -191,7 +200,7 @@
     return YES;
 }
 
-#pragma mark - SWPeopleListViewController
+#pragma mark - SWPeopleListViewControllerDelegate
 - (void)peopleListViewControllerDidSelectContacts:(NSArray*)arr
 {
     self.group.contacts = arr;

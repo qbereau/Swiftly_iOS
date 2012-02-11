@@ -97,7 +97,7 @@
 {
     switch (section) {
         case 0:
-            return 1;
+            return 2;
         case 1:
             return 1;
         case 2:
@@ -126,51 +126,47 @@
         cellID = @"RightDetailSettingsCell";
     }
     
-    UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    SWTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:cellID];
     if (!cell)
     {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+        cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
     }
     
-    cell.accessoryType = UITableViewCellAccessoryNone;
-    cell.selectionStyle = UITableViewCellSelectionStyleBlue;
-    cell.textLabel.highlightedTextColor = [UIColor blackColor];
-    cell.detailTextLabel.text = nil;
-    
-    UIView* bgSelView = [UIView new];
-    [bgSelView setBackgroundColor:[UIColor colorWithRed:0.843 green:0.843 blue:0.843 alpha:1]];
-    bgSelView.layer.cornerRadius = 10;
-    cell.selectedBackgroundView = bgSelView;
+    cell.isGrouped = YES;
+    cell.isLink = NO;
+    cell.isSlider = NO;
     
     switch (indexPath.section)
     {
         case 0:
             if (indexPath.row == 0)
             {
+                cell.isSlider = YES;
+                cell.title.text = NSLocalizedString(@"album_lock", @"album lock");
+                cell.subtitle.text = NSLocalizedString(@"album_lock_subtitle", @"for hiding albums"); 
+            }
+            else
+            {
                 // App version
-                cell.textLabel.text = NSLocalizedString(@"app_version", @"version: ");
-                cell.detailTextLabel.text = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+                cell.title.text = [NSString stringWithFormat:NSLocalizedString(@"app_version", @"version: "), [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey]];
                 cell.selectionStyle = UITableViewCellSelectionStyleNone;
             }
             break;
         case 1:
             if (indexPath.row == 0)
             {
-                cell.textLabel.text = NSLocalizedString(@"how_do_i", @"how do I");                
-                cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+                cell.isSlider = YES;
+                cell.title.text = NSLocalizedString(@"how_do_i", @"how do I");                
             }
             break;
         case 2:
             if (indexPath.row == 0)
             {
-                cell.textLabel.textColor = [UIColor redColor];
-                cell.textLabel.text = NSLocalizedString(@"delete_account", @"delete account...");
-                cell.textLabel.textAlignment = UITextAlignmentCenter;
-                cell.textLabel.highlightedTextColor = [UIColor redColor];
-                cell.detailTextLabel.textColor = [UIColor redColor];
-                cell.detailTextLabel.highlightedTextColor = [UIColor redColor];
-                cell.detailTextLabel.text = NSLocalizedString(@"delete_account_subtitle", @"this will delete your albums, files, ...");
-                cell.detailTextLabel.textAlignment = UITextAlignmentCenter;
+                cell.isLink = YES;
+                cell.isDestructive = YES;
+                
+                cell.title.text = NSLocalizedString(@"delete_account", @"delete account...");
+                cell.subtitle.text = NSLocalizedString(@"delete_account_subtitle", @"this will delete your albums, files, ...");
             }
             break;
     }
@@ -180,7 +176,13 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 2 && indexPath.row == 0)
+    if (indexPath.section == 0 && indexPath.row == 0)
+    {
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+        SWAlbumLockViewController* albumLockViewController = [storyboard instantiateViewControllerWithIdentifier:@"AlbumLockViewController"];
+        [[self navigationController] pushViewController:albumLockViewController animated:YES];        
+    }
+    else if (indexPath.section == 2 && indexPath.row == 0)
     {        
         UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"delete_account_alert_title", @"Are you sure") message:NSLocalizedString(@"delete_account_alert_message", @"this will delete all your data") delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", @"cancel") otherButtonTitles:NSLocalizedString(@"ok", @"OK"), nil];
         [av show];

@@ -8,14 +8,17 @@
 
 #import <UIKit/UIKit.h>
 #import "UIAlertView+Blocks.h"
+#import "SWPeopleListViewController.h"
+#import "SWAlbum.h"
+#import "SWPerson.h"
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 
-@interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate>
+@interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate>
 {
-    NSArray*            _people;
+    SWAlbum*            _album;
 }
 
-@property (nonatomic, strong) NSArray*      people;
+@property (nonatomic, strong) SWAlbum*      album;
 
 @end

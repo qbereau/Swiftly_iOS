@@ -95,60 +95,51 @@
 }
 
 - (void)setupCells
-{
-    UIView *bgSelColorView = [UIView new];
-    [bgSelColorView setBackgroundColor:[UIColor colorWithRed:0.843 green:0.843 blue:0.843 alpha:1]];
-    bgSelColorView.layer.cornerRadius = 10;
-    
-    self.cellShareApp.backgroundView = [self bgCellView];
-    self.cellShareApp.accessoryType = UITableViewCellAccessoryNone;
-    self.cellShareApp.textLabel.font = [UIFont boldSystemFontOfSize:16];
-    self.cellShareApp.textLabel.textColor = [UIColor colorWithRed:0.300 green:0.431 blue:0.486 alpha:1];
-    self.cellShareApp.textLabel.textAlignment = UITextAlignmentCenter;
-    self.cellShareApp.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellShareApp.selectedBackgroundView = bgSelColorView;
+{    
+    self.cellShareApp.backgroundView = [SWTableViewCell backgroundView];
+    self.cellShareApp.isGrouped = YES;
+    self.cellShareApp.isLink = YES;
+    self.cellShareApp.selectedBackgroundView = [SWTableViewCell backgroundHighlightedView];
     
     UIButton *button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
     button.frame = self.cellShareApp.bounds;
+    button.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [button addTarget:self action:@selector(highlightShareAppCell:) forControlEvents:UIControlEventTouchDown];
     [button addTarget:self action:@selector(shareApp:) forControlEvents:UIControlEventTouchUpInside];
     [self.cellShareApp.contentView addSubview:button];
     
     
-    self.cellViewFiles.backgroundView = [self bgCellView];
-    self.cellViewFiles.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    self.cellViewFiles.textLabel.font = [UIFont boldSystemFontOfSize:16];
-    self.cellViewFiles.textLabel.textColor = [UIColor colorWithRed:0.243 green:0.246 blue:0.267 alpha:1];
-    self.cellViewFiles.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellViewFiles.selectedBackgroundView = bgSelColorView;
+    self.cellViewFiles.backgroundView = [SWTableViewCell backgroundView];
+    self.cellViewFiles.isGrouped = YES;
+    self.cellViewFiles.selectedBackgroundView = [SWTableViewCell backgroundHighlightedView];
     
     button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
     button.frame = self.cellViewFiles.bounds;
+    button.autoresizingMask = UIViewAutoresizingFlexibleWidth;    
     [button addTarget:self action:@selector(highlightViewFilesCell:) forControlEvents:UIControlEventTouchDown];
     [button addTarget:self action:@selector(viewFiles:) forControlEvents:UIControlEventTouchUpInside];
     [self.cellViewFiles.contentView addSubview:button];
     
 
-    self.cellBlock.backgroundView = [self bgCellView];
-    self.cellBlock.accessoryType = UITableViewCellAccessoryNone;
-    self.cellBlock.textLabel.numberOfLines = 2;
-    self.cellBlock.textLabel.font = [UIFont boldSystemFontOfSize:14];
-    self.cellBlock.textLabel.textColor = [UIColor redColor];
-    self.cellBlock.textLabel.highlightedTextColor = [UIColor blackColor];
-    self.cellBlock.selectedBackgroundView = bgSelColorView;
+    self.cellBlock.backgroundView   = [SWTableViewCell backgroundView];
+    self.cellBlock.isGrouped        = YES;
+    self.cellBlock.isLink           = YES;
+    self.cellBlock.isDestructive    = YES;
+    self.cellBlock.selectedBackgroundView = [SWTableViewCell backgroundHighlightedView];
     
     button    = [UIButton buttonWithType:UIButtonTypeCustom];
     button.backgroundColor = [UIColor clearColor];
     button.frame = self.cellBlock.bounds;
+    button.autoresizingMask = UIViewAutoresizingFlexibleWidth;    
     [button addTarget:self action:@selector(highlightBlockCell:) forControlEvents:UIControlEventTouchDown];
     [button addTarget:self action:@selector(blockContact:) forControlEvents:UIControlEventTouchUpInside];
     [self.cellBlock.contentView addSubview:button];
 
-    self.cellViewFiles.textLabel.text = NSLocalizedString(@"view_shared_files", @"view shared files");
-    self.cellShareApp.textLabel.text = NSLocalizedString(@"share_app", @"share this app");
-    self.cellBlock.textLabel.text = NSLocalizedString(@"block_person", @"block this person");
+    self.cellViewFiles.title.text = NSLocalizedString(@"view_shared_files", @"view shared files");
+    self.cellShareApp.title.text = NSLocalizedString(@"share_app", @"share this app");
+    self.cellBlock.title.text = NSLocalizedString(@"block_person", @"block this person");
     
     if (!self.contact.isUser)
     {
@@ -162,59 +153,77 @@
         self.cellViewFiles.hidden   = YES;
         self.cellBlock.hidden       = YES;        
     }
+
+    [self.cellViewFiles setSelected:NO animated:NO];
+    [self.cellShareApp setSelected:NO animated:NO];
+    [self.cellBlock setSelected:NO animated:NO];
     
     [self updateBlockContactIndicator];
 }
 
-- (UIView*)bgCellView
-{
-    UIView *bgColorView = [UIView new];
-    [bgColorView setBackgroundColor:[UIColor whiteColor]];
-    bgColorView.layer.cornerRadius = 10;
-    return bgColorView;
-}
-
 - (void)highlightShareAppCell:(UIButton*)sender
 {
-    self.cellShareApp.selected = YES;
-}
-
-- (void)highlightBlockCell:(UIButton*)sender
-{
-    self.cellBlock.selected = YES;
+    self.cellShareApp.backgroundView = [SWTableViewCell backgroundHighlightedView];
 }
 
 - (void)highlightViewFilesCell:(UIButton*)sender
 {
-    self.cellViewFiles.selected = YES;
+    self.cellViewFiles.backgroundView = [SWTableViewCell backgroundHighlightedView];
+}
+
+- (void)highlightBlockCell:(UIButton*)sender
+{
+    self.cellBlock.backgroundView = [SWTableViewCell backgroundHighlightedView];
 }
 
 - (void)shareApp:(UIButton*)sender
 {
-    self.cellShareApp.selected = NO;
-    
     if ([MFMessageComposeViewController canSendText])
     {
         MFMessageComposeViewController *picker = [[MFMessageComposeViewController alloc] init];
         picker.messageComposeDelegate = self;
         picker.body = NSLocalizedString(@"share_sms", @"Get swiftly now....");
-        picker.recipients = [NSArray arrayWithObjects:@"0796294179", nil];
+        picker.recipients = [NSArray arrayWithObjects:self.contact.phoneNumber, nil];
         [self presentModalViewController:picker animated:YES];
     }
+    
+    self.cellShareApp.backgroundView = [SWTableViewCell backgroundView];    
 }
 
 - (void)blockContact:(UIButton*)sender
 {
-    self.cellBlock.selected = NO;
-
-    self.contact.isBlocked = !self.contact.isBlocked;
-    [self updateBlockContactIndicator];
+    RIButtonItem* btnCancel = [RIButtonItem item];
+    btnCancel.label = NSLocalizedString(@"cancel", @"cancel");
+    btnCancel.action = ^{
+        self.cellBlock.backgroundView = [SWTableViewCell backgroundView];
+    };
+    
+    RIButtonItem* btnYES = [RIButtonItem item];
+    btnYES.label = [NSLocalizedString(@"yes", @"yes") uppercaseString];
+    btnYES.action = ^{
+        self.cellBlock.backgroundView = [SWTableViewCell backgroundView];
+        
+        NSLog(@"[SWContactViewController#blockContact] Sync with server");
+        self.contact.isBlocked = !self.contact.isBlocked;
+        [self updateBlockContactIndicator];
+    };
+    
+    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirmation", @"confirmation") message:NSLocalizedString(@"block_person_alert", @"he/she will not be able to....") cancelButtonItem:btnCancel otherButtonItems:btnYES, nil];
+    [av show];
 }
 
 - (void)viewFiles:(UIButton*)sender
 {
-    self.cellViewFiles.selected = NO;
-
+    [UIView animateWithDuration:1.0
+                          delay:0.0
+                        options:UIViewAnimationCurveLinear
+                     animations:^{
+                         self.cellViewFiles.backgroundView.backgroundColor = [SWTableViewCell backgroundColor];
+                     } 
+                     completion:^(BOOL finished){
+                        
+                     }];
+    
     SWAlbumThumbnailsViewController* newController = [[SWAlbumThumbnailsViewController alloc] init];
     newController.navigationItem.hidesBackButton = NO;
     [[self navigationController] pushViewController:newController animated:YES];

@@ -11,10 +11,12 @@
 
 @interface SWGroup : NSObject
 {
+    NSNumber*               _objectID;
     NSString*               _name;
     NSArray*                _contacts;
 }
 
+@property (nonatomic, strong) NSNumber*             objectID;
 @property (nonatomic, strong) NSString*             name;
 @property (nonatomic, strong) NSArray*              contacts;
 

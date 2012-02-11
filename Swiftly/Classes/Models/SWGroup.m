@@ -10,6 +10,7 @@
 
 @implementation SWGroup
 
+@synthesize objectID    = _objectID;
 @synthesize name        = _name;
 @synthesize contacts    = _contacts;
 

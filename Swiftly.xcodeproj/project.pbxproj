@@ -71,6 +71,16 @@
 		196EC54A14E42EBF00DB3CE9 /* SWPeopleListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC54914E42EBF00DB3CE9 /* SWPeopleListViewController.m */; };
 		196EC54E14E43A8F00DB3CE9 /* SWGroupListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */; };
 		196EC55114E5340800DB3CE9 /* SWGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC55014E5340800DB3CE9 /* SWGroup.m */; };
+		196EC57F14E6D6E000DB3CE9 /* JSLockScreenViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC56F14E6D6E000DB3CE9 /* JSLockScreenViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC58014E6D6E000DB3CE9 /* lock_background.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57014E6D6E000DB3CE9 /* lock_background.png */; };
+		196EC58114E6D6E000DB3CE9 /* lock_background@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57114E6D6E000DB3CE9 /* lock_background@2x.png */; };
+		196EC58314E6D6E000DB3CE9 /* passcodeFieldBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57314E6D6E000DB3CE9 /* passcodeFieldBackground.png */; };
+		196EC58414E6D6E000DB3CE9 /* passcodeFieldBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57414E6D6E000DB3CE9 /* passcodeFieldBackground@2x.png */; };
+		196EC58514E6D6E000DB3CE9 /* passcodeTopBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57514E6D6E000DB3CE9 /* passcodeTopBackground.png */; };
+		196EC58614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png */; };
+		196EC58714E6D6E000DB3CE9 /* passcodeTopBackground_red.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57714E6D6E000DB3CE9 /* passcodeTopBackground_red.png */; };
+		196EC58814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */; };
+		196EC58B14E6DF1B00DB3CE9 /* SWAlbumLockViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */; };
 		1978065514DFE82D007582CC /* table_view_cell_grouped_single.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */; };
 		1978065A14DFEE2A007582CC /* table_view_cell_grouped_bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */; };
 		1978065B14DFEE2A007582CC /* table_view_cell_grouped_middle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */; };
@@ -248,6 +258,19 @@
 		196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWGroupListViewController.m; sourceTree = "<group>"; };
 		196EC54F14E5340800DB3CE9 /* SWGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroup.h; sourceTree = "<group>"; };
 		196EC55014E5340800DB3CE9 /* SWGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWGroup.m; sourceTree = "<group>"; };
+		196EC56014E6C7D500DB3CE9 /* SWPeopleListViewControllerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWPeopleListViewControllerDelegate.h; sourceTree = "<group>"; };
+		196EC56E14E6D6E000DB3CE9 /* JSLockScreenViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSLockScreenViewController.h; sourceTree = "<group>"; };
+		196EC56F14E6D6E000DB3CE9 /* JSLockScreenViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSLockScreenViewController.m; sourceTree = "<group>"; };
+		196EC57014E6D6E000DB3CE9 /* lock_background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lock_background.png; sourceTree = "<group>"; };
+		196EC57114E6D6E000DB3CE9 /* lock_background@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "lock_background@2x.png"; sourceTree = "<group>"; };
+		196EC57314E6D6E000DB3CE9 /* passcodeFieldBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = passcodeFieldBackground.png; sourceTree = "<group>"; };
+		196EC57414E6D6E000DB3CE9 /* passcodeFieldBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "passcodeFieldBackground@2x.png"; sourceTree = "<group>"; };
+		196EC57514E6D6E000DB3CE9 /* passcodeTopBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = passcodeTopBackground.png; sourceTree = "<group>"; };
+		196EC57614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "passcodeTopBackground@2x.png"; sourceTree = "<group>"; };
+		196EC57714E6D6E000DB3CE9 /* passcodeTopBackground_red.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = passcodeTopBackground_red.png; sourceTree = "<group>"; };
+		196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "passcodeTopBackground_red@2x.png"; sourceTree = "<group>"; };
+		196EC58914E6DF1800DB3CE9 /* SWAlbumLockViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbumLockViewController.h; sourceTree = "<group>"; };
+		196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbumLockViewController.m; sourceTree = "<group>"; };
 		1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_single.png; sourceTree = "<group>"; };
 		1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_bottom.png; sourceTree = "<group>"; };
 		1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_middle.png; sourceTree = "<group>"; };
@@ -424,6 +447,7 @@
 				191DB5BC14D9490B007F27E6 /* UIAlertView+Blocks.m */,
 				191DB5B414D93219007F27E6 /* SWAPIClient.h */,
 				191DB5B514D93219007F27E6 /* SWAPIClient.m */,
+				196EC56014E6C7D500DB3CE9 /* SWPeopleListViewControllerDelegate.h */,
 			);
 			path = Misc;
 			sourceTree = "<group>";
@@ -431,6 +455,7 @@
 		1950B7C514D6AFB400302BF2 = {
 			isa = PBXGroup;
 			children = (
+				196EC56114E6D6DF00DB3CE9 /* JSLockScreen */,
 				199832EE14DA8CB70083E5C3 /* SDWebImage */,
 				199832D014DA89840083E5C3 /* KTPhotoBrowser */,
 				191DB59214D9313C007F27E6 /* AFNetworking */,
@@ -633,6 +658,8 @@
 				196EC54914E42EBF00DB3CE9 /* SWPeopleListViewController.m */,
 				196EC54C14E43A8F00DB3CE9 /* SWGroupListViewController.h */,
 				196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */,
+				196EC58914E6DF1800DB3CE9 /* SWAlbumLockViewController.h */,
+				196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -669,6 +696,23 @@
 				1978067A14E185D3007582CC /* SWActivityTableViewCell.m */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		196EC56114E6D6DF00DB3CE9 /* JSLockScreen */ = {
+			isa = PBXGroup;
+			children = (
+				196EC56E14E6D6E000DB3CE9 /* JSLockScreenViewController.h */,
+				196EC56F14E6D6E000DB3CE9 /* JSLockScreenViewController.m */,
+				196EC57014E6D6E000DB3CE9 /* lock_background.png */,
+				196EC57114E6D6E000DB3CE9 /* lock_background@2x.png */,
+				196EC57314E6D6E000DB3CE9 /* passcodeFieldBackground.png */,
+				196EC57414E6D6E000DB3CE9 /* passcodeFieldBackground@2x.png */,
+				196EC57514E6D6E000DB3CE9 /* passcodeTopBackground.png */,
+				196EC57614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png */,
+				196EC57714E6D6E000DB3CE9 /* passcodeTopBackground_red.png */,
+				196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */,
+			);
+			path = JSLockScreen;
 			sourceTree = "<group>";
 		};
 		199832D014DA89840083E5C3 /* KTPhotoBrowser */ = {
@@ -848,6 +892,14 @@
 				194D209D14E3FE3000B72A40 /* valid@2x.png in Resources */,
 				194D20A014E3FE4C00B72A40 /* block.png in Resources */,
 				194D20A114E3FE4C00B72A40 /* block@2x.png in Resources */,
+				196EC58014E6D6E000DB3CE9 /* lock_background.png in Resources */,
+				196EC58114E6D6E000DB3CE9 /* lock_background@2x.png in Resources */,
+				196EC58314E6D6E000DB3CE9 /* passcodeFieldBackground.png in Resources */,
+				196EC58414E6D6E000DB3CE9 /* passcodeFieldBackground@2x.png in Resources */,
+				196EC58514E6D6E000DB3CE9 /* passcodeTopBackground.png in Resources */,
+				196EC58614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png in Resources */,
+				196EC58714E6D6E000DB3CE9 /* passcodeTopBackground_red.png in Resources */,
+				196EC58814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -913,6 +965,8 @@
 				196EC54A14E42EBF00DB3CE9 /* SWPeopleListViewController.m in Sources */,
 				196EC54E14E43A8F00DB3CE9 /* SWGroupListViewController.m in Sources */,
 				196EC55114E5340800DB3CE9 /* SWGroup.m in Sources */,
+				196EC57F14E6D6E000DB3CE9 /* JSLockScreenViewController.m in Sources */,
+				196EC58B14E6DF1B00DB3CE9 /* SWAlbumLockViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

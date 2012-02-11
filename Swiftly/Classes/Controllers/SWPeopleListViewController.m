@@ -242,8 +242,8 @@
     NSArray* arr = [self.contacts filteredArrayUsingPredicate:[self predicateForSection:indexPath.section]];
     
     SWPerson* p = [arr objectAtIndex:indexPath.row];
-    cell.textLabel.text = [p name];
-    cell.detailTextLabel.text = p.phoneNumber;
+    cell.title.text = [p name];
+    cell.subtitle.text = p.phoneNumber;
     cell.imageView.image = [p contactImage];
     
     if (self.mode == PEOPLE_LIST_EDIT_MODE)

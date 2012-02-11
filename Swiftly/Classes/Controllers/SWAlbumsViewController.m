@@ -133,14 +133,14 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell* cell;
+    SWTableViewCell* cell;
     if (indexPath.section == 0)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:@"CellAlbum"];
 
         SWAlbum* album = [self.albums objectAtIndex:indexPath.row];
-        cell.textLabel.text = album.name;
-        cell.detailTextLabel.text = @"Quentin Bereau, John Doe, Steve Jobs, Steve Wozniak";
+        cell.title.text = album.name;
+        cell.subtitle.text = @"Quentin Bereau, John Doe, Steve Jobs, Steve Wozniak";
         cell.imageView.image = album.thumbnail;
     }
     else if (indexPath.section == 1)
@@ -149,9 +149,9 @@
         cell.imageView.image = [UIImage imageNamed:@"pic3.png"]; // hack, should come from server
         
         if (indexPath.row == 0)
-            cell.textLabel.text = NSLocalizedString(@"albums_quick_share", @"quick share");
+            cell.title.text = NSLocalizedString(@"albums_quick_share", @"quick share");
         else if (indexPath.row == 1)
-            cell.textLabel.text = @"My Medias";
+            cell.title.text = @"My Medias";
     }
     
     return cell;

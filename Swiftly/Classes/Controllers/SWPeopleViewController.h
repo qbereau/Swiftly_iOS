@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SWGroupListViewController.h"
 #import "SWPeopleListViewController.h"
+#import "SWGroupEditViewController.h"
 
 @interface SWPeopleViewController : UIViewController
 {

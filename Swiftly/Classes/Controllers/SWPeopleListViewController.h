@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AddressBook/AddressBook.h>
+#import "SWPeopleListViewControllerDelegate.h"
 #import "SWContactViewController.h"
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
@@ -15,12 +16,6 @@
 
 #define PEOPLE_LIST_EDIT_MODE 0
 #define PEOPLE_LIST_MULTI_SELECTION_MODE 1
-
-@protocol SWPeopleListViewControllerDelegate <NSObject>
-
-- (void)peopleListViewControllerDidSelectContacts:(NSArray*)selectedContacts;
-
-@end
 
 @interface SWPeopleListViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 {

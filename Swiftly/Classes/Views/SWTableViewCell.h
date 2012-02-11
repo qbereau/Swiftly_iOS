@@ -7,23 +7,31 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface SWTableViewCell : UITableViewCell
 {
     BOOL        _isGrouped;
-    BOOL        _isSingle;
-    BOOL        _isTop;
-    BOOL        _isMiddle;
-    BOOL        _isBottom;
-    
+    BOOL        _isSlider;    
     BOOL        _isLink;
+    BOOL        _isDestructive;
+    
+    UILabel*    _lblTitle;
+    UILabel*    _lblSubtitle;
 }
 
 @property (nonatomic, assign) BOOL      isGrouped;
-@property (nonatomic, assign) BOOL      isSingle;
-@property (nonatomic, assign) BOOL      isTop;
-@property (nonatomic, assign) BOOL      isMiddle;
-@property (nonatomic, assign) BOOL      isBottom;
+@property (nonatomic, assign) BOOL      isSlider;
 @property (nonatomic, assign) BOOL      isLink;
+@property (nonatomic, assign) BOOL      isDestructive;
+@property (nonatomic, strong) UILabel*  title;
+@property (nonatomic, strong) UILabel*  subtitle;
+
+- (void)setup;
+
++ (UIColor*)backgroundColor;
++ (UIColor*)highlightedBackgroundColor;
++ (UIView*)backgroundView;
++ (UIView*)backgroundHighlightedView;
 
 @end

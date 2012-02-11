@@ -14,8 +14,11 @@
 @synthesize ownerID         = _ownerID;
 @synthesize canEditMedias   = _canEditMedias;
 @synthesize canEditPeople   = _canEditPeople;
+@synthesize canExportMedias = _canExportMedias;
 @synthesize name            = _name;
-
+@synthesize isLocked        = _isLocked;
+@synthesize isOwner         = _isOwner;
+@synthesize participants    = _participants;
 @synthesize thumbnail       = _thumbnail;
 
 @end

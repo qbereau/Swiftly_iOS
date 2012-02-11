@@ -9,7 +9,7 @@
 #import "SWActivityTableViewCell.h"
 
 #define PROGRESS_VIEW_POS_X 95
-#define PROGRESS_VIEW_POS_Y 50
+#define PROGRESS_VIEW_POS_Y 60
 
 @implementation SWActivityTableViewCell
 
@@ -39,8 +39,11 @@
 
 - (void)setup
 {
-    self.detailTextLabel.text = NSLocalizedString(@"waiting_to_upload", @"Waiting to upload");
+    [super setup];
+    
+    self.subtitle.text = NSLocalizedString(@"waiting_to_upload", @"Waiting to upload");
     self.progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(PROGRESS_VIEW_POS_X, PROGRESS_VIEW_POS_Y, self.frame.size.width - PROGRESS_VIEW_POS_X - 10, 20)];
+    self.progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     [self addSubview:self.progressView];
 }
 
@@ -60,18 +63,18 @@
     
     if (_progress > 0)
     {
-        self.detailTextLabel.hidden = YES;
+        self.subtitle.hidden = YES;
         self.progressView.hidden = NO;
     }
     else
     {
-        self.detailTextLabel.hidden = NO;
+        self.subtitle.hidden = NO;
         self.progressView.hidden = YES;
         
         if (_progress >= 1.0f)
         {
             NSLog(@"[SWActivityTableViewCell#setProgress] Should give infos from server (timestamp and uploaded filesize)");
-            self.detailTextLabel.text = @"Uploaded just now";
+            self.subtitle.text = @"Uploaded just now";
         }
     }
 }
@@ -80,7 +83,8 @@
 {
     [super layoutSubviews];
     
-    self.detailTextLabel.frame = CGRectMake(self.detailTextLabel.frame.origin.x, PROGRESS_VIEW_POS_Y - 5, self.detailTextLabel.frame.size.width, self.detailTextLabel.frame.size.height);
+    self.title.frame = CGRectMake(PROGRESS_VIEW_POS_X, -20, self.frame.size.width - self.imageView.frame.size.width, self.title.frame.size.height);
+    self.subtitle.frame = CGRectMake(PROGRESS_VIEW_POS_X, 10, self.frame.size.width - self.imageView.frame.size.width, self.subtitle.frame.size.height);
 }
 
 @end

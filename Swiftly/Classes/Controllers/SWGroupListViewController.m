@@ -151,8 +151,8 @@
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     
     SWGroup* group = [self.groups objectAtIndex:indexPath.row];
-    cell.textLabel.text = group.name;
-    cell.detailTextLabel.text = [group participants];
+    cell.title.text = group.name;
+    cell.subtitle.text = [group participants];
     cell.imageView.image = nil;
     
     return cell;
