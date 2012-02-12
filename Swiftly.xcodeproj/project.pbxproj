@@ -29,6 +29,7 @@
 		191DB5C214D94F08007F27E6 /* albums.png in Resources */ = {isa = PBXBuildFile; fileRef = 191DB5C014D94F08007F27E6 /* albums.png */; };
 		191DB5C314D94F08007F27E6 /* albums@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 191DB5C114D94F08007F27E6 /* albums@2x.png */; };
 		191DB5C614D94FF1007F27E6 /* SWTabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = 191DB5C514D94FF1007F27E6 /* SWTabBarController.m */; };
+		192A6F3D14E7D58100B8EACA /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F3C14E7D58100B8EACA /* camera.png */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
@@ -81,6 +82,19 @@
 		196EC58714E6D6E000DB3CE9 /* passcodeTopBackground_red.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57714E6D6E000DB3CE9 /* passcodeTopBackground_red.png */; };
 		196EC58814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */; };
 		196EC58B14E6DF1B00DB3CE9 /* SWAlbumLockViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */; };
+		196EC59D14E7AB6200DB3CE9 /* ELCAlbumPickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC58E14E7AB6200DB3CE9 /* ELCAlbumPickerController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC59E14E7AB6200DB3CE9 /* ELCAlbumPickerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 196EC58F14E7AB6200DB3CE9 /* ELCAlbumPickerController.xib */; };
+		196EC59F14E7AB6200DB3CE9 /* ELCAsset.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC59114E7AB6200DB3CE9 /* ELCAsset.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC5A014E7AB6200DB3CE9 /* ELCAssetCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC59314E7AB6200DB3CE9 /* ELCAssetCell.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC5A114E7AB6200DB3CE9 /* ELCAssetPicker.xib in Resources */ = {isa = PBXBuildFile; fileRef = 196EC59414E7AB6200DB3CE9 /* ELCAssetPicker.xib */; };
+		196EC5A214E7AB6200DB3CE9 /* ELCAssetTablePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC59614E7AB6200DB3CE9 /* ELCAssetTablePicker.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC5A314E7AB6200DB3CE9 /* ELCAssetTablePicker.xib in Resources */ = {isa = PBXBuildFile; fileRef = 196EC59714E7AB6200DB3CE9 /* ELCAssetTablePicker.xib */; };
+		196EC5A414E7AB6200DB3CE9 /* ELCImagePickerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC59914E7AB6200DB3CE9 /* ELCImagePickerController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		196EC5A514E7AB6200DB3CE9 /* ELCImagePickerController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 196EC59A14E7AB6200DB3CE9 /* ELCImagePickerController.xib */; };
+		196EC5A614E7AB6200DB3CE9 /* Overlay.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC59B14E7AB6200DB3CE9 /* Overlay.png */; };
+		196EC5A714E7AB6200DB3CE9 /* Overlay@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 196EC59C14E7AB6200DB3CE9 /* Overlay@2x.png */; };
+		196EC5A914E7AC7000DB3CE9 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 196EC5A814E7AC7000DB3CE9 /* AssetsLibrary.framework */; };
+		196EC5AC14E7AFDE00DB3CE9 /* SWAlbumPickerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC5AB14E7AFDD00DB3CE9 /* SWAlbumPickerViewController.m */; };
 		1978065514DFE82D007582CC /* table_view_cell_grouped_single.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */; };
 		1978065A14DFEE2A007582CC /* table_view_cell_grouped_bottom.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */; };
 		1978065B14DFEE2A007582CC /* table_view_cell_grouped_middle.png in Resources */ = {isa = PBXBuildFile; fileRef = 1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */; };
@@ -202,6 +216,7 @@
 		191DB5C114D94F08007F27E6 /* albums@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "albums@2x.png"; sourceTree = "<group>"; };
 		191DB5C414D94FF1007F27E6 /* SWTabBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWTabBarController.h; sourceTree = "<group>"; };
 		191DB5C514D94FF1007F27E6 /* SWTabBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTabBarController.m; sourceTree = "<group>"; };
+		192A6F3C14E7D58100B8EACA /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -271,6 +286,25 @@
 		196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "passcodeTopBackground_red@2x.png"; sourceTree = "<group>"; };
 		196EC58914E6DF1800DB3CE9 /* SWAlbumLockViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbumLockViewController.h; sourceTree = "<group>"; };
 		196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbumLockViewController.m; sourceTree = "<group>"; };
+		196EC58D14E7AB6200DB3CE9 /* ELCAlbumPickerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ELCAlbumPickerController.h; sourceTree = "<group>"; };
+		196EC58E14E7AB6200DB3CE9 /* ELCAlbumPickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ELCAlbumPickerController.m; sourceTree = "<group>"; };
+		196EC58F14E7AB6200DB3CE9 /* ELCAlbumPickerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ELCAlbumPickerController.xib; sourceTree = "<group>"; };
+		196EC59014E7AB6200DB3CE9 /* ELCAsset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ELCAsset.h; sourceTree = "<group>"; };
+		196EC59114E7AB6200DB3CE9 /* ELCAsset.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ELCAsset.m; sourceTree = "<group>"; };
+		196EC59214E7AB6200DB3CE9 /* ELCAssetCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ELCAssetCell.h; sourceTree = "<group>"; };
+		196EC59314E7AB6200DB3CE9 /* ELCAssetCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ELCAssetCell.m; sourceTree = "<group>"; };
+		196EC59414E7AB6200DB3CE9 /* ELCAssetPicker.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ELCAssetPicker.xib; sourceTree = "<group>"; };
+		196EC59514E7AB6200DB3CE9 /* ELCAssetTablePicker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ELCAssetTablePicker.h; sourceTree = "<group>"; };
+		196EC59614E7AB6200DB3CE9 /* ELCAssetTablePicker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ELCAssetTablePicker.m; sourceTree = "<group>"; };
+		196EC59714E7AB6200DB3CE9 /* ELCAssetTablePicker.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ELCAssetTablePicker.xib; sourceTree = "<group>"; };
+		196EC59814E7AB6200DB3CE9 /* ELCImagePickerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ELCImagePickerController.h; sourceTree = "<group>"; };
+		196EC59914E7AB6200DB3CE9 /* ELCImagePickerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ELCImagePickerController.m; sourceTree = "<group>"; };
+		196EC59A14E7AB6200DB3CE9 /* ELCImagePickerController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ELCImagePickerController.xib; sourceTree = "<group>"; };
+		196EC59B14E7AB6200DB3CE9 /* Overlay.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Overlay.png; sourceTree = "<group>"; };
+		196EC59C14E7AB6200DB3CE9 /* Overlay@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Overlay@2x.png"; sourceTree = "<group>"; };
+		196EC5A814E7AC7000DB3CE9 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		196EC5AA14E7AFDB00DB3CE9 /* SWAlbumPickerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbumPickerViewController.h; sourceTree = "<group>"; };
+		196EC5AB14E7AFDD00DB3CE9 /* SWAlbumPickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbumPickerViewController.m; sourceTree = "<group>"; };
 		1978065414DFE82D007582CC /* table_view_cell_grouped_single.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_single.png; sourceTree = "<group>"; };
 		1978065714DFEE2A007582CC /* table_view_cell_grouped_bottom.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_bottom.png; sourceTree = "<group>"; };
 		1978065814DFEE2A007582CC /* table_view_cell_grouped_middle.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = table_view_cell_grouped_middle.png; sourceTree = "<group>"; };
@@ -392,6 +426,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				196EC5A914E7AC7000DB3CE9 /* AssetsLibrary.framework in Frameworks */,
 				194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */,
 				1964009E14E2CA900009EE99 /* AddressBook.framework in Frameworks */,
 				1978067D14E266C8007582CC /* MediaPlayer.framework in Frameworks */,
@@ -455,6 +490,7 @@
 		1950B7C514D6AFB400302BF2 = {
 			isa = PBXGroup;
 			children = (
+				196EC58C14E7AB6100DB3CE9 /* ELCImagePickerController */,
 				196EC56114E6D6DF00DB3CE9 /* JSLockScreen */,
 				199832EE14DA8CB70083E5C3 /* SDWebImage */,
 				199832D014DA89840083E5C3 /* KTPhotoBrowser */,
@@ -476,6 +512,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				196EC5A814E7AC7000DB3CE9 /* AssetsLibrary.framework */,
 				194D209414E3C34100B72A40 /* MessageUI.framework */,
 				1964009D14E2CA900009EE99 /* AddressBook.framework */,
 				1978067C14E266C7007582CC /* MediaPlayer.framework */,
@@ -527,6 +564,7 @@
 		1950B80A14D6B4FC00302BF2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				192A6F3C14E7D58100B8EACA /* camera.png */,
 				194D209E14E3FE4C00B72A40 /* block.png */,
 				194D209F14E3FE4C00B72A40 /* block@2x.png */,
 				194D209A14E3FE3000B72A40 /* valid.png */,
@@ -660,6 +698,8 @@
 				196EC54D14E43A8F00DB3CE9 /* SWGroupListViewController.m */,
 				196EC58914E6DF1800DB3CE9 /* SWAlbumLockViewController.h */,
 				196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */,
+				196EC5AA14E7AFDB00DB3CE9 /* SWAlbumPickerViewController.h */,
+				196EC5AB14E7AFDD00DB3CE9 /* SWAlbumPickerViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -713,6 +753,29 @@
 				196EC57814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png */,
 			);
 			path = JSLockScreen;
+			sourceTree = "<group>";
+		};
+		196EC58C14E7AB6100DB3CE9 /* ELCImagePickerController */ = {
+			isa = PBXGroup;
+			children = (
+				196EC58D14E7AB6200DB3CE9 /* ELCAlbumPickerController.h */,
+				196EC58E14E7AB6200DB3CE9 /* ELCAlbumPickerController.m */,
+				196EC58F14E7AB6200DB3CE9 /* ELCAlbumPickerController.xib */,
+				196EC59014E7AB6200DB3CE9 /* ELCAsset.h */,
+				196EC59114E7AB6200DB3CE9 /* ELCAsset.m */,
+				196EC59214E7AB6200DB3CE9 /* ELCAssetCell.h */,
+				196EC59314E7AB6200DB3CE9 /* ELCAssetCell.m */,
+				196EC59414E7AB6200DB3CE9 /* ELCAssetPicker.xib */,
+				196EC59514E7AB6200DB3CE9 /* ELCAssetTablePicker.h */,
+				196EC59614E7AB6200DB3CE9 /* ELCAssetTablePicker.m */,
+				196EC59714E7AB6200DB3CE9 /* ELCAssetTablePicker.xib */,
+				196EC59814E7AB6200DB3CE9 /* ELCImagePickerController.h */,
+				196EC59914E7AB6200DB3CE9 /* ELCImagePickerController.m */,
+				196EC59A14E7AB6200DB3CE9 /* ELCImagePickerController.xib */,
+				196EC59B14E7AB6200DB3CE9 /* Overlay.png */,
+				196EC59C14E7AB6200DB3CE9 /* Overlay@2x.png */,
+			);
+			path = ELCImagePickerController;
 			sourceTree = "<group>";
 		};
 		199832D014DA89840083E5C3 /* KTPhotoBrowser */ = {
@@ -900,6 +963,13 @@
 				196EC58614E6D6E000DB3CE9 /* passcodeTopBackground@2x.png in Resources */,
 				196EC58714E6D6E000DB3CE9 /* passcodeTopBackground_red.png in Resources */,
 				196EC58814E6D6E000DB3CE9 /* passcodeTopBackground_red@2x.png in Resources */,
+				196EC59E14E7AB6200DB3CE9 /* ELCAlbumPickerController.xib in Resources */,
+				196EC5A114E7AB6200DB3CE9 /* ELCAssetPicker.xib in Resources */,
+				196EC5A314E7AB6200DB3CE9 /* ELCAssetTablePicker.xib in Resources */,
+				196EC5A514E7AB6200DB3CE9 /* ELCImagePickerController.xib in Resources */,
+				196EC5A614E7AB6200DB3CE9 /* Overlay.png in Resources */,
+				196EC5A714E7AB6200DB3CE9 /* Overlay@2x.png in Resources */,
+				192A6F3D14E7D58100B8EACA /* camera.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -967,6 +1037,12 @@
 				196EC55114E5340800DB3CE9 /* SWGroup.m in Sources */,
 				196EC57F14E6D6E000DB3CE9 /* JSLockScreenViewController.m in Sources */,
 				196EC58B14E6DF1B00DB3CE9 /* SWAlbumLockViewController.m in Sources */,
+				196EC59D14E7AB6200DB3CE9 /* ELCAlbumPickerController.m in Sources */,
+				196EC59F14E7AB6200DB3CE9 /* ELCAsset.m in Sources */,
+				196EC5A014E7AB6200DB3CE9 /* ELCAssetCell.m in Sources */,
+				196EC5A214E7AB6200DB3CE9 /* ELCAssetTablePicker.m in Sources */,
+				196EC5A414E7AB6200DB3CE9 /* ELCImagePickerController.m in Sources */,
+				196EC5AC14E7AFDE00DB3CE9 /* SWAlbumPickerViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

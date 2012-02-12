@@ -44,8 +44,10 @@
 
 - (void)unlockAlbums:(UIButton*)sender
 {
-    SWPromptView* pv = [[SWPromptView alloc] initWithTitle:NSLocalizedString(@"enter_album_lock", @"enter your album lock") delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", @"cancel") okButtonTitle:NSLocalizedString(@"ok", @"ok")];
-    [pv show];
+    _lockScreenViewController = [[JSLockScreenViewController alloc] initWithDelegate:self];
+    
+    UIWindow *window = (UIWindow*)[[[UIApplication sharedApplication] delegate] window];
+    [_lockScreenViewController showInWindow:window];
 }
 
 - (void)viewDidUnload
@@ -157,14 +159,25 @@
     return cell;
 }
 
-#pragma mark - SWPrompt
-- (void)alertView:(UIAlertView *)alertView willDismissWithButtonIndex:(NSInteger)buttonIndex
+#pragma mark - JSLockScreenViewController
+- (void)lockScreenDidUnlock:(JSLockScreenViewController *)lockScreen
 {
-    if (buttonIndex != [alertView cancelButtonIndex])
-    {
-        NSString *entered = [(SWPromptView *)alertView enteredText];
-        NSLog(@"%@", [NSString stringWithFormat:@"You typed: %@", entered]);
-    }
+    NSLog(@"Success");
+}
+
+- (void)lockScreenFailedUnlock:(JSLockScreenViewController *)lockScreen
+{
+    NSLog(@"Fail");
+}
+
+- (void)lockScreenDidCancel:(JSLockScreenViewController *)lockScreen
+{
+    NSLog(@"Cancel");
+}
+
+- (void)lockScreenDidDismiss:(JSLockScreenViewController *)lockScreen
+{
+    NSLog(@"Dismissed");
 }
 
 @end

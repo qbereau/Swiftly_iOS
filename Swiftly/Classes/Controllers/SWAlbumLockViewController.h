@@ -11,11 +11,9 @@
 #import "SWTableViewCell.h"
 #import "JSLockScreenViewController.h"
 
-@interface SWAlbumLockViewController : UITableViewController <JSLockScreenDelegate>
+@interface SWAlbumLockViewController : UITableViewController
 {
     NSNumber*                       _albumLock;
-    
-    JSLockScreenViewController*     _lockScreenViewController;
 }
 
 @property (nonatomic, strong) NSNumber*         albumLock;

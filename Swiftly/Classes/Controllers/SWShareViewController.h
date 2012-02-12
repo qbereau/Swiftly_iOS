@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ELCImagePickerController.h"
+#import "SWAlbumPickerViewController.h"
 
 @interface SWShareViewController : UIViewController
 

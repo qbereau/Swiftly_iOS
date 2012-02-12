@@ -116,3 +116,11 @@
 "tap_to_cancel"                         = "Tap to cancel";
 "wrong_passcode"                        = "Wrong Passcode";
 "passcode_info_use"                     = "Try again or tap to cancel";
+
+"select_an_album"                       = "Select an album";
+"error"                                 = "Error";
+"album_error"                           = "Album Error: %@ - %@";
+"loading"                               = "Loading...";
+"pick_files"                            = "Pick Files";
+"select_all"                            = "Select All";
+"deselect_all"                          = "Deselect All";

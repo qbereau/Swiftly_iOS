@@ -10,11 +10,13 @@
 #import "SWAlbum.h"
 #import "SWAlbumThumbnailsViewController.h"
 #import "SWTableViewCell.h"
-#import "SWPromptView.h"
+#import "JSLockScreenViewController.h"
 
-@interface SWAlbumsViewController : UITableViewController
+@interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
 {
     NSMutableArray*                 _albums;
+    
+    JSLockScreenViewController*     _lockScreenViewController;    
 }
 
 @property (nonatomic, strong) NSMutableArray*           albums;

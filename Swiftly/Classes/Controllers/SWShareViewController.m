@@ -21,6 +21,17 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    SWAlbumPickerViewController *albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];    
+	ELCImagePickerController *elcPicker = [[ELCImagePickerController alloc] initWithRootViewController:albumController];
+    [albumController setParent:elcPicker];
+	[elcPicker setDelegate:self];
+ 
+    self.navigationController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
+    
+    [self.navigationController addChildViewController:elcPicker];
+    [self.view addSubview:elcPicker.view];    
+    [elcPicker didMoveToParentViewController:self];
 }
 
 - (void)viewDidUnload

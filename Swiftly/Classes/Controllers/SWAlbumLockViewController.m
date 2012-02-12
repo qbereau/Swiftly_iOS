@@ -106,34 +106,8 @@
 {
     if (indexPath.section == 0 && indexPath.row == 0)
     {
-        _lockScreenViewController = [[JSLockScreenViewController alloc] initWithDelegate:self];
-        
-        _lockScreenViewController.isNewPasscode = !self.albumLock;
-        
-        UIWindow *window = (UIWindow*)[[[UIApplication sharedApplication] delegate] window];
-        [_lockScreenViewController showInWindow:window];
+
     }
-}
-
-#pragma mark - JSLockScreenViewController
-- (void)lockScreenDidUnlock:(JSLockScreenViewController *)lockScreen
-{
-    NSLog(@"Success");
-}
-
-- (void)lockScreenFailedUnlock:(JSLockScreenViewController *)lockScreen
-{
-    NSLog(@"Fail");
-}
-
-- (void)lockScreenDidCancel:(JSLockScreenViewController *)lockScreen
-{
-    NSLog(@"Cancel");
-}
-
-- (void)lockScreenDidDismiss:(JSLockScreenViewController *)lockScreen
-{
-    NSLog(@"Dismissed");
 }
 
 @end
