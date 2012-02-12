@@ -22,16 +22,20 @@
 {
     [super viewDidLoad];
     
-    SWAlbumPickerViewController *albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];    
-	ELCImagePickerController *elcPicker = [[ELCImagePickerController alloc] initWithRootViewController:albumController];
+    SWAlbumPickerViewController* albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];    
+	ELCImagePickerController* elcPicker = [[ELCImagePickerController alloc] initWithRootViewController:albumController];
     [albumController setParent:elcPicker];
 	[elcPicker setDelegate:self];
  
     self.navigationController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
-    [self.navigationController addChildViewController:elcPicker];
-    [self.view addSubview:elcPicker.view];    
-    [elcPicker didMoveToParentViewController:self];
+    [self.navigationController presentModalViewController:elcPicker animated:NO];
+    
+    /*
+    [self.navigationController addChildViewController:_elcPicker];
+    [self.view addSubview:_elcPicker.view];    
+    [_elcPicker didMoveToParentViewController:self];
+     */
 }
 
 - (void)viewDidUnload
@@ -69,6 +73,23 @@
     } else {
         return YES;
     }
+}
+
+#pragma mark - ELCImagePickerControllerDelegate
+- (void)elcImagePickerController:(ELCImagePickerController *)picker didFinishPickingMediaWithInfo:(NSArray *)info
+{
+    NSLog(@"finish: %@", info);
+    
+    /*
+     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+     SWAlbumChoiceSelectionViewController* vc = [storyboard instantiateViewControllerWithIdentifier:@"AlbumChoiceSelectionViewController"];
+     [[self navigationController] pushViewController:vc animated:YES];
+     */
+}
+
+- (void)elcImagePickerControllerDidCancel:(ELCImagePickerController *)picker
+{
+    NSLog(@"cancel");
 }
 
 @end

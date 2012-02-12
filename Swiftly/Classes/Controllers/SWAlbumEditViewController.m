@@ -15,6 +15,8 @@
 - (void)setupSectionMediaSettings:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath;
 - (void)setupSectionSecurity:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath;
 - (void)setupSectionSettings:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath;
+- (void)setupSectionChooseAlbumToLink:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath;
+- (void)setupSectionShareToPeople:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath;
 
 
 - (void)handleSectionParticipantsWithIndexPath:(NSIndexPath*)indexPath;
@@ -22,12 +24,16 @@
 - (void)handleSectionMediaSettingsWithIndexPath:(NSIndexPath*)indexPath;
 - (void)handleSectionSecurityWithIndexPath:(NSIndexPath*)indexPath;
 - (void)handleSectionSettingsWithIndexPath:(NSIndexPath*)indexPath;
+- (void)handleSectionChooseAlbumToLinkWithIndexPath:(NSIndexPath*)indexPath;
+- (void)handleSectionShareToPeopleWithIndexPath:(NSIndexPath*)indexPath;
 
 @end
 
 @implementation SWAlbumEditViewController
 
 @synthesize album = _album;
+@synthesize filesToUpload = _filesToUpload;
+@synthesize mode = _mode;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -60,37 +66,62 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     self.title = NSLocalizedString(@"edit_album", @"edit album");
+}
+
+- (void)setFilesToUpload:(NSArray *)filesToUpload
+{
+    _filesToUpload = filesToUpload;
+}
+
+- (void)setMode:(NSInteger)mode
+{
+    _mode = mode;
     
-    // Data
-    SWPerson* qb = [SWPerson new];
-    qb.firstName = @"Quentin";
-    qb.lastName = @"Bereau";
-    qb.phoneNumber = @"079 629 41 79";
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done:)];
     
-    SWPerson* pb = [SWPerson new];
-    pb.firstName = @"Patrick";
-    pb.lastName = @"Bereau";
-    pb.phoneNumber = @"+41 78 842 41 86";
-    
-    SWPerson* tb = [SWPerson new];
-    tb.firstName = @"Tristan";
-    tb.lastName = @"Bereau";
-    tb.phoneNumber = @"+41 78 744 51 47";
-    
-    SWPerson* pc = [SWPerson new];
-    pc.firstName = @"Paul";
-    pc.lastName = @"Carneiro";
-    pc.phoneNumber = @"+41 79 439 10 72";        
-    
-    self.album = [SWAlbum new];
-    self.album.name = @"test";
-    self.album.participants = [NSArray arrayWithObjects:qb, pb, tb, pc, nil];
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(done:)];        
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
+    {
+        self.album = [SWAlbum new];
+    }
+    else if (self.mode == SW_ALBUM_MODE_LINK)
+    {
+        // Temporary
+        SWAlbum* a1 = [SWAlbum new];
+        a1.name = @"Album 1";
+        SWAlbum* a2 = [SWAlbum new];
+        a2.name = @"Album 2";
+        _linkedAlbums = [NSArray arrayWithObjects:a1, a2, nil];
+    }
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        
+    }
 }
 
 - (void)done:(id)sender
 {
-    NSLog(@"[SWAlbumEditViewController#done] Sync with server");    
-    [self.navigationController popViewControllerAnimated:YES];
+    //[self.navigationController popViewControllerAnimated:YES];
+    
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        NSLog(@"[SWAlbumEditViewController#done] edit album");
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
+    {
+        NSLog(@"[SWAlbumEditViewController#done] create album");
+    }
+    else if (self.mode == SW_ALBUM_MODE_LINK)
+    {
+        NSLog(@"[SWAlbumEditViewController#done] link album");
+    }
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        NSLog(@"[SWAlbumEditViewController#done] quick share");
+    }
 }
 
 - (void)viewDidUnload
@@ -129,9 +160,21 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    if (self.album.isOwner)
-        return 6;
-    return 5;
+    switch (self.mode)
+    {
+        case SW_ALBUM_MODE_EDIT:
+            if (self.album.isOwner)
+                return 6;
+            return 5;         
+        case SW_ALBUM_MODE_CREATE:
+            return 5;
+        case SW_ALBUM_MODE_LINK:
+            return 2;
+        case SW_ALBUM_MODE_QUICK_SHARE:
+            return 1;
+        default:
+            return 0;
+    }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
@@ -146,7 +189,55 @@
     v.font = [UIFont boldSystemFontOfSize:14.0];
     v.backgroundColor = [UIColor clearColor];
     
-    if (self.album.isOwner)
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        if (self.album.isOwner)
+        {
+            switch (section)
+            {
+                case 0:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"album_name", @"album name")];
+                    break;
+                case 1:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"linked_people", @"people linked to this album")];
+                    break;
+                case 2:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"album_settings", @"album settings")];
+                    break;
+                case 3:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];
+                    break;
+                case 4:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];
+                    break;
+                case 5:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
+                    break;
+            }        
+        }
+        else
+        {
+            switch (section)
+            {
+                case 0:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"album_name", @"album name")];
+                    break;
+                case 1:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"linked_people", @"people linked to this album")];
+                    break;
+                case 2:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];                
+                    break;
+                case 3:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];                
+                    break;
+                case 4:
+                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
+                    break;
+            }
+        }
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         switch (section)
         {
@@ -165,39 +256,73 @@
             case 4:
                 v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];
                 break;
-            case 5:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
-                break;
         }        
     }
-    else
+    else if (self.mode == SW_ALBUM_MODE_LINK)
     {
         switch (section)
         {
             case 0:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"album_name", @"album name")];
+                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"choose_album_to_link", @"choose an album where your files will be linked")];
                 break;
             case 1:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"linked_people", @"people linked to this album")];
+                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];
                 break;
-            case 2:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];                
-                break;
-            case 3:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];                
-                break;
-            case 4:
-                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
-                break;
-        }
+        }       
     }
-    
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        switch (section)
+        {
+            case 0:
+                v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"share_to_people", @"Share to the following people")];
+                break;
+        }       
+    }    
+        
     return v;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (self.album.isOwner)
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        if (self.album.isOwner)
+        {
+            switch (section)
+            {
+                case 0:
+                    return 1;
+                case 1:
+                    return [self.album.participants count] + 1;
+                case 2:
+                    return 2;
+                case 3:
+                    return 1;
+                case 4:
+                    return 1;
+                case 5:
+                    return 3;
+            }        
+        }
+        else
+        {
+            switch (section)
+            {
+                case 0:
+                    return 1;
+                case 1:
+                    return [self.album.participants count];
+                case 2:
+                    return 1;
+                case 3:
+                    return 1;
+                case 4:
+                    return 2;
+            }            
+        }        
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         switch (section)
         {
@@ -211,27 +336,28 @@
                 return 1;
             case 4:
                 return 1;
-            case 5:
-                return 3;
-        }        
+        }
     }
-    else
+    else if (self.mode == SW_ALBUM_MODE_LINK)
     {
         switch (section)
         {
             case 0:
-                return 1;
+                // should come from CoreData...
+                return [_linkedAlbums count];
             case 1:
-                return [self.album.participants count];
-            case 2:
                 return 1;
-            case 3:
-                return 1;
-            case 4:
-                return 2;
-        }            
+        }
     }
-    
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        switch (section)
+        {
+            case 0:
+                return [_quickSharePeople count] + 1;
+        }
+    }    
+        
     return 0;
 }
 
@@ -241,7 +367,7 @@
     static NSString *InputCellIdentifier = @"InputGroupedCell";
     
     SWTableViewCell *cell;
-    if (indexPath.section == 0 && indexPath.row == 0)
+    if ((self.mode == SW_ALBUM_MODE_EDIT || self.mode == SW_ALBUM_MODE_CREATE) && indexPath.section == 0 && indexPath.row == 0)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:InputCellIdentifier];
         
@@ -289,7 +415,49 @@
     cell.isLink = NO;
     cell.isDestructive = NO;
     
-    if (self.album.isOwner)
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        if (self.album.isOwner)
+        {
+            switch (indexPath.section)
+            {
+                case 1:
+                    [self setupSectionParticipants:cell indexPath:indexPath];
+                    break;
+                case 2:
+                    [self setupSectionAlbumSettings:cell indexPath:indexPath];
+                    break;
+                case 3:
+                    [self setupSectionMediaSettings:cell indexPath:indexPath];
+                    break;
+                case 4:
+                    [self setupSectionSecurity:cell indexPath:indexPath];
+                    break;
+                case 5:
+                    [self setupSectionSettings:cell indexPath:indexPath];
+                    break;
+            }
+        }
+        else
+        {
+            switch (indexPath.section)
+            {
+                case 1:
+                    [self setupSectionParticipants:cell indexPath:indexPath];
+                    break;
+                case 2:
+                    [self setupSectionMediaSettings:cell indexPath:indexPath];
+                    break;
+                case 3:
+                    [self setupSectionSecurity:cell indexPath:indexPath];
+                    break;
+                case 4:
+                    [self setupSectionSettings:cell indexPath:indexPath];
+                    break;
+            }        
+        }        
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         switch (indexPath.section)
         {
@@ -305,28 +473,28 @@
             case 4:
                 [self setupSectionSecurity:cell indexPath:indexPath];
                 break;
-            case 5:
-                [self setupSectionSettings:cell indexPath:indexPath];
-                break;
-        }
+        }        
     }
-    else
+    else if (self.mode == SW_ALBUM_MODE_LINK)
     {
         switch (indexPath.section)
         {
-            case 1:
-                [self setupSectionParticipants:cell indexPath:indexPath];
+            case 0:
+                [self setupSectionChooseAlbumToLink:cell indexPath:indexPath];
                 break;
-            case 2:
+            case 1:
                 [self setupSectionMediaSettings:cell indexPath:indexPath];
                 break;
-            case 3:
-                [self setupSectionSecurity:cell indexPath:indexPath];
+        }
+    }
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        switch (indexPath.section)
+        {
+            case 0:
+                [self setupSectionShareToPeople:cell indexPath:indexPath];
                 break;
-            case 4:
-                [self setupSectionSettings:cell indexPath:indexPath];
-                break;
-        }        
+        }
     }
     
     return cell;
@@ -336,7 +504,49 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (self.album.isOwner)
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        if (self.album.isOwner)
+        {
+            switch (indexPath.section)
+            {
+                case 1:
+                    [self handleSectionParticipantsWithIndexPath:indexPath];
+                    break;
+                case 2:
+                    [self handleSectionAlbumSettingsWithIndexPath:indexPath];
+                    break;
+                case 3:
+                    [self handleSectionMediaSettingsWithIndexPath:indexPath];
+                    break;
+                case 4:
+                    [self handleSectionSecurityWithIndexPath:indexPath];
+                    break;
+                case 5:
+                    [self handleSectionSettingsWithIndexPath:indexPath];
+                    break;
+            }
+        }
+        else
+        {
+            switch (indexPath.section)
+            {
+                case 1:
+                    [self handleSectionParticipantsWithIndexPath:indexPath];
+                    break;
+                case 2:
+                    [self handleSectionMediaSettingsWithIndexPath:indexPath];
+                    break;
+                case 3:
+                    [self handleSectionSecurityWithIndexPath:indexPath];
+                    break;
+                case 4:
+                    [self handleSectionSettingsWithIndexPath:indexPath];
+                    break;
+            }        
+        }        
+    }
+    else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         switch (indexPath.section)
         {
@@ -352,29 +562,29 @@
             case 4:
                 [self handleSectionSecurityWithIndexPath:indexPath];
                 break;
-            case 5:
-                [self handleSectionSettingsWithIndexPath:indexPath];
-                break;
-        }
+        }          
     }
-    else
+    else if (self.mode == SW_ALBUM_MODE_LINK)
     {
         switch (indexPath.section)
         {
-            case 1:
-                [self handleSectionParticipantsWithIndexPath:indexPath];
+            case 0:
+                [self handleSectionChooseAlbumToLinkWithIndexPath:indexPath];
                 break;
-            case 2:
+            case 1:
                 [self handleSectionMediaSettingsWithIndexPath:indexPath];
                 break;
-            case 3:
-                [self handleSectionSecurityWithIndexPath:indexPath];
-                break;
-            case 4:
-                [self handleSectionSettingsWithIndexPath:indexPath];
-                break;
-        }        
+        }
     }
+    else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        switch (indexPath.section)
+        {
+            case 0:
+                [self handleSectionShareToPeopleWithIndexPath:indexPath];
+                break;
+        }
+    }    
 }
 
 #pragma mark - UITextField delegate
@@ -387,8 +597,16 @@
 #pragma mark - SWPeopleListViewControllerDelegate
 - (void)peopleListViewControllerDidSelectContacts:(NSArray*)arr
 {
-    self.album.participants = arr;
-    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];
+    if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
+    {
+        _quickSharePeople = arr;
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:NO];
+    }
+    else
+    {
+        self.album.participants = arr;
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];
+    }
 }
 
 @end
@@ -430,7 +648,14 @@
 {
     cell.title.text = NSLocalizedString(@"media_settings_save_files", @"allow people to save and forward my files");
     
-    cell.accessoryType = self.album.canExportMedias ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;    
+    if (self.mode == SW_ALBUM_MODE_LINK)
+    {
+        cell.accessoryType = _canExportMediasForLinkedAlbum ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    }
+    else
+    {
+        cell.accessoryType = self.album.canExportMedias ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    }
 }
 
 - (void)setupSectionSecurity:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
@@ -438,7 +663,7 @@
     cell.title.text = NSLocalizedString(@"album_settings_lock", @"lock this album");
     cell.subtitle.text = NSLocalizedString(@"album_settings_lock_description", @"you can setup a passcode on the settings page. this will only lock this album for your account.");
     
-    cell.accessoryType = self.album.isLocked ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;        
+    cell.accessoryType = self.album.isLocked ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
 }
 
 - (void)setupSectionSettings:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
@@ -462,16 +687,45 @@
     }    
 }
 
+- (void)setupSectionChooseAlbumToLink:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
+{
+    if (indexPath.row < [_linkedAlbums count])
+    {
+        SWAlbum* p = [_linkedAlbums objectAtIndex:indexPath.row];
+        // if (p.canEditMedias)
+        cell.title.text = p.name;
+        cell.accessoryType = (p == _selectedLinkedAlbum) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    }
+}
+
+- (void)setupSectionShareToPeople:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
+{
+    if (indexPath.row < [_quickSharePeople count])
+    {
+        SWPerson* p = [_quickSharePeople objectAtIndex:indexPath.row];
+        cell.title.text = p.name;
+        cell.imageView.image = p.thumbnail;
+    }
+    else
+    {
+        cell.isLink = YES;
+        cell.title.text = NSLocalizedString(@"add_remove_people", @"Add / Remove people");
+    }
+}
+
 - (void)handleSectionParticipantsWithIndexPath:(NSIndexPath*)indexPath
 {
-    if (self.album.isOwner)
+    if (indexPath.row == [self.album.participants count])
     {
-        SWPeopleListViewController* plvc = [SWPeopleListViewController new];
-        plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
-        plvc.delegate = self;
-        plvc.selectedContacts = [NSMutableArray arrayWithArray:self.album.participants];
-        [self presentViewController:plvc animated:YES completion: nil];
-    }    
+        if ((self.mode == SW_ALBUM_MODE_EDIT && self.album.isOwner) || self.mode == SW_ALBUM_MODE_CREATE)
+        {
+            SWPeopleListViewController* plvc = [SWPeopleListViewController new];
+            plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
+            plvc.delegate = self;
+            plvc.selectedContacts = [NSMutableArray arrayWithArray:self.album.participants];
+            [self presentViewController:plvc animated:YES completion: nil];
+        }
+    }
 }
 
 - (void)handleSectionAlbumSettingsWithIndexPath:(NSIndexPath*)indexPath
@@ -486,9 +740,16 @@
 
 - (void)handleSectionMediaSettingsWithIndexPath:(NSIndexPath*)indexPath
 {
-    self.album.canExportMedias = !self.album.canExportMedias;
+    if (self.mode == SW_ALBUM_MODE_LINK)
+    {
+        _canExportMediasForLinkedAlbum = !_canExportMediasForLinkedAlbum;
+    }
+    else
+    {
+        self.album.canExportMedias = !self.album.canExportMedias;
+    }
     
-    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];       
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];
 }
 
 - (void)handleSectionSecurityWithIndexPath:(NSIndexPath*)indexPath
@@ -539,6 +800,25 @@
                                                otherButtonItems:btnYES, nil];
         [alert show];
     }    
+}
+
+- (void)handleSectionChooseAlbumToLinkWithIndexPath:(NSIndexPath*)indexPath
+{
+    _selectedLinkedAlbum = [_linkedAlbums objectAtIndex:indexPath.row];
+
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];    
+}
+
+- (void)handleSectionShareToPeopleWithIndexPath:(NSIndexPath*)indexPath
+{
+    if (indexPath.row == [_quickSharePeople count])
+    {
+        SWPeopleListViewController* plvc = [SWPeopleListViewController new];
+        plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
+        plvc.delegate = self;
+        plvc.selectedContacts = [NSMutableArray arrayWithArray:_quickSharePeople];
+        [self presentViewController:plvc animated:YES completion: nil]; 
+    }
 }
 
 @end

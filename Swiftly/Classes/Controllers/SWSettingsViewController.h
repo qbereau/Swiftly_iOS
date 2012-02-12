@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "SWTableViewCell.h"
 #import "SWAlbumLockViewController.h"
+#import "KVPasscodeViewController.h"
 
 @interface SWSettingsViewController : UITableViewController
 

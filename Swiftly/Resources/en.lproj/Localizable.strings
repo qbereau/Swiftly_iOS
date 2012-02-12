@@ -110,6 +110,10 @@
 "album_lock_subtitle"                   = "For hiding sensitive albums";
 "album_lock_new_lock"                   = "New Album Lock";
 "album_lock_change_lock"                = "Change Album Lock";
+"album_lock_define_new_lock"            = "Define a new album lock:";
+"album_lock_repeat_new_lock"            = "Confirm your album lock:";
+"album_lock_enter_album_lock"           = "Enter your album lock:";
+"album_lock_delete_album_lock"          = "Delete Album Lock";
 
 "enter_passcode"                        = "Enter Passcode";
 "enter_new_passcode"                    = "Enter New Passcode";
@@ -124,3 +128,12 @@
 "pick_files"                            = "Pick Files";
 "select_all"                            = "Select All";
 "deselect_all"                          = "Deselect All";
+
+"what_to_do"                            = "What do you want to do?";
+"create_new_album"                      = "Create a new album";
+"link_to_album"                         = "Link to an existing album";
+"quick_share"                           = "Quick Share";
+"album_settings"                        = "Album Settings";
+
+"choose_album_to_link"                  = "Choose an album to link your files to";
+"share_to_people"                       = "Quick Share to the following persons";

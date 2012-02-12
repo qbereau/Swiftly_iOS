@@ -92,8 +92,35 @@
 
 - (void)editAlbum:(UIBarButtonItem*)button
 {
-    SWAlbumEditViewController* newController = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    [[self navigationController] pushViewController:newController animated:YES];
+    // Data
+    SWPerson* qb = [SWPerson new];
+    qb.firstName = @"Quentin";
+    qb.lastName = @"Bereau";
+    qb.phoneNumber = @"079 629 41 79";
+    
+    SWPerson* pb = [SWPerson new];
+    pb.firstName = @"Patrick";
+    pb.lastName = @"Bereau";
+    pb.phoneNumber = @"+41 78 842 41 86";
+    
+    SWPerson* tb = [SWPerson new];
+    tb.firstName = @"Tristan";
+    tb.lastName = @"Bereau";
+    tb.phoneNumber = @"+41 78 744 51 47";
+    
+    SWPerson* pc = [SWPerson new];
+    pc.firstName = @"Paul";
+    pc.lastName = @"Carneiro";
+    pc.phoneNumber = @"+41 79 439 10 72";        
+    
+    SWAlbum* album = [SWAlbum new];
+    album.name = @"test";
+    album.participants = [NSArray arrayWithObjects:qb, pb, tb, pc, nil];
+    // -------
+    
+    SWAlbumEditViewController* vc = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
+    vc.album = album;
+    [[self navigationController] pushViewController:vc animated:YES];
 }
 
 - (void)changeMediaType:(id)sender

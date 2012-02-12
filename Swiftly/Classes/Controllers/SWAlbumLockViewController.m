@@ -38,7 +38,7 @@
     [super viewDidLoad];
     
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
-    
+    self.navigationItem.title = NSLocalizedString(@"album_lock", @"album lock");
 }
 
 - (void)viewDidUnload
@@ -58,6 +58,8 @@
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
+    if (self.albumLock)
+        return 2;
     return 1;
 }
 
@@ -93,20 +95,131 @@
     
     cell.isGrouped = YES;
     cell.isLink = YES;
+    cell.isDestructive = NO;    
     
-    if (self.albumLock)
-        cell.title.text = NSLocalizedString(@"album_lock_change_lock", @"change album lock");
-    else
-        cell.title.text = NSLocalizedString(@"album_lock_new_lock", @"new album lock");
+    if (indexPath.section == 0 && indexPath.row == 0)
+    {
+        if (self.albumLock)
+            cell.title.text = NSLocalizedString(@"album_lock_change_lock", @"change album lock");
+        else
+            cell.title.text = NSLocalizedString(@"album_lock_new_lock", @"new album lock");
+    }
+    else if (indexPath.section == 1 && indexPath.row == 0)
+    {
+        cell.isDestructive = YES;
+        cell.title.text = NSLocalizedString(@"album_lock_delete_album_lock", @"delete album lock");        
+    }
     
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 0 && indexPath.row == 0)
+    _wantToDeleteAlbumLock = (indexPath.section == 1 && indexPath.row == 0);
+    
+    _passcodeController = [[KVPasscodeViewController alloc] init];
+    _passcodeController.delegate = self;        
+    
+    UINavigationController *passcodeNavigationController = [[UINavigationController alloc] initWithRootViewController:_passcodeController];        
+    [self.navigationController presentModalViewController:passcodeNavigationController animated:YES];
+    
+    if (!self.albumLock)
     {
+        _passcodeController.titleLabel.text = NSLocalizedString(@"album_lock_define_new_lock", @"define a new album lock");
+    }      
+}
 
+#pragma mark - KVPasscodeViewControllerDelegate 
+- (void)didCancelPasscodeController:(KVPasscodeViewController *)controller
+{
+    _newAlbumLock = nil;
+}
+
+- (void)passcodeController:(KVPasscodeViewController *)controller passcodeEntered:(NSString *)passCode 
+{
+    if (_wantToDeleteAlbumLock)
+    {
+        if ([passCode intValue] != [self.albumLock intValue])
+        {
+            NSLog(@"delete impossible, code don't match");
+            [controller dismissModalViewControllerAnimated:YES];
+        }
+        else
+        {
+            // Should delete album lock!!
+            self.albumLock = nil;
+            _newAlbumLock = nil;
+            _confirmingLock = NO;
+            NSLog(@"album lock deleted!!");            
+            [self.tableView reloadData];
+            [controller dismissModalViewControllerAnimated:YES];            
+        }
+    }
+    else if (!self.albumLock)
+    {
+        if (!_newAlbumLock)
+        {
+            _newAlbumLock = [NSNumber numberWithInt:[passCode intValue]];
+            [controller resetWithAnimation:KVPasscodeAnimationStyleConfirm];
+            controller.titleLabel.text = NSLocalizedString(@"album_lock_repeat_new_lock", @"confirm your album lock");
+        }
+        else if ([passCode intValue] != [_newAlbumLock intValue])
+        {
+            _newAlbumLock = nil;
+            [controller dismissModalViewControllerAnimated:YES];
+            NSLog(@"two code don't match!!");
+        }
+        else
+        {
+            self.albumLock = [NSNumber numberWithInt:[passCode intValue]];
+            _newAlbumLock = nil;
+            _confirmingLock = NO;
+            NSLog(@"OK! New code defined!");
+            [self.tableView reloadData];
+            [controller dismissModalViewControllerAnimated:YES];            
+        }
+    }
+    else
+    {
+        if ([passCode intValue] != [self.albumLock intValue] && !_confirmingLock)
+        {
+            NSLog(@"update impossible, code don't match");
+            [controller dismissModalViewControllerAnimated:YES];
+        }
+        else
+        {
+            if (!_newAlbumLock)
+            {
+                if (!_confirmingLock)
+                {
+                    _confirmingLock = YES;
+                    [controller resetWithAnimation:KVPasscodeAnimationStyleConfirm];
+                    controller.titleLabel.text = NSLocalizedString(@"album_lock_define_new_lock", @"define a new album lock");
+                }
+                else
+                {
+                    _newAlbumLock = [NSNumber numberWithInt:[passCode intValue]];
+                    [controller resetWithAnimation:KVPasscodeAnimationStyleConfirm];
+                    controller.titleLabel.text = NSLocalizedString(@"album_lock_repeat_new_lock", @"confirm your album lock");
+                }
+            }
+            else if ([passCode intValue] != [_newAlbumLock intValue])
+            {
+                _newAlbumLock = nil;     
+                _confirmingLock = NO;
+                [controller dismissModalViewControllerAnimated:YES];
+                NSLog(@"two code don't match!!");
+            }
+            else
+            {
+                self.albumLock = [NSNumber numberWithInt:[passCode intValue]];
+                _newAlbumLock = nil;
+                _confirmingLock = NO;
+                NSLog(@"OK! New code defined!");
+                [self.tableView reloadData];
+                [controller dismissModalViewControllerAnimated:YES];                
+            }
+        }
     }
 }
 

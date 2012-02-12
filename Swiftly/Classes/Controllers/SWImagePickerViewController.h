@@ -1,8 +1,8 @@
 //
-//  SWShareViewController.h
+//  SWImagePickerViewController.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/1/12.
+//  Created by Quentin Bereau on 2/12/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -11,9 +11,6 @@
 #import "SWAlbumPickerViewController.h"
 #import "SWAlbumChoiceSelectionViewController.h"
 
-@interface SWShareViewController : UIViewController
-{
-
-}
+@interface SWImagePickerViewController : ELCImagePickerController
 
 @end

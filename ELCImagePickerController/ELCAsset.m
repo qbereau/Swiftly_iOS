@@ -29,6 +29,8 @@
         _camera.frame = CGRectMake(6, frame.size.height - 12, 16, 8);
         _camera.contentMode = UIViewContentModeScaleAspectFit;
         [self addSubview:_camera];
+        
+        self.backgroundColor = [UIColor clearColor];
     }
     return self;
 }
@@ -47,9 +49,8 @@
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGRect rectangle = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
     CGContextAddRect(ctx, rectangle);
-    CGContextSetFillColorWithColor(ctx, [UIColor blackColor].CGColor);
-    CGContextSetAlpha(ctx, 0.9);
-    CGContextFillRect(ctx, rectangle);         
+    CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5].CGColor);
+    CGContextFillRect(ctx, rectangle);
 }
 
 @end

@@ -9,11 +9,15 @@
 #import <UIKit/UIKit.h>
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
-#import "JSLockScreenViewController.h"
+#import "KVPasscodeViewController.h"
 
-@interface SWAlbumLockViewController : UITableViewController
+@interface SWAlbumLockViewController : UITableViewController <KVPasscodeViewControllerDelegate>
 {
-    NSNumber*                       _albumLock;
+    NSNumber*                       _albumLock;    
+    NSNumber*                       _newAlbumLock;
+    BOOL                            _wantToDeleteAlbumLock;
+    BOOL                            _confirmingLock;
+    KVPasscodeViewController*       _passcodeController;
 }
 
 @property (nonatomic, strong) NSNumber*         albumLock;

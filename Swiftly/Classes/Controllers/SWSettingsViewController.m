@@ -180,7 +180,7 @@
     {
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
         SWAlbumLockViewController* albumLockViewController = [storyboard instantiateViewControllerWithIdentifier:@"AlbumLockViewController"];
-        [[self navigationController] pushViewController:albumLockViewController animated:YES];        
+        [self.navigationController pushViewController:albumLockViewController animated:YES];   
     }
     else if (indexPath.section == 2 && indexPath.row == 0)
     {        

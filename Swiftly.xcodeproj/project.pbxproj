@@ -30,6 +30,11 @@
 		191DB5C314D94F08007F27E6 /* albums@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 191DB5C114D94F08007F27E6 /* albums@2x.png */; };
 		191DB5C614D94FF1007F27E6 /* SWTabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = 191DB5C514D94FF1007F27E6 /* SWTabBarController.m */; };
 		192A6F3D14E7D58100B8EACA /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F3C14E7D58100B8EACA /* camera.png */; };
+		192A6F4014E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F3F14E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m */; };
+		192A6F4314E7F98B00B8EACA /* SWImagePickerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F4214E7F98B00B8EACA /* SWImagePickerViewController.m */; };
+		192A6F4814E81CE400B8EACA /* KVPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F4614E81CE400B8EACA /* KVPasscodeViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		192A6F4914E81CE400B8EACA /* KVPasscodeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F4714E81CE400B8EACA /* KVPasscodeViewController.xib */; };
+		192A6F4B14E81D9500B8EACA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
@@ -217,6 +222,14 @@
 		191DB5C414D94FF1007F27E6 /* SWTabBarController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWTabBarController.h; sourceTree = "<group>"; };
 		191DB5C514D94FF1007F27E6 /* SWTabBarController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWTabBarController.m; sourceTree = "<group>"; };
 		192A6F3C14E7D58100B8EACA /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = camera.png; sourceTree = "<group>"; };
+		192A6F3E14E7F52700B8EACA /* SWAlbumChoiceSelectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbumChoiceSelectionViewController.h; sourceTree = "<group>"; };
+		192A6F3F14E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbumChoiceSelectionViewController.m; sourceTree = "<group>"; };
+		192A6F4114E7F98A00B8EACA /* SWImagePickerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWImagePickerViewController.h; sourceTree = "<group>"; };
+		192A6F4214E7F98B00B8EACA /* SWImagePickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWImagePickerViewController.m; sourceTree = "<group>"; };
+		192A6F4514E81CE400B8EACA /* KVPasscodeViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KVPasscodeViewController.h; sourceTree = "<group>"; };
+		192A6F4614E81CE400B8EACA /* KVPasscodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KVPasscodeViewController.m; sourceTree = "<group>"; };
+		192A6F4714E81CE400B8EACA /* KVPasscodeViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = KVPasscodeViewController.xib; sourceTree = "<group>"; };
+		192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -426,6 +439,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				192A6F4B14E81D9500B8EACA /* AudioToolbox.framework in Frameworks */,
 				196EC5A914E7AC7000DB3CE9 /* AssetsLibrary.framework in Frameworks */,
 				194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */,
 				1964009E14E2CA900009EE99 /* AddressBook.framework in Frameworks */,
@@ -487,9 +501,20 @@
 			path = Misc;
 			sourceTree = "<group>";
 		};
+		192A6F4414E81CE400B8EACA /* KVPasscode */ = {
+			isa = PBXGroup;
+			children = (
+				192A6F4514E81CE400B8EACA /* KVPasscodeViewController.h */,
+				192A6F4614E81CE400B8EACA /* KVPasscodeViewController.m */,
+				192A6F4714E81CE400B8EACA /* KVPasscodeViewController.xib */,
+			);
+			path = KVPasscode;
+			sourceTree = "<group>";
+		};
 		1950B7C514D6AFB400302BF2 = {
 			isa = PBXGroup;
 			children = (
+				192A6F4414E81CE400B8EACA /* KVPasscode */,
 				196EC58C14E7AB6100DB3CE9 /* ELCImagePickerController */,
 				196EC56114E6D6DF00DB3CE9 /* JSLockScreen */,
 				199832EE14DA8CB70083E5C3 /* SDWebImage */,
@@ -512,6 +537,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */,
 				196EC5A814E7AC7000DB3CE9 /* AssetsLibrary.framework */,
 				194D209414E3C34100B72A40 /* MessageUI.framework */,
 				1964009D14E2CA900009EE99 /* AddressBook.framework */,
@@ -700,6 +726,10 @@
 				196EC58A14E6DF1900DB3CE9 /* SWAlbumLockViewController.m */,
 				196EC5AA14E7AFDB00DB3CE9 /* SWAlbumPickerViewController.h */,
 				196EC5AB14E7AFDD00DB3CE9 /* SWAlbumPickerViewController.m */,
+				192A6F3E14E7F52700B8EACA /* SWAlbumChoiceSelectionViewController.h */,
+				192A6F3F14E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m */,
+				192A6F4114E7F98A00B8EACA /* SWImagePickerViewController.h */,
+				192A6F4214E7F98B00B8EACA /* SWImagePickerViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -970,6 +1000,7 @@
 				196EC5A614E7AB6200DB3CE9 /* Overlay.png in Resources */,
 				196EC5A714E7AB6200DB3CE9 /* Overlay@2x.png in Resources */,
 				192A6F3D14E7D58100B8EACA /* camera.png in Resources */,
+				192A6F4914E81CE400B8EACA /* KVPasscodeViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1043,6 +1074,9 @@
 				196EC5A214E7AB6200DB3CE9 /* ELCAssetTablePicker.m in Sources */,
 				196EC5A414E7AB6200DB3CE9 /* ELCImagePickerController.m in Sources */,
 				196EC5AC14E7AFDE00DB3CE9 /* SWAlbumPickerViewController.m in Sources */,
+				192A6F4014E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m in Sources */,
+				192A6F4314E7F98B00B8EACA /* SWImagePickerViewController.m in Sources */,
+				192A6F4814E81CE400B8EACA /* KVPasscodeViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
