@@ -114,6 +114,7 @@
 "album_lock_repeat_new_lock"            = "Confirm your album lock:";
 "album_lock_enter_album_lock"           = "Enter your album lock:";
 "album_lock_delete_album_lock"          = "Delete Album Lock";
+"album_lock_delete_album_lock_subtitle" = "All your locked albums will be visible";
 
 "enter_passcode"                        = "Enter Passcode";
 "enter_new_passcode"                    = "Enter New Passcode";

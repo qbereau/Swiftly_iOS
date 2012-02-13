@@ -13,6 +13,8 @@
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 #import "SWPerson.h"
+#import "SWGroup.h"
+#import "SWSwitchButton.h"
 
 #define PEOPLE_LIST_EDIT_MODE 0
 #define PEOPLE_LIST_MULTI_SELECTION_MODE 1
@@ -25,6 +27,10 @@
     UITableView*        _tableView;
     
     BOOL                _showOnlyUsers;
+    
+    
+    NSArray*            _groups;
+    UIScrollView*       _scrollView;
 }
 
 @property (nonatomic, assign) id <SWPeopleListViewControllerDelegate> delegate;
@@ -36,5 +42,9 @@
 @property (nonatomic, assign) BOOL              showOnlyUsers;
 
 - (NSPredicate*)predicateForSection:(NSInteger)idx;
+
+- (void)pushedButton:(SWSwitchButton*)sender;
+- (void)scrollLeft:(UIButton*)sender;
+- (void)scrollRight:(UIButton*)sender;
 
 @end

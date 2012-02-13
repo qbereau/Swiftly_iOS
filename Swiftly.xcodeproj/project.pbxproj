@@ -35,6 +35,11 @@
 		192A6F4814E81CE400B8EACA /* KVPasscodeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F4614E81CE400B8EACA /* KVPasscodeViewController.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		192A6F4914E81CE400B8EACA /* KVPasscodeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F4714E81CE400B8EACA /* KVPasscodeViewController.xib */; };
 		192A6F4B14E81D9500B8EACA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */; };
+		192A6F4E14E90CFE00B8EACA /* arrow_left.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F4C14E90CFE00B8EACA /* arrow_left.png */; };
+		192A6F4F14E90CFE00B8EACA /* arrow_right.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F4D14E90CFE00B8EACA /* arrow_right.png */; };
+		192A6F5214E91A8600B8EACA /* SWSwitchButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F5114E91A8600B8EACA /* SWSwitchButton.m */; };
+		192A6F5914E922D400B8EACA /* rounded_button_pushed.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F5714E922D400B8EACA /* rounded_button_pushed.png */; };
+		192A6F5A14E922D400B8EACA /* rounded_button_pushed@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 192A6F5814E922D400B8EACA /* rounded_button_pushed@2x.png */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
@@ -230,6 +235,12 @@
 		192A6F4614E81CE400B8EACA /* KVPasscodeViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KVPasscodeViewController.m; sourceTree = "<group>"; };
 		192A6F4714E81CE400B8EACA /* KVPasscodeViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = KVPasscodeViewController.xib; sourceTree = "<group>"; };
 		192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		192A6F4C14E90CFE00B8EACA /* arrow_left.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = arrow_left.png; path = Swiftly/Resources/images/arrow_left.png; sourceTree = SOURCE_ROOT; };
+		192A6F4D14E90CFE00B8EACA /* arrow_right.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = arrow_right.png; path = Swiftly/Resources/images/arrow_right.png; sourceTree = SOURCE_ROOT; };
+		192A6F5014E91A8600B8EACA /* SWSwitchButton.h */ = {isa = PBXFileReference; fileEncoding = 4; path = SWSwitchButton.h; sourceTree = "<group>"; };
+		192A6F5114E91A8600B8EACA /* SWSwitchButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWSwitchButton.m; sourceTree = "<group>"; };
+		192A6F5714E922D400B8EACA /* rounded_button_pushed.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rounded_button_pushed.png; sourceTree = "<group>"; };
+		192A6F5814E922D400B8EACA /* rounded_button_pushed@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "rounded_button_pushed@2x.png"; sourceTree = "<group>"; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -590,6 +601,10 @@
 		1950B80A14D6B4FC00302BF2 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				192A6F5714E922D400B8EACA /* rounded_button_pushed.png */,
+				192A6F5814E922D400B8EACA /* rounded_button_pushed@2x.png */,
+				192A6F4C14E90CFE00B8EACA /* arrow_left.png */,
+				192A6F4D14E90CFE00B8EACA /* arrow_right.png */,
 				192A6F3C14E7D58100B8EACA /* camera.png */,
 				194D209E14E3FE4C00B72A40 /* block.png */,
 				194D209F14E3FE4C00B72A40 /* block@2x.png */,
@@ -764,6 +779,8 @@
 				1978067714E17D4F007582CC /* SWTableView.m */,
 				1978067914E185D3007582CC /* SWActivityTableViewCell.h */,
 				1978067A14E185D3007582CC /* SWActivityTableViewCell.m */,
+				192A6F5014E91A8600B8EACA /* SWSwitchButton.h */,
+				192A6F5114E91A8600B8EACA /* SWSwitchButton.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1001,6 +1018,10 @@
 				196EC5A714E7AB6200DB3CE9 /* Overlay@2x.png in Resources */,
 				192A6F3D14E7D58100B8EACA /* camera.png in Resources */,
 				192A6F4914E81CE400B8EACA /* KVPasscodeViewController.xib in Resources */,
+				192A6F4E14E90CFE00B8EACA /* arrow_left.png in Resources */,
+				192A6F4F14E90CFE00B8EACA /* arrow_right.png in Resources */,
+				192A6F5914E922D400B8EACA /* rounded_button_pushed.png in Resources */,
+				192A6F5A14E922D400B8EACA /* rounded_button_pushed@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1077,6 +1098,7 @@
 				192A6F4014E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m in Sources */,
 				192A6F4314E7F98B00B8EACA /* SWImagePickerViewController.m in Sources */,
 				192A6F4814E81CE400B8EACA /* KVPasscodeViewController.m in Sources */,
+				192A6F5214E91A8600B8EACA /* SWSwitchButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

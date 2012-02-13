@@ -8,6 +8,8 @@
 
 #import "SWPeopleListViewController.h"
 
+#define SCROLL_FACTOR 50
+
 @implementation SWPeopleListViewController
 
 @synthesize selectedContacts    = _selectedContacts;
@@ -56,10 +58,141 @@
         UIBarButtonItem *flexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
         [toolbar setItems:[NSArray arrayWithObjects:flexibleSpace, btnCancel, flexibleSpace, btnDone, flexibleSpace, nil]];
         
-        self.tableView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - toolbarHeight);
+        self.tableView.frame = CGRectMake(0, 44, self.view.frame.size.width, self.view.frame.size.height - toolbarHeight - 44);
         
-        [self.view addSubview:toolbar];        
+        [self.view addSubview:toolbar];
+        
+        //--
+        UIView* groupView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 44)];
+        groupView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        groupView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"topbar"]];
+        
+        UIButton* btnArrowLeft = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 44)];
+        [btnArrowLeft setImage:[UIImage imageNamed:@"arrow_left"] forState:UIControlStateNormal];
+        [btnArrowLeft addTarget:self action:@selector(scrollLeft:) forControlEvents:UIControlEventTouchDown];
+        [groupView addSubview:btnArrowLeft];
+        
+        UIButton* btnArrowRight = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - 30, 0, 30, 44)];
+        btnArrowRight.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin;
+        [btnArrowRight setImage:[UIImage imageNamed:@"arrow_right"] forState:UIControlStateNormal];        
+        btnArrowRight.contentMode = UIViewContentModeScaleAspectFit;
+        [btnArrowRight addTarget:self action:@selector(scrollRight:) forControlEvents:UIControlEventTouchUpInside];        
+        [groupView addSubview:btnArrowRight];
+
+        _scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(30, 0, self.view.frame.size.width - 60, 44)];
+        _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [groupView addSubview:_scrollView];
+        
+        // Custom Data - Should come from Core Data
+        SWPerson* qb = [SWPerson new];
+        qb.firstName = @"Quentin";
+        qb.lastName = @"Bereau";
+        qb.phoneNumber = @"079 629 41 79";
+        
+        SWPerson* pb = [SWPerson new];
+        pb.firstName = @"Patrick";
+        pb.lastName = @"Bereau";
+        pb.phoneNumber = @"+41 78 842 41 86";
+        
+        SWPerson* tb = [SWPerson new];
+        tb.firstName = @"Tristan";
+        tb.lastName = @"Bereau";
+        tb.phoneNumber = @"+41 78 744 51 47";
+        
+        SWPerson* pc = [SWPerson new];
+        pc.firstName = @"Paul";
+        pc.lastName = @"Carneiro";
+        pc.phoneNumber = @"+41 79 439 10 72";
+        
+        SWGroup* g1 = [SWGroup new];
+        g1.name = @"Family";
+        g1.contacts = [NSArray arrayWithObjects:qb, pb, tb, nil];
+        
+        SWGroup* g2 = [SWGroup new];
+        g2.name = @"Friends";
+        g2.contacts = [NSArray arrayWithObjects:pc, tb, nil];
+        
+        SWGroup* g3 = [SWGroup new];
+        g3.name = @"Colleagues";
+        g3.contacts = [NSArray arrayWithObjects:qb, pb, pc, nil];
+        
+        _groups = [NSArray arrayWithObjects:g1, g2, g3, g1, g2, g3, nil];
+        NSInteger xPos = 0;
+        NSInteger idx = 0;
+        for (SWGroup* g in _groups)
+        {            
+            SWSwitchButton* btn = [[SWSwitchButton alloc] initWithFrame:CGRectMake(xPos, 7, 100, 28)];
+            [btn setTitle:g.name forState:UIControlStateNormal];
+            btn.titleLabel.textColor = [UIColor whiteColor];
+            btn.titleLabel.font = [UIFont boldSystemFontOfSize:14];
+            [btn setPushed:NO];
+            [btn setTag:idx];
+            [btn sizeToFit];
+            [btn setFrame:CGRectMake(xPos, btn.frame.origin.y, btn.frame.size.width + 20, btn.frame.size.height)];
+            [btn addTarget:self action:@selector(pushedButton:) forControlEvents:UIControlEventTouchUpInside];
+            [_scrollView addSubview:btn];
+            ++idx;
+            xPos += (btn.frame.size.width + 20);
+        }
+        
+        _scrollView.contentSize = CGSizeMake(xPos, _scrollView.frame.size.height);
+        
+        [self.view addSubview:groupView];
     }
+}
+
+- (void)pushedButton:(SWSwitchButton*)sender
+{
+    [sender setPushed:!sender.pushed];
+    
+    SWGroup* g = [_groups objectAtIndex:sender.tag];
+    
+    for (SWPerson* p in g.contacts)
+    {
+        if (sender.pushed && ![self.selectedContacts containsObject:p])
+            [self.selectedContacts addObject:p];
+        else if (!sender.pushed && [self.selectedContacts containsObject:p])
+        {
+            // Check if person is not already present in another selected group
+            BOOL shouldDeleteObject = YES;
+            for (UIView* v in _scrollView.subviews)
+            {
+                if ([v isKindOfClass:[SWSwitchButton class]])
+                {
+                    SWSwitchButton* btn = (SWSwitchButton*)btn;
+                    if (btn.tag != sender.tag && btn.pushed)
+                    {
+                        SWGroup* otherGroup = [_groups objectAtIndex:btn.tag];
+                        if ([otherGroup.contacts containsObject:p])
+                        {
+                            shouldDeleteObject = NO;
+                        }
+                    }
+                }
+            }
+            
+            if (shouldDeleteObject)
+                [self.selectedContacts removeObject:p];
+        }
+    }
+    
+    [self.tableView reloadData];    
+}
+
+- (void)scrollLeft:(UIButton*)sender
+{
+    if (_scrollView.contentOffset.x - SCROLL_FACTOR > 0)
+        [_scrollView setContentOffset:CGPointMake(_scrollView.contentOffset.x - SCROLL_FACTOR, _scrollView.contentOffset.y) animated:YES];
+    else
+        [_scrollView setContentOffset:CGPointMake(0, _scrollView.contentOffset.y) animated:YES];
+}
+
+- (void)scrollRight:(UIButton*)sender
+{
+    if (_scrollView.contentOffset.x + SCROLL_FACTOR < _scrollView.contentSize.width - _scrollView.frame.size.width)
+        [_scrollView setContentOffset:CGPointMake(_scrollView.contentOffset.x + SCROLL_FACTOR, _scrollView.contentOffset.y) animated:YES];
+    else
+        [_scrollView setContentOffset:CGPointMake(_scrollView.contentSize.width - _scrollView.frame.size.width, _scrollView.contentOffset.y) animated:YES];        
 }
 
 - (void)cancel:(UIBarButtonItem*)sender
