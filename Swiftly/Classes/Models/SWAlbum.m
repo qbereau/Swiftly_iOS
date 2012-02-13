@@ -2,23 +2,24 @@
 //  SWAlbum.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/1/12.
+//  Created by Quentin Bereau on 2/13/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "SWAlbum.h"
+#import "SWPerson.h"
+
 
 @implementation SWAlbum
 
-@synthesize objectID        = _objectID;
-@synthesize ownerID         = _ownerID;
-@synthesize canEditMedias   = _canEditMedias;
-@synthesize canEditPeople   = _canEditPeople;
-@synthesize canExportMedias = _canExportMedias;
-@synthesize name            = _name;
-@synthesize isLocked        = _isLocked;
-@synthesize isOwner         = _isOwner;
-@synthesize participants    = _participants;
-@synthesize thumbnail       = _thumbnail;
+@dynamic canEditMedias;
+@dynamic canEditPeople;
+@dynamic canExportMedias;
+@dynamic isLocked;
+@dynamic isOwner;
+@dynamic name;
+@dynamic ownerID;
+@dynamic thumbnail;
+@dynamic participants;
 
 @end

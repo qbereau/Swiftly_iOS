@@ -2,24 +2,25 @@
 //  SWGroup.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/10/12.
+//  Created by Quentin Bereau on 2/13/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import "SWPerson.h"
+#import <CoreData/CoreData.h>
 
-@interface SWGroup : NSObject
-{
-    NSNumber*               _objectID;
-    NSString*               _name;
-    NSArray*                _contacts;
-}
+@class SWPerson;
 
-@property (nonatomic, strong) NSNumber*             objectID;
-@property (nonatomic, strong) NSString*             name;
-@property (nonatomic, strong) NSArray*              contacts;
+@interface SWGroup : NSManagedObject
 
-- (NSString*)participants;
+@property (nonatomic, retain) NSString * name;
+@property (nonatomic, retain) NSSet *contacts;
+@end
 
+@interface SWGroup (CoreDataGeneratedAccessors)
+
+- (void)addContactsObject:(SWPerson *)value;
+- (void)removeContactsObject:(SWPerson *)value;
+- (void)addContacts:(NSSet *)values;
+- (void)removeContacts:(NSSet *)values;
 @end

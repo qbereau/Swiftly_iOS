@@ -604,7 +604,7 @@
     }
     else
     {
-        self.album.participants = arr;
+        self.album.participants = [NSSet setWithArray:arr];
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];
     }
 }
@@ -619,7 +619,7 @@
     {
         SWPerson* p = [self.album.participants objectAtIndex:indexPath.row];
         cell.title.text = p.name;
-        cell.imageView.image = p.thumbnail;
+        cell.imageView.image = [UIImage imageWithData:p.thumbnail];
     }
     else
     {
@@ -704,7 +704,7 @@
     {
         SWPerson* p = [_quickSharePeople objectAtIndex:indexPath.row];
         cell.title.text = p.name;
-        cell.imageView.image = p.thumbnail;
+        cell.imageView.image = [UIImage imageWithData:p.thumbnail];
     }
     else
     {
@@ -722,7 +722,7 @@
             SWPeopleListViewController* plvc = [SWPeopleListViewController new];
             plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
             plvc.delegate = self;
-            plvc.selectedContacts = [NSMutableArray arrayWithArray:self.album.participants];
+            plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.album.participants allObjects]];
             [self presentViewController:plvc animated:YES completion: nil];
         }
     }

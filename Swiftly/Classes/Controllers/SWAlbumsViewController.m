@@ -33,13 +33,26 @@
     
     SWAlbum* album1 = [[SWAlbum alloc] init];
     album1.name = @"Amsterdam (49)";
-    album1.thumbnail = [UIImage imageNamed:@"pic1.png"];
+    album1.thumbnail = UIImagePNGRepresentation([UIImage imageNamed:@"pic1.png"]);
     
     SWAlbum* album2 = [[SWAlbum alloc] init];
     album2.name = @"ISE 2012 (4)";
-    album2.thumbnail = [UIImage imageNamed:@"pic2.png"];
+    album2.thumbnail = UIImagePNGRepresentation([UIImage imageNamed:@"pic2.png"]);
     
     self.albums = [NSMutableArray arrayWithObjects:album1, album2, nil];
+    
+    
+    [[SWAPIClient sharedClient] getPath:@"/albums" 
+                              parameters:nil 
+                                 success:^(AFHTTPRequestOperation *operation, id responseObject) 
+     {
+         NSLog(@"here");
+     }
+                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) 
+     {
+         NSLog(@"error");
+     }
+     ];
 }
 
 - (void)unlockAlbums:(UIButton*)sender
@@ -143,7 +156,7 @@
         SWAlbum* album = [self.albums objectAtIndex:indexPath.row];
         cell.title.text = album.name;
         cell.subtitle.text = @"Quentin Bereau, John Doe, Steve Jobs, Steve Wozniak";
-        cell.imageView.image = album.thumbnail;
+        cell.imageView.image = [UIImage imageWithData:album.thumbnail];
     }
     else if (indexPath.section == 1)
     {

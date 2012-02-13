@@ -12,6 +12,7 @@
 #import "SWTableViewCell.h"
 #import "SWPerson.h"
 #import "SWGroup.h"
+#import "SWGroup+Details.h"
 
 @interface SWGroupListViewController : UITableViewController
 {

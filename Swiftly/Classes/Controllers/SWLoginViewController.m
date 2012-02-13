@@ -18,9 +18,8 @@
 #define VIEW_CONTAINER_CENTER_POS_X 14
 #define VIEW_CONTAINER_LEFT_POS_X -320
 
-#define KEY_USER_PHONE_NUMBER @"user_phone_number"
-
 @implementation SWLoginViewController
+
 @synthesize imgViewLogo;
 @synthesize lblDescription;
 @synthesize lblChooseCountry;
@@ -38,6 +37,7 @@
 @synthesize btnBack;
 @synthesize btnValidateConfirmation;
 @synthesize lblValidateCodeDescription;
+@synthesize inputValidationCode;
 
 @synthesize countries = _countries;
 @synthesize alreadySetup = _alreadySetup;
@@ -55,8 +55,12 @@
 {  
     [super viewDidAppear:animated];
     
-    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-    if ([userDefaults objectForKey:KEY_USER_PHONE_NUMBER])
+    NSDictionary* dict              = [SWAPIClient userCredentials];
+    NSString* key                   = (NSString*)[dict objectForKey:@"key"];
+    NSString* token                 = (NSString*)[dict objectForKey:@"token"];
+    NSNumber* account_validated     = (NSNumber*)[dict objectForKey:@"account_activated"];
+    
+    if (key && token && key.length > 0 && token.length > 0 && [account_validated boolValue])
     {
         [self gotoApp];
     }
@@ -68,7 +72,9 @@
 
 - (void)viewDidLoad
 {
-    //[self removeUserPhoneNumber]; // Dev
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Countries" ofType:@"plist"];
+    NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
+    self.countries = [plistDict objectForKey:@"countries"];    
     
     self.view.hidden = YES;
 }
@@ -117,6 +123,7 @@
     [self setBtnBack:nil];
     [self setBtnValidateConfirmation:nil];
     [self setLblValidateCodeDescription:nil];
+    [self setInputValidationCode:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -126,12 +133,6 @@
 {
     // Return YES for supported orientations
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
-}
-
-- (void)removeUserPhoneNumber
-{
-    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-    [userDefaults removeObjectForKey:KEY_USER_PHONE_NUMBER];
 }
 
 - (void)setup
@@ -151,9 +152,6 @@
         countryCode = @"US";
     }
     
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Countries" ofType:@"plist"];
-    NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
-    self.countries = [plistDict objectForKey:@"countries"];
     for (NSDictionary *dict in self.countries)
     {
         if ([[[dict objectForKey:@"country_code"] lowercaseString] isEqualToString:[countryCode lowercaseString]])
@@ -251,13 +249,17 @@
                      }];
 }
 
-- (void)codeValidated
+- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token
 {
-    // Save phone number
-    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-    NSLog(@"Normally it should come from the server, e164 formatted....");
-    [userDefaults setObject:[inputPhoneNumber text] forKey:KEY_USER_PHONE_NUMBER];
+    // Save to Keychain
+    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
+    [keychain setObject:key forKey:(__bridge id)kSecAttrAccount];
+    [keychain setObject:token forKey:(__bridge id)kSecValueData];
     
+    // Also save a dummy BOOL that will be erased if the deletes the app
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool:YES forKey:@"account_activated"];
+    [defaults synchronize];
     
     // Alert user
     RIButtonItem *btnOK = [RIButtonItem item];
@@ -282,6 +284,10 @@
                                           cancelButtonTitle:@"OK"
                                           otherButtonTitles:nil];
     [alert show];
+    
+    [self.spinnerConfirmation stopAnimating];
+    self.spinnerConfirmation.hidden = YES;
+    self.btnValidateConfirmation.hidden = NO;
 }
 
 - (void)gotoApp
@@ -292,18 +298,23 @@
 #pragma mark - Actions
 - (IBAction)changeCountries:(UIButton*)sender
 {
-    self.pickerCountries.hidden = NO;
-    self.pickerCountries.frame = CGRectMake(0, PICKER_DEFAULT_POS_Y, self.pickerCountries.frame.size.width, self.pickerCountries.frame.size.height);
-    [UIView animateWithDuration:0.25
-                        delay:0.0
-                        options: UIViewAnimationCurveEaseIn
-                        animations:^{
-                            self.pickerCountries.frame = CGRectMake(0, PICKER_EXPANDED_POS_Y, self.pickerCountries.frame.size.width, self.pickerCountries.frame.size.height);
-                            self.scrollView.frame = CGRectMake(0, self.scrollView.frame.origin.y - SCROLLVIEW_OFFSET, self.scrollView.frame.size.width, self.scrollView.frame.size.height);
-                        }
-                        completion:^(BOOL f1){
+    [self.inputPhoneNumber resignFirstResponder];
+    
+    if (self.pickerCountries.frame.origin.y >= PICKER_DEFAULT_POS_Y)
+    {
+        self.pickerCountries.hidden = NO;
+        self.pickerCountries.frame = CGRectMake(0, PICKER_DEFAULT_POS_Y, self.pickerCountries.frame.size.width, self.pickerCountries.frame.size.height);
+        [UIView animateWithDuration:0.25
+                            delay:0.0
+                            options: UIViewAnimationCurveEaseIn
+                            animations:^{
+                                self.pickerCountries.frame = CGRectMake(0, PICKER_EXPANDED_POS_Y, self.pickerCountries.frame.size.width, self.pickerCountries.frame.size.height);
+                                self.scrollView.frame = CGRectMake(0, self.scrollView.frame.origin.y - SCROLLVIEW_OFFSET, self.scrollView.frame.size.width, self.scrollView.frame.size.height);
+                            }
+                            completion:^(BOOL f1){
 
-                        }];
+                            }];
+    }
 }
 
 - (IBAction)validateLogin:(UIButton*)sender
@@ -317,10 +328,27 @@
         [self.spinnerLoading startAnimating];
         
         // Check API
-        // ...
-        //
-        
-        [self accountValidated];
+        NSString* phone_nb = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
+        NSDictionary* dict = [NSDictionary dictionaryWithObject:phone_nb forKey:@"phone_number"];
+        [[SWAPIClient sharedClient] postPath:@"/accounts" 
+                                  parameters:dict 
+                                     success:^(AFHTTPRequestOperation *operation, id responseObject) 
+                                     {
+                                         [self accountValidated];
+                                     }
+                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) 
+                                     {
+                                         UIAlertView* alert = [[UIAlertView alloc] 
+                                                               initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"login_error_login", @"maybe you tried too many times")
+                                                               delegate:self
+                                                    cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                         [alert show];
+                                         
+                                         self.btnValidate.hidden = NO;
+                                         self.spinnerLoading.hidden  = YES;
+                                         [self.spinnerLoading stopAnimating];
+                                     }
+         ];
     }
     else
     {
@@ -335,6 +363,8 @@
 
 - (IBAction)back:(UIButton*)sender
 {
+    [self.inputValidationCode resignFirstResponder];
+    
     // Simply go to LoginViewContainer
     [UIView animateWithDuration:0.25
                           delay:0.0
@@ -351,6 +381,7 @@
 - (IBAction)validateCode:(UIButton*)sender
 {
     [self.inputPhoneNumber resignFirstResponder];
+    [self.inputValidationCode resignFirstResponder];    
     
     self.btnValidateConfirmation.hidden = YES;
     self.btnBack.hidden = NO;
@@ -360,21 +391,34 @@
     [self.spinnerConfirmation startAnimating];
     
     // API Call
-    // ....
-    //
-    
-    // Worked
-    [self codeValidated];
-    // Nope
-    // [self codeNotValidated];
+    NSString* phone_nb = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
+    NSString* code = self.inputValidationCode.text;
+    NSDictionary* dict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:phone_nb, code, nil] forKeys:[NSArray arrayWithObjects:@"phone_number", @"activation_code", nil]];
+    [[SWAPIClient sharedClient] postPath:@"/accounts/activate" 
+                              parameters:dict 
+                                 success:^(AFHTTPRequestOperation *operation, id responseObject) 
+                                        {
+                                            NSString* key = (NSString*)[responseObject valueForKey:@"key"];
+                                            NSString* token = (NSString*)[responseObject valueForKey:@"token"];
+                                            
+                                            [self codeValidatedWithKey:key token:token];
+                                        }
+                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) 
+                                        {
+                                            [self codeNotValidated];
+                                        }
+     ];    
 }
 
 #pragma mark - Notifications
 - (void)keyboardWillShow:(NSNotification *)aNotification {
-    [self moveTextViewForKeyboard:aNotification up:YES];
+    
+    if (self.pickerCountries.frame.origin.y >= PICKER_DEFAULT_POS_Y)
+        [self moveTextViewForKeyboard:aNotification up:YES];
 }
 
-- (void)keyboardWillHide:(NSNotification *)aNotification {
+- (void)keyboardWillHide:(NSNotification *)aNotification 
+{
     [self moveTextViewForKeyboard:aNotification up:NO]; 
 }
 

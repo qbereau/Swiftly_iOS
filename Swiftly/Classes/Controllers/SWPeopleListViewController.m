@@ -252,7 +252,7 @@
         if (ABPersonHasImageData(ref))
         {
             NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
-            p.thumbnail = [UIImage imageWithData:imageData];
+            p.thumbnail = UIImagePNGRepresentation([UIImage imageWithData:imageData]);
         }
         
         if (p.firstName || p.lastName)        

@@ -6,7 +6,7 @@
   Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 */
 
-"login_description"                     = "Thanks for downloading Swiftly!\n\nPlease enter your phone number so we can create or activate your account on this phone.";
+"login_description"                     = "Thank you for downloading Swiftly!\nPlease enter your phone number so we can create or activate your account on this phone.";
 "login_choose_country"                  = "Select your country";
 "login_enter_phone"                     = "Enter your phone number";
 "login_error_phone"                     = "Please enter a phone number";
@@ -16,6 +16,7 @@
 "login_code_not_validated"              = "The code you entered was not correct";
 "login_account_validated_title"         = "Account validated!";
 "login_account_validated_description"   = "You can now use Swiftly";
+"login_error_login"                     = "Maybe you've tried too many times?";
 
 
 "menu_albums"                           = "Albums";

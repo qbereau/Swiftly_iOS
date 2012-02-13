@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="872" systemVersion="10K549" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="SWAlbum" representedClassName="SWAlbum" syncable="YES">
+        <attribute name="canEditMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="canEditPeople" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="canExportMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isLocked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="ownerID" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="participants" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="albums" inverseEntity="SWPerson" syncable="YES"/>
+    </entity>
+    <entity name="SWGroup" representedClassName="SWGroup" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="groups" inverseEntity="SWPerson" syncable="YES"/>
+    </entity>
+    <entity name="SWPerson" representedClassName="SWPerson" syncable="YES">
+        <attribute name="firstName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isBlocked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isBlocking" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isLinked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isUser" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lastName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="phoneNumber" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Binary" syncable="YES"/>
+        <relationship name="albums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWAlbum" inverseName="participants" inverseEntity="SWAlbum" syncable="YES"/>
+        <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWGroup" inverseName="contacts" inverseEntity="SWGroup" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="180"/>
+        <element name="SWGroup" positionX="160" positionY="192" width="128" height="75"/>
+        <element name="SWPerson" positionX="414" positionY="264" width="128" height="195"/>
+    </elements>
+</model>

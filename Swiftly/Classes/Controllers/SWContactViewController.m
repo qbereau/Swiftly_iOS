@@ -56,7 +56,7 @@
     
     self.lblName.text = [self.contact name];
     self.lblPhoneNumber.text = self.contact.phoneNumber;
-    self.thumbnail.image = self.contact.thumbnail;
+    self.thumbnail.image = [UIImage imageWithData:self.contact.thumbnail];
     CALayer * l = [self.thumbnail layer];
     [l setMasksToBounds:YES];
     [l setCornerRadius:10.0];

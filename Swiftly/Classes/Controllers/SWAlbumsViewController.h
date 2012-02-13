@@ -11,6 +11,7 @@
 #import "SWAlbumThumbnailsViewController.h"
 #import "SWTableViewCell.h"
 #import "JSLockScreenViewController.h"
+#import "SWAPIClient.h"
 
 @interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
 {

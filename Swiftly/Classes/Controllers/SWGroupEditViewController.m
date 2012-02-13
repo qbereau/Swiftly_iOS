@@ -163,7 +163,7 @@
         {
             SWPerson* p = [self.group.contacts objectAtIndex:indexPath.row];
             cell.title.text = p.name;
-            cell.imageView.image = p.thumbnail;
+            cell.imageView.image = [UIImage imageWithData:p.thumbnail];
             cell.imageView.frame = CGRectMake(10, 10, 44, 44);
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
         }
@@ -188,7 +188,7 @@
         SWPeopleListViewController* plvc = [SWPeopleListViewController new];
         plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
         plvc.delegate = self;
-        plvc.selectedContacts = [NSMutableArray arrayWithArray:self.group.contacts];
+        plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.group.contacts allObjects]];
         [self presentViewController:plvc animated:YES completion: nil];
     }
 }
@@ -203,7 +203,7 @@
 #pragma mark - SWPeopleListViewControllerDelegate
 - (void)peopleListViewControllerDidSelectContacts:(NSArray*)arr
 {
-    self.group.contacts = arr;
+    self.group.contacts = [NSSet setWithArray:arr];
     [self.tableView reloadData];
 }
 

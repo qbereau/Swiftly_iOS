@@ -10,11 +10,13 @@
 #import <QuartzCore/QuartzCore.h>
 #import <CoreTelephony/CTCarrier.h>
 #import <CoreTelephony/CTTelephonyNetworkInfo.h>
+#import <Security/Security.h>
 #import "SWRoundedRectView.h"
 #import "UIAlertView+Blocks.h"
 #import "RIButtonItem.h"
+#import "SWAPIClient.h"
 
-@interface SWLoginViewController : UIViewController
+@interface SWLoginViewController : UIViewController <UIPickerViewDelegate, UIPickerViewDataSource>
 {
     NSMutableArray*         _countries;
     BOOL                    _alreadySetup;
@@ -38,6 +40,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *btnBack;
 @property (weak, nonatomic) IBOutlet UIButton *btnValidateConfirmation;
 @property (weak, nonatomic) IBOutlet UILabel *lblValidateCodeDescription;
+@property (weak, nonatomic) IBOutlet UITextField *inputValidationCode;
 
 @property (strong, nonatomic) NSMutableArray *countries;
 @property (assign, nonatomic) BOOL alreadySetup;
@@ -48,9 +51,8 @@
 - (IBAction)validateCode:(id)sender;
 
 - (void)setup;
-- (void)removeUserPhoneNumber;
 - (void)accountValidated;
-- (void)codeValidated;
+- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token;
 - (void)codeNotValidated;
 - (void)gotoApp;
 - (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up;

@@ -2,36 +2,32 @@
 //  SWAlbum.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/1/12.
+//  Created by Quentin Bereau on 2/13/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
-@interface SWAlbum : NSObject
-{
-    NSNumber*                   _objectID;
-    int                         _ownerID;
-    BOOL                        _canEditMedias;
-    BOOL                        _canEditPeople;
-    BOOL                        _canExportMedias;
-    BOOL                        _isLocked;
-    BOOL                        _isOwner;
-    NSString*                   _name;
-    NSArray*                    _participants;
-    UIImage*                    _thumbnail; // tmp, should be a url(string), coming from server
-}
+@class SWPerson;
 
+@interface SWAlbum : NSManagedObject
 
-@property (nonatomic, strong) NSNumber*         objectID;
-@property (nonatomic, assign) int               ownerID;
-@property (nonatomic, assign) BOOL              canEditMedias;
-@property (nonatomic, assign) BOOL              canEditPeople;
-@property (nonatomic, assign) BOOL              canExportMedias;
-@property (nonatomic, assign) BOOL              isLocked;
-@property (nonatomic, assign) BOOL              isOwner;
-@property (nonatomic, strong) NSString*         name;
-@property (nonatomic, strong) NSArray*          participants;
-@property (nonatomic, strong) UIImage*          thumbnail;
+@property (nonatomic) BOOL canEditMedias;
+@property (nonatomic) BOOL canEditPeople;
+@property (nonatomic) BOOL canExportMedias;
+@property (nonatomic) BOOL isLocked;
+@property (nonatomic) BOOL isOwner;
+@property (nonatomic, retain) NSString * name;
+@property (nonatomic) int16_t ownerID;
+@property (nonatomic, retain) NSData * thumbnail;
+@property (nonatomic, retain) NSSet *participants;
+@end
 
+@interface SWAlbum (CoreDataGeneratedAccessors)
+
+- (void)addParticipantsObject:(SWPerson *)value;
+- (void)removeParticipantsObject:(SWPerson *)value;
+- (void)addParticipants:(NSSet *)values;
+- (void)removeParticipants:(NSSet *)values;
 @end
