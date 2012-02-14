@@ -86,8 +86,8 @@
 
 }
 
-- (void) doneAction:(id)sender {
-	
+- (void) doneAction:(id)sender 
+{    
 	NSMutableArray *selectedAssetsImages = [[[NSMutableArray alloc] init] autorelease];
 	    
 	for(ELCAsset *elcAsset in self.elcAssets) 
@@ -97,8 +97,14 @@
 			[selectedAssetsImages addObject:[elcAsset asset]];
 		}
 	}
-        
-    [(ELCAlbumPickerController*)self.parent selectedAssets:selectedAssetsImages];
+    
+    if ([selectedAssetsImages count] > 0)
+        [(ELCAlbumPickerController*)self.parent selectedAssets:selectedAssetsImages];
+    else
+    {
+        UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"select_files_error", @"please select at least one file") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+        [av show];
+    }
 }
 
 #pragma mark UITableViewDataSource Delegate Methods

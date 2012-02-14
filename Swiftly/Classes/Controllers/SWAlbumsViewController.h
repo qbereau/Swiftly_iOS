@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SWTabBarController.h"
 #import "SWAlbum.h"
 #import "SWAlbumThumbnailsViewController.h"
 #import "SWTableViewCell.h"
@@ -15,11 +16,19 @@
 
 @interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
 {
-    NSMutableArray*                 _albums;
+    NSArray*                        _sharedAlbums;
+    NSArray*                        _specialAlbums;    
+    
     
     JSLockScreenViewController*     _lockScreenViewController;    
+    
+    NSManagedObjectContext*         _managedObjectContext;
 }
 
-@property (nonatomic, strong) NSMutableArray*           albums;
+@property (nonatomic, strong) NSArray*              sharedAlbums;
+@property (nonatomic, strong) NSArray*              specialAlbums;
+@property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
+
+- (void)synchronize;
 
 @end

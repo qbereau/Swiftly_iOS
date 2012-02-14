@@ -83,40 +83,8 @@
         _scrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [groupView addSubview:_scrollView];
         
-        // Custom Data - Should come from Core Data
-        SWPerson* qb = [SWPerson new];
-        qb.firstName = @"Quentin";
-        qb.lastName = @"Bereau";
-        qb.phoneNumber = @"079 629 41 79";
+        _groups = [SWGroup findAllObjects];
         
-        SWPerson* pb = [SWPerson new];
-        pb.firstName = @"Patrick";
-        pb.lastName = @"Bereau";
-        pb.phoneNumber = @"+41 78 842 41 86";
-        
-        SWPerson* tb = [SWPerson new];
-        tb.firstName = @"Tristan";
-        tb.lastName = @"Bereau";
-        tb.phoneNumber = @"+41 78 744 51 47";
-        
-        SWPerson* pc = [SWPerson new];
-        pc.firstName = @"Paul";
-        pc.lastName = @"Carneiro";
-        pc.phoneNumber = @"+41 79 439 10 72";
-        
-        SWGroup* g1 = [SWGroup new];
-        g1.name = @"Family";
-        g1.contacts = [NSArray arrayWithObjects:qb, pb, tb, nil];
-        
-        SWGroup* g2 = [SWGroup new];
-        g2.name = @"Friends";
-        g2.contacts = [NSArray arrayWithObjects:pc, tb, nil];
-        
-        SWGroup* g3 = [SWGroup new];
-        g3.name = @"Colleagues";
-        g3.contacts = [NSArray arrayWithObjects:qb, pb, pc, nil];
-        
-        _groups = [NSArray arrayWithObjects:g1, g2, g3, g1, g2, g3, nil];
         NSInteger xPos = 0;
         NSInteger idx = 0;
         for (SWGroup* g in _groups)
@@ -223,8 +191,24 @@
     if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE && !self.selectedContacts)
         self.selectedContacts = [NSMutableArray array];
     
-    // Data Source
-    NSMutableArray* persons = [NSMutableArray array];
+    // Sync with server
+    if (self.navigationController.view)
+        [self synchronize];
+    else
+    {
+        self.contacts = [SWPerson findAllObjects];
+        [self.tableView reloadData];        
+    }
+}
+
+- (void)synchronize
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+    // Step 1: We get an array of all the people present in AddressBook
+    NSMutableArray* peopleAB = [NSMutableArray array];
+    NSMutableArray* phones = [NSMutableArray array];
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
     CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
@@ -232,7 +216,7 @@
     {
         ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
         
-        SWPerson* p = [SWPerson new];
+        SWPerson* p = [SWPerson newEntity];
         p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
         p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
         
@@ -252,22 +236,152 @@
         if (ABPersonHasImageData(ref))
         {
             NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
-            p.thumbnail = UIImagePNGRepresentation([UIImage imageWithData:imageData]);
+            p.thumbnail = [UIImage imageWithData:imageData]; 
+            
         }
+        else
+            p.thumbnail = [SWPerson defaultImage];
         
         if (p.firstName || p.lastName)        
-            [persons addObject:p];
+            [peopleAB addObject:p];
+        
+        [phones addObject:p.phoneNumber];
         
         CFRelease(ref);
-    }
+    }    
     
-    self.contacts = [persons sortedArrayUsingComparator:^(id a, id b) {
-        NSString* o1 = [(SWPerson*)a lastName];
-        NSString* o2 = [(SWPerson*)b lastName];
-        return [o1 compare:o2];
-    }];
-    
-    [self.tableView reloadData];
+    // Step 2: We download the user accounts list for update
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        [[SWAPIClient sharedClient] getPath:@"/accounts"
+                                 parameters:nil
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                        if ([responseObject isKindOfClass:[NSArray class]])
+                                        {
+                                            for (id obj in responseObject)
+                                            {
+                                                SWPerson* existingObj = [SWPerson findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                
+                                                if (existingObj)
+                                                {
+                                                    existingObj.phoneNumber = [obj valueForKey:@"phone_number"];
+                                                    existingObj.isUser      = YES;
+                                                    existingObj.isBlocked   = [[obj valueForKey:@"blocked"] boolValue];
+                                                    existingObj.isBlocking  = [[obj valueForKey:@"blocking"] boolValue];
+                                                    existingObj.isLinked    = [[obj valueForKey:@"linked"] boolValue];
+                                                    
+                                                    // Update infos from AddressBook
+                                                    for (SWPerson* p in peopleAB)
+                                                    {
+                                                        if ([p.phoneNumber isEqualToString:existingObj.originalPhoneNumber])
+                                                        {
+                                                            existingObj.firstName = p.firstName;
+                                                            existingObj.lastName  = p.lastName;
+                                                            existingObj.thumbnail = p.thumbnail;
+                                                            break;
+                                                        }
+                                                    }                                                    
+                                                    
+                                                }
+                                            }
+                                            
+                                            // Step 3:  We still need to check if there are new users to the                                            
+                                            //          AddressBook and sync them with server
+                                            //          A user might also have changed a friend's phone number
+                                            //          In that case, we need to relink the new phone number
+                                            //          In the end we'll only display contacts coming from AddressBook
+                                            //          With phone numbers matching the ones that the app have
+                                            
+                                            NSMutableArray* newPhoneNumbers = [NSMutableArray array];
+                                            NSMutableArray* newContacts = [NSMutableArray array];
+                                            for (SWPerson* p in peopleAB)
+                                            {
+                                                SWPerson* existingContact = [SWPerson findObjectWithOriginalPhoneNumber:p.phoneNumber];
+                                                
+                                                if (!existingContact)
+                                                {
+                                                    [newPhoneNumbers addObject:p.phoneNumber];
+                                                    [newContacts addObject:p];
+                                                }
+                                            }
+                                            
+                                            // Create new link with this contact
+                                            if ([newPhoneNumbers count] > 0)
+                                            {
+                                                NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
+                                                [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
+                                                                         parameters:dict 
+                                                                            success:^(AFHTTPRequestOperation *operation2, id responseNewObject) {
+                                                                                if ([responseNewObject isKindOfClass:[NSArray class]])
+                                                                                {
+                                                                                    for (id newObj in responseNewObject)
+                                                                                    {
+                                                                                        SWPerson* newPerson   = [SWPerson createEntity];                                                
+                                                                                        newPerson.serverID    = [[newObj valueForKey:@"id"] intValue];
+                                                                                        newPerson.originalPhoneNumber = [newObj valueForKey:@"original_phone_number"];
+                                                                                        newPerson.phoneNumber  = [newObj valueForKey:@"phone_number"];
+                                                                                        newPerson.isUser       = [[newObj valueForKey:@"valid"] boolValue];
+                                                                                        newPerson.isBlocked    = [[newObj valueForKey:@"blocked"] boolValue];
+                                                                                        newPerson.isBlocking   = [[newObj valueForKey:@"blocking"] boolValue];
+                                                                                        newPerson.isLinked     = [[newObj valueForKey:@"linked"] boolValue];                                                                                    
+                                                                                        
+                                                                                        // Add additional infos from AddressBook
+                                                                                        for (SWPerson* p in newContacts)
+                                                                                        {
+                                                                                            if ([p.phoneNumber isEqualToString:newPerson.originalPhoneNumber])
+                                                                                            {
+                                                                                                newPerson.firstName = p.firstName;
+                                                                                                newPerson.lastName  = p.lastName;
+                                                                                                newPerson.thumbnail = p.thumbnail;
+                                                                                                break;
+                                                                                            }
+                                                                                        }
+                                                                                                                                                                              
+                                                                                    }
+                                                                                    
+                                                                                    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                                                      
+                                                                                    
+                                                                                    self.contacts = [SWPerson findAllObjects];
+                                                                                    [self.tableView reloadData];
+                                                                                    
+                                                                                    // Hide the HUD in the main tread 
+                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                                                                        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                                                    });
+                                                                                }                                                                            
+                                                                            }
+                                                                            failure:^(AFHTTPRequestOperation *operation2, NSError *error2) {
+                                                                                
+                                                                            }
+                                                 ];    
+                                            }
+                                            else
+                                            {
+                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                
+                                                self.contacts = [SWPerson findAllObjects];
+                                                [self.tableView reloadData];
+                                                
+                                                // Hide the HUD in the main tread 
+                                                dispatch_async(dispatch_get_main_queue(), ^{
+                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                });                                                
+                                            }
+                                            
+                                            
+                                        }
+                                    }
+                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                        [av show];
+                                        
+                                        // Hide the HUD in the main tread 
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                        });
+                                    }
+         ];
+    });    
 }
 
 - (void)viewDidUnload
@@ -376,7 +490,7 @@
     
     SWPerson* p = [arr objectAtIndex:indexPath.row];
     cell.title.text = [p name];
-    cell.subtitle.text = p.phoneNumber;
+    cell.subtitle.text = p.originalPhoneNumber;
     cell.imageView.image = [p contactImage];
     
     if (self.mode == PEOPLE_LIST_EDIT_MODE)

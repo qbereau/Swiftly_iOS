@@ -11,8 +11,9 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
-    #import "CoreData+MagicalRecord.h"
-    #define MR_SHORTHAND
+    #import <CoreData/CoreData.h>
+
+    #import "SWAppDelegate.h"
 #endif
 
 #define SWIFTLY_APP_ID @"com.swiftly.swiftly"

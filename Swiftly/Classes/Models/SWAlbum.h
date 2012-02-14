@@ -2,7 +2,7 @@
 //  SWAlbum.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/13/12.
+//  Created by Quentin Bereau on 2/14/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -19,8 +19,11 @@
 @property (nonatomic) BOOL isLocked;
 @property (nonatomic) BOOL isOwner;
 @property (nonatomic, retain) NSString * name;
-@property (nonatomic) int16_t ownerID;
-@property (nonatomic, retain) NSData * thumbnail;
+@property (nonatomic) int32_t ownerID;
+@property (nonatomic, retain) id thumbnail;
+@property (nonatomic) int32_t serverID;
+@property (nonatomic) BOOL isQuickShareAlbum;
+@property (nonatomic) BOOL isMyMediasAlbum;
 @property (nonatomic, retain) NSSet *participants;
 @end
 

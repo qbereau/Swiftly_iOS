@@ -123,6 +123,8 @@
 "wrong_passcode"                        = "Wrong Passcode";
 "passcode_info_use"                     = "Try again or tap to cancel";
 
+"generic_error_desc"                    = "An error occured. Please make sure to be connected to internet";
+
 "select_an_album"                       = "Select an album";
 "error"                                 = "Error";
 "album_error"                           = "Album Error: %@ - %@";
@@ -139,3 +141,11 @@
 
 "choose_album_to_link"                  = "Choose an album to link your files to";
 "share_to_people"                       = "Quick Share to the following persons";
+
+"delete_group"                          = "Delete this Group";
+"delete_group_confirmation"             = "Are you sure you want to delete this Group?";
+
+"select_files_error"                    = "Please select at least one file in order to continue";
+"no_linkable_album"                     = "No albums available";
+"no_linkable_album_subtitle"            = "Currently no albums can receive your files";
+"select_linkable_album"                 = "Please select an album";

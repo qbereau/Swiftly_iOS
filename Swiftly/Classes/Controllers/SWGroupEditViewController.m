@@ -47,7 +47,7 @@
     [super viewDidLoad];
     
     if (!self.group)
-        self.group = [SWGroup new];
+        self.group = [SWGroup newEntity];
     
     self.navigationItem.title = self.group.name;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
@@ -60,7 +60,86 @@
 
 - (void)editGroup:(UIBarButtonItem*)sender
 {
-    NSLog(@"[SWGroupEditViewController#editGroup] Save");
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
+            
+            if (self.group.serverID == 0)
+                self.group = [SWGroup createEntity];
+            
+            [self.group updateWithObject:responseObject];
+            
+            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+            [[self navigationController] popViewControllerAnimated:YES];            
+        };
+        
+        void (^failure)(AFHTTPRequestOperation*, NSError*) = ^(AFHTTPRequestOperation *operation, NSError *error) {
+            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+            [av show];
+            
+            // Hide the HUD in the main tread 
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+            });
+        };
+        
+        NSMutableArray* arr_ids = [NSMutableArray array];
+        for (SWPerson* p in self.group.contacts)
+        {
+            [arr_ids addObject:[NSNumber numberWithInt:p.serverID]];
+        }        
+        
+        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:self.group.name, @"name", arr_ids, @"account_ids", nil];        
+        if (self.group.serverID != 0)
+        {
+            [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
+                                      parameters:params
+                                         success:success
+                                         failure:failure
+             ];
+        }
+        else
+        {
+            [[SWAPIClient sharedClient] postPath:@"/groups"
+                                     parameters:params
+                                        success:success
+                                        failure:failure
+             ];
+        }
+    });
+}
+
+- (void)deleteGroup
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
+                                    parameters:nil
+                                       success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                           SWGroup* g = [SWGroup findObjectWithServerID:self.group.serverID];
+                                           [g deleteEntity];
+                                           [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           [[self navigationController] popViewControllerAnimated:YES];
+                                       }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                           [av show];
+                                           
+                                           // Hide the HUD in the main tread 
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           });
+                                       }
+         ];
+    });
 }
 
 - (void)viewDidUnload
@@ -82,15 +161,18 @@
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-	return 2;
+    if (self.group.serverID > 0)
+        return 3;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     if (section == 0)
         return 1;
-    
-    return [self.group.contacts count] + 1;
+    else if (section == 1)
+        return [[self.group contacts_arr] count] + 1;
+    return 1;
 }
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
@@ -100,8 +182,10 @@
     
     if (section == 0)
         v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"group_name", @"group name")];
-    else
+    else if (section == 1)
         v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"participants", @"participants")];
+    else
+        v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
     
     return v;
 }
@@ -141,6 +225,7 @@
     
     cell.isGrouped = YES;
     cell.isLink = NO;
+    cell.isDestructive = NO;
     cell.title.textAlignment = UITextAlignmentLeft;
     
     if (indexPath.section == 0)
@@ -159,11 +244,11 @@
     }
     else if (indexPath.section == 1)
     {   
-        if (indexPath.row < [self.group.contacts count])
+        if (indexPath.row < [[self.group contacts_arr] count])
         {
-            SWPerson* p = [self.group.contacts objectAtIndex:indexPath.row];
+            SWPerson* p = [[self.group contacts_arr] objectAtIndex:indexPath.row];
             cell.title.text = p.name;
-            cell.imageView.image = [UIImage imageWithData:p.thumbnail];
+            cell.imageView.image = p.thumbnail;
             cell.imageView.frame = CGRectMake(10, 10, 44, 44);
             cell.selectionStyle = UITableViewCellSelectionStyleNone;
         }
@@ -177,25 +262,46 @@
             cell.selectionStyle = UITableViewCellSelectionStyleBlue;
         }
     }
+    else if (indexPath.section == 2)
+    {
+        cell.isLink = YES;
+        cell.isDestructive = YES;
+        cell.title.text = NSLocalizedString(@"delete_group", @"delete group");
+    }
     
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.section == 1 && indexPath.row == [self.group.contacts count])
+    if (indexPath.section == 1 && indexPath.row == [[self.group contacts_arr] count])
     {
         SWPeopleListViewController* plvc = [SWPeopleListViewController new];
         plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
         plvc.delegate = self;
-        plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.group.contacts allObjects]];
+        plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.group contacts_arr]];
         [self presentViewController:plvc animated:YES completion: nil];
+    }
+    else if (indexPath.section == 2 && indexPath.row == 0)
+    {
+        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirmation", @"confirmation") message:NSLocalizedString(@"delete_group_confirmation", @"are you sure...") delegate:self cancelButtonTitle:NSLocalizedString(@"cancel", @"cancel") otherButtonTitles:NSLocalizedString(@"ok", @"ok"), nil];
+        [av show];
+    }
+}
+
+#pragma mark - UIAlertViewDelegate
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == 1)
+    {
+        [self deleteGroup];
     }
 }
 
 #pragma mark - UITextField delegate
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
+    self.group.name = textField.text;
     [textField resignFirstResponder];
     return YES;
 }
@@ -203,7 +309,14 @@
 #pragma mark - SWPeopleListViewControllerDelegate
 - (void)peopleListViewControllerDidSelectContacts:(NSArray*)arr
 {
-    self.group.contacts = [NSSet setWithArray:arr];
+    if (self.group.contacts)
+        [self.group setContacts:nil];
+    
+    for (SWPerson* p in arr)
+    {
+        [self.group addContactsObject:p];
+    }
+
     [self.tableView reloadData];
 }
 

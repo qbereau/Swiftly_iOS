@@ -36,41 +36,11 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    [self.tableView setAutoresizesSubviews:YES];
+    [self.tableView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];    
 
-    // Data
-    SWPerson* qb = [SWPerson new];
-    qb.firstName = @"Quentin";
-    qb.lastName = @"Bereau";
-    qb.phoneNumber = @"079 629 41 79";
-    
-    SWPerson* pb = [SWPerson new];
-    pb.firstName = @"Patrick";
-    pb.lastName = @"Bereau";
-    pb.phoneNumber = @"+41 78 842 41 86";
-    
-    SWPerson* tb = [SWPerson new];
-    tb.firstName = @"Tristan";
-    tb.lastName = @"Bereau";
-    tb.phoneNumber = @"+41 78 744 51 47";
-    
-    SWPerson* pc = [SWPerson new];
-    pc.firstName = @"Paul";
-    pc.lastName = @"Carneiro";
-    pc.phoneNumber = @"+41 79 439 10 72";
-    
-    SWGroup* g1 = [SWGroup new];
-    g1.name = @"Family";
-    g1.contacts = [NSArray arrayWithObjects:qb, pb, tb, nil];
-    
-    SWGroup* g2 = [SWGroup new];
-    g2.name = @"Friends";
-    g2.contacts = [NSArray arrayWithObjects:pc, tb, nil];
-    
-    SWGroup* g3 = [SWGroup new];
-    g3.name = @"Colleagues";
-    g3.contacts = [NSArray arrayWithObjects:qb, pb, pc, nil];
-    
-    self.groups = [NSArray arrayWithObjects:g1, g2, g3, nil];
+    [self synchronize];
 }
 
 - (void)viewDidUnload
@@ -83,6 +53,9 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+
+    self.groups = [SWGroup findAllObjects];
+    [self.tableView reloadData];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -111,6 +84,63 @@
     }
 }
 
+- (void)synchronize
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+    //[SWGroup deleteAllObjects];
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[SWAPIClient sharedClient] getPath:@"/groups"
+                                 parameters:nil
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                        if ([responseObject isKindOfClass:[NSArray class]])
+                                        {   
+                                            NSMutableArray* arrID = [NSMutableArray array];
+                                            for (id obj in responseObject)
+                                            {
+                                                [arrID addObject:[obj valueForKey:@"id"]];
+                                                
+                                                SWGroup* groupObj = [SWGroup findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                
+                                                if (!groupObj)
+                                                    groupObj = [SWGroup createEntity];
+                                                
+                                                [groupObj updateWithObject:obj];
+                                            }
+                                            
+                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                            
+                                            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrID];
+                                            NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
+                                            BOOL shouldResync = NO;
+                                            for (SWGroup* g in arr)
+                                            {
+                                                shouldResync = YES;
+                                                [g deleteEntity];
+                                            }
+                                            
+                                            if (shouldResync)
+                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                            
+                                            self.groups = [SWGroup findAllObjects];
+                                            [self.tableView reloadData];                                            
+                                            
+                                        }
+                                    }
+                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                        [av show];
+                                        
+                                        // Hide the HUD in the main tread 
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                        });         
+                                    }
+         ];
+    });
+}
 
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -152,7 +182,7 @@
     
     SWGroup* group = [self.groups objectAtIndex:indexPath.row];
     cell.title.text = group.name;
-    cell.subtitle.text = [group participants];
+    cell.subtitle.text = [group contacts_str];
     cell.imageView.image = nil;
     
     return cell;

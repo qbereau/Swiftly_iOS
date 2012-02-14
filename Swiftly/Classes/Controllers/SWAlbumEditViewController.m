@@ -34,6 +34,7 @@
 @synthesize album = _album;
 @synthesize filesToUpload = _filesToUpload;
 @synthesize mode = _mode;
+@synthesize linkableAlbums = _linkableAlbums;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -85,16 +86,11 @@
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
-        self.album = [SWAlbum new];
+        self.album = [SWAlbum newEntity];
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
-        // Temporary
-        SWAlbum* a1 = [SWAlbum new];
-        a1.name = @"Album 1";
-        SWAlbum* a2 = [SWAlbum new];
-        a2.name = @"Album 2";
-        _linkedAlbums = [NSArray arrayWithObjects:a1, a2, nil];
+        self.linkableAlbums = [SWAlbum findAllLinkableAlbums];
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
@@ -104,19 +100,91 @@
 
 - (void)done:(id)sender
 {
-    //[self.navigationController popViewControllerAnimated:YES];
+    void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        if (self.album.serverID == 0)
+            self.album = [SWAlbum createEntity];
+        
+        [self.album updateWithObject:responseObject];                                               
+        
+        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+        
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+        SWActivitiesViewController* vc = [storyboard instantiateViewControllerWithIdentifier:@"ActivitiesViewController"];
+        [[self navigationController] popToViewController:vc animated:YES];
+    };
+    
+    void (^failure)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, NSError *error) {
+        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+        [av show];
+        
+        // Hide the HUD in the main tread 
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+        });
+    };
+
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    hud.labelText = NSLocalizedString(@"loading", @"loading");
     
     if (self.mode == SW_ALBUM_MODE_EDIT)
-    {
-        NSLog(@"[SWAlbumEditViewController#done] edit album");
+    {        
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            [[SWAPIClient sharedClient] putPath:@"albums"
+                                      parameters:[self.album toDictionnary]
+                                         success:success
+                                         failure:failure             
+             ];
+        });
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
-        NSLog(@"[SWAlbumEditViewController#done] create album");
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            [[SWAPIClient sharedClient] postPath:@"albums"
+                                        parameters:[self.album toDictionnary]
+                                           success:success
+                                           failure:failure             
+             ];
+        });
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
-        NSLog(@"[SWAlbumEditViewController#done] link album");
+        if (!_selectedLinkedAlbum)
+        {
+            UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"select_linkable_album", @"select an album") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+            [av show];            
+        }
+        else
+        {
+            dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{            
+                for (NSDictionary* media in self.filesToUpload)
+                {
+                    NSLog(@"Media: %@", media);
+                    
+                    NSString* fileType = @"image/jpeg";
+                    NSString* mediaUrl = (NSString*)[media valueForKey:@"UIImagePickerControllerReferenceURL"];
+                    if ([[mediaUrl lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+                        fileType = @"image/png";
+                    
+                    
+                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:_selectedLinkedAlbum.serverID], @"album_id", nil];
+                    
+                    [[SWAPIClient sharedClient] postPath:@"medias"
+                                              parameters:params
+                                                 success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                    
+                                                 } 
+                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                     
+                                                 }
+                     ];                    
+                    
+                }
+            });
+        }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
@@ -169,7 +237,9 @@
         case SW_ALBUM_MODE_CREATE:
             return 5;
         case SW_ALBUM_MODE_LINK:
-            return 2;
+            if ([self.linkableAlbums count] > 0)
+                return 2;
+            return 1;
         case SW_ALBUM_MODE_QUICK_SHARE:
             return 1;
         default:
@@ -294,7 +364,7 @@
                 case 0:
                     return 1;
                 case 1:
-                    return [self.album.participants count] + 1;
+                    return [[self.album participants_arr] count] + 1;
                 case 2:
                     return 2;
                 case 3:
@@ -312,7 +382,7 @@
                 case 0:
                     return 1;
                 case 1:
-                    return [self.album.participants count];
+                    return [[self.album participants_arr] count];
                 case 2:
                     return 1;
                 case 3:
@@ -329,7 +399,7 @@
             case 0:
                 return 1;
             case 1:
-                return [self.album.participants count] + 1;
+                return [[self.album participants_arr] count] + 1;
             case 2:
                 return 2;
             case 3:
@@ -343,10 +413,13 @@
         switch (section)
         {
             case 0:
-                // should come from CoreData...
-                return [_linkedAlbums count];
-            case 1:
+                if ([self.linkableAlbums count] > 0)
+                    return [self.linkableAlbums count];
                 return 1;
+            case 1:
+                if ([self.linkableAlbums count] > 0)
+                    return 1;
+                return 0;
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
@@ -590,6 +663,7 @@
 #pragma mark - UITextField delegate
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
+    self.album.name = textField.text;
     [textField resignFirstResponder];
     return YES;
 }
@@ -604,7 +678,14 @@
     }
     else
     {
-        self.album.participants = [NSSet setWithArray:arr];
+        if (self.album.participants)
+            [self.album setParticipants:nil];
+        
+        for (SWPerson* p in arr)
+        {
+            [self.album addParticipantsObject:p];
+        }
+        
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];
     }
 }
@@ -615,11 +696,11 @@
 
 - (void)setupSectionParticipants:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
 {
-    if (indexPath.row < [self.album.participants count])
+    if (indexPath.row < [[self.album participants_arr] count])
     {
-        SWPerson* p = [self.album.participants objectAtIndex:indexPath.row];
+        SWPerson* p = [[self.album participants_arr] objectAtIndex:indexPath.row];
         cell.title.text = p.name;
-        cell.imageView.image = [UIImage imageWithData:p.thumbnail];
+        cell.imageView.image = p.thumbnail;
     }
     else
     {
@@ -689,12 +770,21 @@
 
 - (void)setupSectionChooseAlbumToLink:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
 {
-    if (indexPath.row < [_linkedAlbums count])
+    if ([self.linkableAlbums count] > 0)
     {
-        SWAlbum* p = [_linkedAlbums objectAtIndex:indexPath.row];
-        // if (p.canEditMedias)
-        cell.title.text = p.name;
-        cell.accessoryType = (p == _selectedLinkedAlbum) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        if (indexPath.row < [self.linkableAlbums count])
+        {
+            SWAlbum* p = [self.linkableAlbums objectAtIndex:indexPath.row];
+            // if (p.canEditMedias)
+            cell.title.text = p.name;
+            cell.accessoryType = (p == _selectedLinkedAlbum) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        }
+    }
+    else
+    {
+        cell.title.text = NSLocalizedString(@"no_linkable_album", @"no albums available");
+        cell.subtitle.text = NSLocalizedString(@"no_linkable_album_subtitle", @"no albums linkable...");
+        self.navigationItem.rightBarButtonItem = nil;
     }
 }
 
@@ -704,7 +794,7 @@
     {
         SWPerson* p = [_quickSharePeople objectAtIndex:indexPath.row];
         cell.title.text = p.name;
-        cell.imageView.image = [UIImage imageWithData:p.thumbnail];
+        cell.imageView.image = p.thumbnail;
     }
     else
     {
@@ -715,14 +805,14 @@
 
 - (void)handleSectionParticipantsWithIndexPath:(NSIndexPath*)indexPath
 {
-    if (indexPath.row == [self.album.participants count])
+    if (indexPath.row == [[self.album participants_arr] count])
     {
         if ((self.mode == SW_ALBUM_MODE_EDIT && self.album.isOwner) || self.mode == SW_ALBUM_MODE_CREATE)
         {
             SWPeopleListViewController* plvc = [SWPeopleListViewController new];
             plvc.mode = PEOPLE_LIST_MULTI_SELECTION_MODE;
             plvc.delegate = self;
-            plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.album.participants allObjects]];
+            plvc.selectedContacts = [NSMutableArray arrayWithArray:[self.album participants_arr]];
             [self presentViewController:plvc animated:YES completion: nil];
         }
     }
@@ -804,9 +894,12 @@
 
 - (void)handleSectionChooseAlbumToLinkWithIndexPath:(NSIndexPath*)indexPath
 {
-    _selectedLinkedAlbum = [_linkedAlbums objectAtIndex:indexPath.row];
+    if ([self.linkableAlbums count] > 0)
+    {
+        _selectedLinkedAlbum = [self.linkableAlbums objectAtIndex:indexPath.row];
 
-    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];    
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];    
+    }
 }
 
 - (void)handleSectionShareToPeopleWithIndexPath:(NSIndexPath*)indexPath

@@ -21,4 +21,6 @@
 
 @property (nonatomic, strong) NSArray*          groups;
 
+- (void)synchronize;
+
 @end

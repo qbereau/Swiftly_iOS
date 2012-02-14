@@ -15,13 +15,13 @@
 #import "UIAlertView+Blocks.h"
 #import "RIButtonItem.h"
 #import "SWAPIClient.h"
+#import "SWTabBarController.h"
 
 @interface SWLoginViewController : UIViewController <UIPickerViewDelegate, UIPickerViewDataSource>
 {
     NSMutableArray*         _countries;
     BOOL                    _alreadySetup;
 }
-
 
 @property (weak, nonatomic) IBOutlet UIImageView *imgViewLogo;
 @property (weak, nonatomic) IBOutlet UILabel *lblDescription;

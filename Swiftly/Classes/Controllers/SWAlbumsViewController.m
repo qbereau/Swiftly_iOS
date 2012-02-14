@@ -10,7 +10,9 @@
 
 @implementation SWAlbumsViewController
 
-@synthesize albums = _albums;
+@synthesize sharedAlbums = _sharedAlbums;
+@synthesize specialAlbums = _specialAlbums;
+@synthesize managedObjectContext = _managedObjectContext;
 
 - (void)didReceiveMemoryWarning
 {
@@ -31,28 +33,55 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    SWAlbum* album1 = [[SWAlbum alloc] init];
-    album1.name = @"Amsterdam (49)";
-    album1.thumbnail = UIImagePNGRepresentation([UIImage imageNamed:@"pic1.png"]);
+    // Data Source
+    self.sharedAlbums   = [SWAlbum findAllSharedAlbums];
+    self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
-    SWAlbum* album2 = [[SWAlbum alloc] init];
-    album2.name = @"ISE 2012 (4)";
-    album2.thumbnail = UIImagePNGRepresentation([UIImage imageNamed:@"pic2.png"]);
+    [self synchronize];
+}
+
+- (void)synchronize
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+    hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-    self.albums = [NSMutableArray arrayWithObjects:album1, album2, nil];
-    
-    
-    [[SWAPIClient sharedClient] getPath:@"/albums" 
-                              parameters:nil 
-                                 success:^(AFHTTPRequestOperation *operation, id responseObject) 
-     {
-         NSLog(@"here");
-     }
-                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) 
-     {
-         NSLog(@"error");
-     }
-     ];
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[SWAPIClient sharedClient] getPath:@"/albums" 
+                                 parameters:nil 
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                         if ([responseObject isKindOfClass:[NSArray class]])
+                                         {
+                                             for (id obj in responseObject)
+                                             {
+                                                 SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                 
+                                                 if (!albumObj)
+                                                 {
+                                                     albumObj = [SWAlbum createEntity];
+                                                 }
+                                                 
+                                                 [albumObj updateWithObject:obj];
+                                             }
+                                             
+                                             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                             
+                                             self.sharedAlbums  = [SWAlbum findAllSharedAlbums];
+                                             self.specialAlbums = [SWAlbum findAllSpecialAlbums];   
+                                             [self.tableView reloadData];
+                                         }
+                                     }
+                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                        [av show];
+                                        
+                                        // Hide the HUD in the main tread 
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                        });
+                                    }
+         ];   
+    });
 }
 
 - (void)unlockAlbums:(UIButton*)sender
@@ -108,7 +137,7 @@
         if (idxPath.section == 0)
         {
             // Shared Album only here...
-            SWAlbum* selectedAlbum = [self.albums objectAtIndex:idxPath.row];
+            SWAlbum* selectedAlbum = [self.sharedAlbums objectAtIndex:idxPath.row];
             SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
             albumThumbnailsVC.allowAlbumEdition = YES;
             albumThumbnailsVC.selectedAlbum = selectedAlbum;
@@ -125,8 +154,8 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     if (section == 0)
-        return [self.albums count];
-    return 2;
+        return [self.sharedAlbums count];
+    return [self.specialAlbums count];
 }
 
 - (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
@@ -149,25 +178,21 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     SWTableViewCell* cell;
+    SWAlbum* album;
     if (indexPath.section == 0)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:@"CellAlbum"];
-
-        SWAlbum* album = [self.albums objectAtIndex:indexPath.row];
-        cell.title.text = album.name;
-        cell.subtitle.text = @"Quentin Bereau, John Doe, Steve Jobs, Steve Wozniak";
-        cell.imageView.image = [UIImage imageWithData:album.thumbnail];
+        album = [self.sharedAlbums objectAtIndex:indexPath.row];
     }
     else if (indexPath.section == 1)
     {
         cell = [tableView dequeueReusableCellWithIdentifier:@"CellSharedAlbum"];
-        cell.imageView.image = [UIImage imageNamed:@"pic3.png"]; // hack, should come from server
-        
-        if (indexPath.row == 0)
-            cell.title.text = NSLocalizedString(@"albums_quick_share", @"quick share");
-        else if (indexPath.row == 1)
-            cell.title.text = @"My Medias";
+        album = [self.specialAlbums objectAtIndex:indexPath.row];
     }
+    
+    cell.title.text = album.name;
+    cell.subtitle.text = [album participants_str];
+    cell.imageView.image = album.thumbnail;    
     
     return cell;
 }

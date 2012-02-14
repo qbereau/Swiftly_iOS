@@ -49,14 +49,9 @@
     self.scroller.alwaysBounceVertical = YES;
     self.scroller.contentSize = CGSizeMake(self.view.frame.size.width, self.cellBlock.frame.origin.y + self.cellBlock.frame.size.height + 10);
     
-    if (self.contact.isUser)
-    {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(editContact:)];
-    }
-    
     self.lblName.text = [self.contact name];
     self.lblPhoneNumber.text = self.contact.phoneNumber;
-    self.thumbnail.image = [UIImage imageWithData:self.contact.thumbnail];
+    self.thumbnail.image = self.contact.thumbnail;
     CALayer * l = [self.thumbnail layer];
     [l setMasksToBounds:YES];
     [l setCornerRadius:10.0];
@@ -203,9 +198,26 @@
     btnYES.action = ^{
         self.cellBlock.backgroundView = [SWTableViewCell backgroundView];
         
-        NSLog(@"[SWContactViewController#blockContact] Sync with server");
-        self.contact.isBlocked = !self.contact.isBlocked;
-        [self updateBlockContactIndicator];
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+        hud.labelText = NSLocalizedString(@"loading", @"loading");
+        
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            NSArray* arr_ids = [NSArray arrayWithObject:[NSNumber numberWithInt:self.contact.serverID]];
+            NSDictionary* params = [NSDictionary dictionaryWithObject:arr_ids forKey:@"ids"];
+            [[SWAPIClient sharedClient] putPath:@"/accounts/block"
+                                     parameters:params
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            NSLog(@"WRONG --> Should call appropriate unblock API");
+                                            self.contact.isBlocked = !self.contact.isBlocked;
+                                            [self updateBlockContactIndicator];
+                                        }
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                 
+                                        }
+             ];
+        });
+
     };
     
     UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"confirmation", @"confirmation") message:NSLocalizedString(@"block_person_alert", @"he/she will not be able to....") cancelButtonItem:btnCancel otherButtonItems:btnYES, nil];

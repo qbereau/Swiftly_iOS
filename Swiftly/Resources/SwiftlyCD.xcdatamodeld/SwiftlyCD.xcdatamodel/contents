@@ -5,15 +5,31 @@
         <attribute name="canEditPeople" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="canExportMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isLocked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isMyMediasAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isQuickShareAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="ownerID" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="thumbnail" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="ownerID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Transformable" valueTransformerName="ImageToDataTransformer" syncable="YES"/>
+        <relationship name="medias" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWMedia" inverseName="album" inverseEntity="SWMedia" syncable="YES"/>
         <relationship name="participants" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="albums" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
     <entity name="SWGroup" representedClassName="SWGroup" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="groups" inverseEntity="SWPerson" syncable="YES"/>
+    </entity>
+    <entity name="SWMedia" representedClassName="SWMedia" syncable="YES">
+        <attribute name="acl" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="awsAccessKeyID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="contentType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="filename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="policy" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="signature" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uploadProgress" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <relationship name="album" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SWAlbum" inverseName="medias" inverseEntity="SWAlbum" syncable="YES"/>
     </entity>
     <entity name="SWPerson" representedClassName="SWPerson" syncable="YES">
         <attribute name="firstName" optional="YES" attributeType="String" syncable="YES"/>
@@ -22,8 +38,10 @@
         <attribute name="isLinked" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isUser" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lastName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalPhoneNumber" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="phoneNumber" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="thumbnail" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="Transformable" syncable="YES"/>
         <relationship name="albums" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWAlbum" inverseName="participants" inverseEntity="SWAlbum" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWGroup" inverseName="contacts" inverseEntity="SWGroup" syncable="YES"/>
     </entity>
@@ -31,5 +49,6 @@
         <element name="SWAlbum" positionX="126" positionY="360" width="128" height="180"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="75"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="195"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="180"/>
     </elements>
 </model>

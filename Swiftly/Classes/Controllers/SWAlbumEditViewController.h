@@ -9,7 +9,9 @@
 #import <UIKit/UIKit.h>
 #import "UIAlertView+Blocks.h"
 #import "SWPeopleListViewController.h"
+#import "SWActivitiesViewController.h"
 #import "SWAlbum.h"
+#import "SWAlbum+Details.h"
 #import "SWPerson.h"
 #import "SWPerson+Details.h"
 #import "SWTableView.h"
@@ -36,11 +38,12 @@
     NSArray*            _quickSharePeople;
     
     // Datasource
-    NSArray* _linkedAlbums;
+    NSArray*            _linkableAlbums;
 }
 
 @property (nonatomic, strong) SWAlbum*      album;
 @property (nonatomic, strong) NSArray*      filesToUpload;
 @property (nonatomic, assign) NSInteger     mode;
+@property (nonatomic, strong) NSArray*      linkableAlbums;
 
 @end

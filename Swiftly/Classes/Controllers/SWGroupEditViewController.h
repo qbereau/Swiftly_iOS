@@ -12,12 +12,15 @@
 #import "SWTableViewCell.h"
 #import "SWPerson.h"
 #import "SWGroup.h"
+#import "SWGroup+Details.h"
 
-@interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate>
+@interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate, UIAlertViewDelegate>
 {
     SWGroup*            _group;
 }
 
 @property (nonatomic, strong) SWGroup*              group;
+
+- (void)deleteGroup;
 
 @end

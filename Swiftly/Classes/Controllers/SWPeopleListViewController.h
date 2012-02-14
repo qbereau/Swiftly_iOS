@@ -15,6 +15,9 @@
 #import "SWPerson.h"
 #import "SWGroup.h"
 #import "SWSwitchButton.h"
+#import "SWAPIClient.h"
+#import "MBProgressHUD.h"
+#import "SWGroup+Details.h"
 
 #define PEOPLE_LIST_EDIT_MODE 0
 #define PEOPLE_LIST_MULTI_SELECTION_MODE 1
@@ -42,7 +45,7 @@
 @property (nonatomic, assign) BOOL              showOnlyUsers;
 
 - (NSPredicate*)predicateForSection:(NSInteger)idx;
-
+- (void)synchronize;
 - (void)pushedButton:(SWSwitchButton*)sender;
 - (void)scrollLeft:(UIButton*)sender;
 - (void)scrollRight:(UIButton*)sender;
