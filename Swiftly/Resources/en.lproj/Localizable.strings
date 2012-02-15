@@ -123,7 +123,7 @@
 "wrong_passcode"                        = "Wrong Passcode";
 "passcode_info_use"                     = "Try again or tap to cancel";
 
-"generic_error_desc"                    = "An error occured. Please make sure to be connected to internet";
+"generic_error_desc"                    = "An unexpected error occured. Please retry.";
 
 "select_an_album"                       = "Select an album";
 "error"                                 = "Error";
@@ -149,3 +149,8 @@
 "no_linkable_album"                     = "No albums available";
 "no_linkable_album_subtitle"            = "Currently no albums can receive your files";
 "select_linkable_album"                 = "Please select an album";
+
+"error_no_alassets_access"              = "You did not give access to Swiftly to access your library";
+
+"uploaded_time"                         = "Uploaded: %@";
+"is_uploading"                          = "Uploading....";

@@ -11,7 +11,7 @@
 @implementation SWAlbumThumbnailsViewController
 
 @synthesize selectedAlbum       = _selectedAlbum;
-@synthesize medias              = _medias;
+@synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -40,8 +40,98 @@
 
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
-    self.medias = [SWWebImagesDataSource new];
-    [self setDataSource:self.medias];
+    if (self.selectedAlbum)
+    {             
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+        hud.labelText = NSLocalizedString(@"loading", @"loading");
+        __block int reqCounter = 0;
+        
+        // Update Medias
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+
+            NSString* medias_url = [NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID];
+            if (self.selectedAlbum.isMyMediasAlbum)
+                medias_url = [NSString stringWithFormat:@"/medias"];
+            
+            ++reqCounter;
+            [[SWAPIClient sharedClient] getPath:medias_url
+                                     parameters:nil
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            NSLog(@"obj: %@ - %@", responseObject, [responseObject class]);
+                                            self.mediaDS = [[SWWebImagesDataSource alloc] init];
+                                            
+                                            NSMutableArray* arrMedias = [NSMutableArray new];
+                                            for (id obj in responseObject)
+                                            {
+                                                SWMedia* mediaObj = [SWMedia createEntity];
+                                                [mediaObj updateWithObject:obj];
+                                                [arrMedias addObject:mediaObj];
+                                            }
+                                            
+                                            self.mediaDS.allMedias = arrMedias;
+                                            [self.mediaDS resetFilter];
+                                            [self setDataSource:self.mediaDS]; 
+                                            
+                                            // Hide the HUD in the main tread 
+                                            --reqCounter;
+                                            if (reqCounter <= 0)
+                                            {
+                                                dispatch_async(dispatch_get_main_queue(), ^{
+                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                });
+                                            }
+                                        } 
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            // Hide the HUD in the main tread 
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                                [av show];                                                
+                                            });
+                                        }
+             ];  
+            
+        });
+        
+        // Update Accounts
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            ++reqCounter;
+            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", self.selectedAlbum.serverID]
+                                     parameters:nil
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            NSLog(@"obj: %@", responseObject);
+                                            
+                                            for (id o in responseObject)
+                                            {
+                                                SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
+                                                if (!p)
+                                                    p = [SWPerson newEntity];
+                                                [self.selectedAlbum addParticipantsObject:p];
+                                            }
+                                            
+                                            // Hide the HUD in the main tread 
+                                            --reqCounter;
+                                            if (reqCounter <= 0)
+                                            {                                            
+                                                dispatch_async(dispatch_get_main_queue(), ^{
+                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                });
+                                            }
+                                        } 
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            // Hide the HUD in the main tread 
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                                [av show];                                                
+                                            });
+                                        }
+             ];  
+            
+        });        
+        
+    }
     
     UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:
 											[NSArray arrayWithObjects:NSLocalizedString(@"all", @"all"), NSLocalizedString(@"images", @"images"), NSLocalizedString(@"videos", @"videos"), nil]];
@@ -92,41 +182,36 @@
 
 - (void)editAlbum:(UIBarButtonItem*)button
 {
-    // Data
-    SWPerson* qb = [SWPerson new];
-    qb.firstName = @"Quentin";
-    qb.lastName = @"Bereau";
-    qb.phoneNumber = @"079 629 41 79";
-    
-    SWPerson* pb = [SWPerson new];
-    pb.firstName = @"Patrick";
-    pb.lastName = @"Bereau";
-    pb.phoneNumber = @"+41 78 842 41 86";
-    
-    SWPerson* tb = [SWPerson new];
-    tb.firstName = @"Tristan";
-    tb.lastName = @"Bereau";
-    tb.phoneNumber = @"+41 78 744 51 47";
-    
-    SWPerson* pc = [SWPerson new];
-    pc.firstName = @"Paul";
-    pc.lastName = @"Carneiro";
-    pc.phoneNumber = @"+41 79 439 10 72";        
-    
-    SWAlbum* album = [SWAlbum new];
-    album.name = @"test";
-    album.participants = [NSArray arrayWithObjects:qb, pb, tb, pc, nil];
-    // -------
-    
     SWAlbumEditViewController* vc = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
-    vc.album = album;
+    vc.album = self.selectedAlbum;
     [[self navigationController] pushViewController:vc animated:YES];
 }
 
 - (void)changeMediaType:(id)sender
 {
+    if (!self.mediaDS.allMedias)
+        return;
+    
     UISegmentedControl *segmentedControl = (UISegmentedControl*)sender;
     NSLog(@"%d", segmentedControl.selectedSegmentIndex);
+    
+    if (segmentedControl.selectedSegmentIndex == 0)
+    {
+        // All
+        [self.mediaDS resetFilter];
+    }
+    else if (segmentedControl.selectedSegmentIndex == 1)
+    {
+        // Images
+        [self.mediaDS imageFilter];        
+    }
+    else
+    {
+        // Videos
+        [self.mediaDS videoFilter];        
+    }
+    
+    [self setDataSource:self.mediaDS];    
 }
 
 #pragma mark - KTThumbsViewController

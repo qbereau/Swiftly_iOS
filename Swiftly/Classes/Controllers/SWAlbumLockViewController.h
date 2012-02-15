@@ -10,6 +10,7 @@
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 #import "KVPasscodeViewController.h"
+#import "KeychainItemWrapper.h"
 
 @interface SWAlbumLockViewController : UITableViewController <KVPasscodeViewControllerDelegate>
 {
@@ -21,5 +22,7 @@
 }
 
 @property (nonatomic, strong) NSNumber*         albumLock;
+
+- (void)defineNewLock:(int)lock;
 
 @end

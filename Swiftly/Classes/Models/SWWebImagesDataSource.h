@@ -8,14 +8,21 @@
 
 #import <Foundation/Foundation.h>
 #import "KTPhotoBrowserDataSource.h"
+#import "SWMedia.h"
+#import "SWMedia+Details.h"
 
 @interface SWWebImagesDataSource : NSObject <KTPhotoBrowserDataSource>
 {
-    NSArray*            _images;
+    NSArray*            _allMedias;
+    NSArray*            _filteredMedias;
 }
 
-@property (nonatomic, strong) NSArray*  images;
+@property (nonatomic, strong) NSArray*  allMedias;
 
+
+- (void)resetFilter;
+- (void)imageFilter;
+- (void)videoFilter;
 
 - (BOOL)isMediaOpenAtIndex:(NSInteger)index;
 

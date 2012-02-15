@@ -22,6 +22,8 @@
 #define PEOPLE_LIST_EDIT_MODE 0
 #define PEOPLE_LIST_MULTI_SELECTION_MODE 1
 
+typedef void (^UploadPeopleBlock)(NSDictionary*, NSArray*);
+
 @interface SWPeopleListViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 {
     NSArray*            _contacts;
@@ -34,13 +36,15 @@
     
     NSArray*            _groups;
     UIScrollView*       _scrollView;
+    
+    UploadPeopleBlock   _uploadPeopleBlock;
 }
 
 @property (nonatomic, assign) id <SWPeopleListViewControllerDelegate> delegate;
 @property (nonatomic, strong) NSArray*          contacts;
 @property (nonatomic, strong) NSMutableArray*   selectedContacts;
 @property (nonatomic, assign) NSInteger         mode;
-
+@property (nonatomic, copy)   UploadPeopleBlock uploadPeopleBlock;
 @property (nonatomic, strong) UITableView*      tableView;
 @property (nonatomic, assign) BOOL              showOnlyUsers;
 

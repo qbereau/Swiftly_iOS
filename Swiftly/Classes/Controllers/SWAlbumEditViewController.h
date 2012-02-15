@@ -46,4 +46,7 @@
 @property (nonatomic, assign) NSInteger     mode;
 @property (nonatomic, strong) NSArray*      linkableAlbums;
 
+- (void)cleanupAlbum:(BOOL)shouldUnlink;
+- (void)deleteAlbum:(BOOL)shouldUnlink;
+
 @end

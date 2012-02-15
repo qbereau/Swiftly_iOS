@@ -33,15 +33,16 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    // Data Source
-    self.sharedAlbums   = [SWAlbum findAllSharedAlbums];
+    self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
-    [self synchronize];
+    [self synchronize];    
 }
 
 - (void)synchronize
 {
+    [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
+    
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
     hud.labelText = NSLocalizedString(@"loading", @"loading");
     
@@ -58,6 +59,7 @@
                                                  if (!albumObj)
                                                  {
                                                      albumObj = [SWAlbum createEntity];
+                                                     albumObj.isLocked = NO;                                                     
                                                  }
                                                  
                                                  [albumObj updateWithObject:obj];
@@ -72,12 +74,11 @@
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                        [av show];
-                                        
                                         // Hide the HUD in the main tread 
                                         dispatch_async(dispatch_get_main_queue(), ^{
                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                            [av show];                                            
                                         });
                                     }
          ];   
@@ -107,6 +108,9 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
+    self.specialAlbums  = [SWAlbum findAllSpecialAlbums];    
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -134,14 +138,18 @@
     if ([[segue identifier] isEqualToString:@"SelectedSharedAlbum"])
     {
         NSIndexPath* idxPath = [self.tableView indexPathForSelectedRow];
-        if (idxPath.section == 0)
-        {
-            // Shared Album only here...
-            SWAlbum* selectedAlbum = [self.sharedAlbums objectAtIndex:idxPath.row];
-            SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
-            albumThumbnailsVC.allowAlbumEdition = YES;
-            albumThumbnailsVC.selectedAlbum = selectedAlbum;
-        }
+        SWAlbum* selectedAlbum = [self.sharedAlbums objectAtIndex:idxPath.row];
+        SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
+        albumThumbnailsVC.allowAlbumEdition = YES;
+        albumThumbnailsVC.selectedAlbum = selectedAlbum;
+    }
+    else if ([[segue identifier] isEqualToString:@"SelectedOtherAlbum"])
+    {
+        NSIndexPath* idxPath = [self.tableView indexPathForSelectedRow];
+        SWAlbum* selectedAlbum = [self.specialAlbums objectAtIndex:idxPath.row];
+        SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
+        albumThumbnailsVC.allowAlbumEdition = NO;
+        albumThumbnailsVC.selectedAlbum = selectedAlbum;        
     }
 }
 
@@ -200,22 +208,23 @@
 #pragma mark - JSLockScreenViewController
 - (void)lockScreenDidUnlock:(JSLockScreenViewController *)lockScreen
 {
-    NSLog(@"Success");
+    self.sharedAlbums   = [SWAlbum findAllSharedAlbums];
+    [self.tableView reloadData];
 }
 
 - (void)lockScreenFailedUnlock:(JSLockScreenViewController *)lockScreen
 {
-    NSLog(@"Fail");
+
 }
 
 - (void)lockScreenDidCancel:(JSLockScreenViewController *)lockScreen
 {
-    NSLog(@"Cancel");
+
 }
 
 - (void)lockScreenDidDismiss:(JSLockScreenViewController *)lockScreen
 {
-    NSLog(@"Dismissed");
+
 }
 
 @end

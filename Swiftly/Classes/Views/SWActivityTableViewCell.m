@@ -60,23 +60,6 @@
     _progress = progress;
     
     self.progressView.progress = _progress;
-    
-    if (_progress > 0)
-    {
-        self.subtitle.hidden = YES;
-        self.progressView.hidden = NO;
-    }
-    else
-    {
-        self.subtitle.hidden = NO;
-        self.progressView.hidden = YES;
-        
-        if (_progress >= 1.0f)
-        {
-            NSLog(@"[SWActivityTableViewCell#setProgress] Should give infos from server (timestamp and uploaded filesize)");
-            self.subtitle.text = @"Uploaded just now";
-        }
-    }
 }
 
 - (void)layoutSubviews

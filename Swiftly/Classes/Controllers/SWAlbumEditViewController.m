@@ -102,26 +102,27 @@
 {
     void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
         
+        BOOL shouldBeLocked = self.album.isLocked;
         if (self.album.serverID == 0)
             self.album = [SWAlbum createEntity];
         
+        self.album.isLocked = shouldBeLocked;
         [self.album updateWithObject:responseObject];                                               
         
         [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
         
-        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
-        SWActivitiesViewController* vc = [storyboard instantiateViewControllerWithIdentifier:@"ActivitiesViewController"];
-        [[self navigationController] popToViewController:vc animated:YES];
+        self.tabBarController.selectedIndex = 1;
+        [self.navigationController popToRootViewControllerAnimated:NO];
     };
     
     void (^failure)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, NSError *error) {
-        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-        [av show];
-        
         // Hide the HUD in the main tread 
         dispatch_async(dispatch_get_main_queue(), ^{
             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+            
+            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+            [av show];            
         });
     };
 
@@ -132,7 +133,7 @@
     {        
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            [[SWAPIClient sharedClient] putPath:@"albums"
+            [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
                                       parameters:[self.album toDictionnary]
                                          success:success
                                          failure:failure             
@@ -143,45 +144,101 @@
     {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            [[SWAPIClient sharedClient] postPath:@"albums"
-                                        parameters:[self.album toDictionnary]
-                                           success:success
-                                           failure:failure             
-             ];
+            __block int processedEntity = 0;
+            for (NSDictionary* media in self.filesToUpload)
+            {                    
+                NSString* fileType = @"image/jpeg";
+                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
+                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+                    fileType = @"image/png";
+                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
+                    fileType = @"video/quicktime";
+                
+                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
+                
+                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:_selectedLinkedAlbum.serverID], @"album_id", nil];
+                
+                [[SWAPIClient sharedClient] postPath:@"/medias"
+                                          parameters:params
+                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                 
+                                                 SWMedia* mediaObj = [SWMedia createEntity];
+                                                 [mediaObj updateWithObject:responseObject];
+                                                 mediaObj.uploadProgress    = 0.0f;
+                                                 mediaObj.isUploaded        = NO;
+                                                 mediaObj.thumbnail         = mediaThumbnail;
+                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                 
+                                                 ++processedEntity;
+                                                 if (processedEntity == [self.filesToUpload count])
+                                                 {
+                                                     [[SWAPIClient sharedClient] postPath:@"/albums"
+                                                                               parameters:[self.album toDictionnary]
+                                                                                  success:success
+                                                                                  failure:failure 
+                                                      ];
+                                                 }                                                     
+                                             } 
+                                             failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                 NSLog(@"error: %@", [error description]);
+                                             }
+                 ];
+            }
+            
         });
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
         if (!_selectedLinkedAlbum)
         {
+            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];  
+            
             UIAlertView* av = [[UIAlertView alloc] initWithTitle:@"" message:NSLocalizedString(@"select_linkable_album", @"select an album") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-            [av show];            
+            [av show];       
         }
         else
         {
-            dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{            
+            dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+                
+                __block int processedEntity = 0;
                 for (NSDictionary* media in self.filesToUpload)
-                {
-                    NSLog(@"Media: %@", media);
-                    
+                {                    
                     NSString* fileType = @"image/jpeg";
-                    NSString* mediaUrl = (NSString*)[media valueForKey:@"UIImagePickerControllerReferenceURL"];
-                    if ([[mediaUrl lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+                    NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
+                    if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
                         fileType = @"image/png";
+                    else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
+                        fileType = @"video/quicktime";
                     
+                    UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
                     
                     NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:_selectedLinkedAlbum.serverID], @"album_id", nil];
                     
-                    [[SWAPIClient sharedClient] postPath:@"medias"
+                    [[SWAPIClient sharedClient] postPath:@"/medias"
                                               parameters:params
                                                  success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                    
+
+                                                     SWMedia* mediaObj = [SWMedia createEntity];
+                                                     [mediaObj updateWithObject:responseObject];
+                                                     mediaObj.uploadProgress    = 0.0f;
+                                                     mediaObj.isUploaded        = NO;
+                                                     mediaObj.thumbnail         = mediaThumbnail;
+                                                     mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                     
+                                                     ++processedEntity;
+                                                     if (processedEntity == [self.filesToUpload count])
+                                                     {
+                                                         [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                         
+                                                         self.tabBarController.selectedIndex = 1;
+                                                         [self.navigationController popToRootViewControllerAnimated:NO];
+                                                     }                                                     
                                                  } 
                                                  failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                     
+                                                     NSLog(@"error: %@", [error description]);
                                                  }
-                     ];                    
-                    
+                     ];                                        
                 }
             });
         }
@@ -190,6 +247,73 @@
     {
         NSLog(@"[SWAlbumEditViewController#done] quick share");
     }
+}
+
+- (void)cleanupAlbum:(BOOL)shouldUnlink
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        NSString* unlink; 
+        if (shouldUnlink)
+            unlink = @"&unlink";
+        else
+            unlink = @"";
+        
+        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d/cleanup%@", self.album.serverID, unlink]
+                                    parameters:nil
+                                       success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           [[self navigationController] popToRootViewControllerAnimated:YES];
+                                       }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                           [av show];
+                                           
+                                           // Hide the HUD in the main tread 
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           });
+                                       }
+         ];
+    });
+}
+
+- (void)deleteAlbum:(BOOL)shouldUnlink
+{
+    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+	hud.labelText = NSLocalizedString(@"loading", @"loading");
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        NSString* unlink; 
+        if (shouldUnlink)
+            unlink = @"&unlink";
+        else
+            unlink = @"";
+        
+        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/albums/%d%@", self.album.serverID, unlink]
+                                    parameters:nil
+                                       success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                           SWAlbum* album = [SWAlbum findObjectWithServerID:self.album.serverID];
+                                           [album deleteEntity];
+                                           [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           [[self navigationController] popToRootViewControllerAnimated:YES];
+                                       }
+                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                           [av show];
+                                           
+                                           // Hide the HUD in the main tread 
+                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           });
+                                       }
+         ];
+    });
 }
 
 - (void)viewDidUnload
@@ -364,7 +488,9 @@
                 case 0:
                     return 1;
                 case 1:
-                    return [[self.album participants_arr] count] + 1;
+                    if (self.album.participants)
+                        return [[self.album participants_arr] count] + 1;
+                    return 0;
                 case 2:
                     return 2;
                 case 3:
@@ -864,21 +990,21 @@
     {
         msg = NSLocalizedString(@"delete_my_medias_warning", @"");
         btnYES.action = ^{
-            NSLog(@"delete my files");
+            [self cleanupAlbum:NO];
         };
     }
     else if (indexPath.row == 1)
     {
         msg = NSLocalizedString(@"unlink_from_album_warning", @"");
         btnYES.action = ^{
-            NSLog(@"unlink myself from this album");
+            [self deleteAlbum:YES];
         };
     }
     else if (indexPath.row == 2)
     {
         msg = NSLocalizedString(@"delete_album_warning", @"");
         btnYES.action = ^{
-            NSLog(@"delete this album");
+            [self deleteAlbum:NO];
         };
     }    
     

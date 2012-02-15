@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		191B2BC714EC3DD90058C4F7 /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 191B2BC614EC3DD90058C4F7 /* SWMedia.m */; };
 		191BC34D14DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */; };
 		191BC34E14DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */; };
 		191BC34F14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */; };
@@ -51,9 +52,8 @@
 		192A6FF114EA9D4800B8EACA /* SWPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF014EA9D4800B8EACA /* SWPerson.m */; };
 		192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */; };
 		192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF614EAE70800B8EACA /* SWGroup.m */; };
-		192A6FF914EB02C300B8EACA /* AWSiOSSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A6FF814EB02C300B8EACA /* AWSiOSSDK.framework */; };
 		192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */; };
-		192A700214EB179E00B8EACA /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A700114EB179D00B8EACA /* SWMedia.m */; };
+		192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A702014EC06A500B8EACA /* AVFoundation.framework */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
@@ -199,6 +199,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		191B2BC514EC3DD90058C4F7 /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
+		191B2BC614EC3DD90058C4F7 /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
 		191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_sel_right_unsel.png; sourceTree = "<group>"; };
 		191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_sel.png; sourceTree = "<group>"; };
 		191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_unsel.png; sourceTree = "<group>"; };
@@ -271,11 +273,9 @@
 		192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		192A6FF514EAE70700B8EACA /* SWGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroup.h; sourceTree = "<group>"; };
 		192A6FF614EAE70800B8EACA /* SWGroup.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWGroup.m; sourceTree = "<group>"; };
-		192A6FF814EB02C300B8EACA /* AWSiOSSDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AWSiOSSDK.framework; sourceTree = "<group>"; };
 		192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SWMedia+Details.h"; sourceTree = "<group>"; };
 		192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SWMedia+Details.m"; sourceTree = "<group>"; };
-		192A700014EB179C00B8EACA /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
-		192A700114EB179D00B8EACA /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
+		192A702014EC06A500B8EACA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -479,6 +479,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */,
 				192A6F9014E9845E00B8EACA /* CoreData.framework in Frameworks */,
 				192A6F5C14E968E600B8EACA /* Security.framework in Frameworks */,
 				192A6F4B14E81D9500B8EACA /* AudioToolbox.framework in Frameworks */,
@@ -491,7 +492,6 @@
 				1950B7D514D6AFB400302BF2 /* UIKit.framework in Frameworks */,
 				1950B7D714D6AFB400302BF2 /* Foundation.framework in Frameworks */,
 				1950B7D914D6AFB400302BF2 /* CoreGraphics.framework in Frameworks */,
-				192A6FF914EB02C300B8EACA /* AWSiOSSDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -584,7 +584,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				192A6FF814EB02C300B8EACA /* AWSiOSSDK.framework */,
+				192A702014EC06A500B8EACA /* AVFoundation.framework */,
 				192A6F8F14E9845E00B8EACA /* CoreData.framework */,
 				192A6F5B14E968E600B8EACA /* Security.framework */,
 				192A6F4A14E81D9400B8EACA /* AudioToolbox.framework */,
@@ -808,8 +808,8 @@
 				192A6FF614EAE70800B8EACA /* SWGroup.m */,
 				192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */,
 				192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */,
-				192A700014EB179C00B8EACA /* SWMedia.h */,
-				192A700114EB179D00B8EACA /* SWMedia.m */,
+				191B2BC514EC3DD90058C4F7 /* SWMedia.h */,
+				191B2BC614EC3DD90058C4F7 /* SWMedia.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1156,7 +1156,7 @@
 				192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */,
 				192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */,
 				192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */,
-				192A700214EB179E00B8EACA /* SWMedia.m in Sources */,
+				191B2BC714EC3DD90058C4F7 /* SWMedia.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

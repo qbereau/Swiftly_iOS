@@ -17,13 +17,13 @@
 {
     SWAlbum*                    _selectedAlbum;
     
-    SWWebImagesDataSource*      _medias;
+    SWWebImagesDataSource*      _mediaDS;
     
     BOOL                        _allowAlbumEditition;
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
-@property (nonatomic, strong) SWWebImagesDataSource*    medias;
+@property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
 
 @end

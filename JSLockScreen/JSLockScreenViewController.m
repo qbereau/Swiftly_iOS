@@ -273,7 +273,8 @@
 
 - (void)checkPasscode
 {
-	NSString *savedPasscode = @"1234"; // However you store / retrieve your passcode
+    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+    NSString* savedPasscode = [keychain objectForKey:(__bridge id)kSecValueData];    
 	
 	if ([[_passcodeField text] isEqualToString:savedPasscode])
 	{		

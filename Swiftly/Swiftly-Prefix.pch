@@ -17,3 +17,4 @@
 #endif
 
 #define SWIFTLY_APP_ID @"com.swiftly.swiftly"
+#define SWIFTLY_LOCK_ID @"com.swiftly.swiftly_locks"

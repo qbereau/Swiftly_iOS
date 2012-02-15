@@ -23,6 +23,7 @@
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 + (NSArray *)findAllObjects;
 + (NSArray *)findAllLinkableAlbums;
++ (NSArray*)findUnlockedSharedAlbums;
 + (NSArray *)findAllSharedAlbums;
 + (NSArray *)findAllSpecialAlbums;
 + (void)deleteAllObjects;
@@ -31,5 +32,6 @@
 + (SWAlbum*)newEntity; // no context
 - (void)updateWithObject:(id)obj;
 - (NSDictionary*)toDictionnary;
+- (void)deleteEntity;
 
 @end

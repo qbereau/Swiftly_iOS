@@ -39,6 +39,11 @@
     
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.navigationItem.title = NSLocalizedString(@"album_lock", @"album lock");
+    
+    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+    NSString* lock = [keychain objectForKey:(__bridge id)kSecValueData];
+    if (lock && lock.length > 0)
+        self.albumLock = [NSNumber numberWithInt:[lock intValue]];
 }
 
 - (void)viewDidUnload
@@ -157,6 +162,13 @@
     [_passcodeController dismissModalViewControllerAnimated:YES];    
 }
 
+- (void)defineNewLock:(int)lock
+{
+    self.albumLock = [NSNumber numberWithInt:lock];
+    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+    [keychain setObject:[NSString stringWithFormat:@"%d", [self.albumLock intValue]] forKey:(__bridge id)kSecValueData];
+}
+
 #pragma mark - KVPasscodeViewControllerDelegate 
 - (void)didCancelPasscodeController:(KVPasscodeViewController *)controller
 {
@@ -218,7 +230,7 @@
         {
             // OK - New Code Created
 
-            self.albumLock = [NSNumber numberWithInt:[passCode intValue]];
+            [self defineNewLock:[passCode intValue]];            
             [self resetCodesProcess];
             [self.tableView reloadData];
             [controller dismissModalViewControllerAnimated:YES];            
@@ -279,8 +291,7 @@
             else
             {
                 // OK - Album Lock Updated
-                
-                self.albumLock = [NSNumber numberWithInt:[passCode intValue]];
+                [self defineNewLock:[passCode intValue]];
                 [self resetCodesProcess];
 
                 [self.tableView reloadData];

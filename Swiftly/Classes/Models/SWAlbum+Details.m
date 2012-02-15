@@ -94,6 +94,18 @@
     return [context executeFetchRequest:request error:nil];    
 }
 
++ (NSArray*)findUnlockedSharedAlbums
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ AND isMyMediasAlbum == %@ AND isLocked == %@", [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    
+    return [context executeFetchRequest:request error:nil];
+}
+
 + (NSArray*)findAllSharedAlbums
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
@@ -137,6 +149,12 @@
     return obj;
 }
 
+- (void)deleteEntity
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [context deleteObject:self];
+}
+
 - (void)updateWithObject:(id)obj
 {    
     NSString* album_name = [obj valueForKey:@"name"];
@@ -154,7 +172,14 @@
     self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
     self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];   
     
-    self.thumbnail          = [obj valueForKey:@"thumbnail"] ? [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[obj valueForKey:@"thumbnail"]]]] : [UIImage imageNamed:@"photoDefault.png"]; // Warning sync ... should be handled ansync!
+    NSString* thumbnail_url = [obj valueForKey:@"thumbnail_url"];
+    if (thumbnail_url && [thumbnail_url class] != [NSNull class])
+    {
+        // Warning sync ... should be handled ansync!
+        self.thumbnail = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:thumbnail_url]]];
+    }
+    else
+        self.thumbnail = [UIImage imageNamed:@"photoDefault.png"]; 
 }
 
 - (NSDictionary*)toDictionnary

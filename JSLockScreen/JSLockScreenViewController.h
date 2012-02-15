@@ -16,6 +16,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "KeychainItemWrapper.h"
 
 @class JSLockScreenViewController;
 

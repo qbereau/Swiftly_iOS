@@ -10,9 +10,14 @@
 
 @interface SWMedia (Details)
 
+- (UIImage*)thumbnailOrDefaultImage;
+- (NSString*)uploadedTime;
+
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 + (NSArray *)findAllObjects;
++ (NSArray *)findInProgressObjects;
++ (NSArray *)findRecentObjects;
 + (void)deleteAllObjects;
 + (SWMedia*)findObjectWithServerID:(int)serverID;
 + (SWMedia*)createEntity; // in context

@@ -17,6 +17,7 @@
 @synthesize mode                = _mode;
 @synthesize tableView           = _tableView;
 @synthesize showOnlyUsers       = _showOnlyUsers;
+@synthesize uploadPeopleBlock   = _uploadPeopleBlock;
 @synthesize delegate;
 
 - (void)didReceiveMemoryWarning
@@ -39,6 +40,56 @@
     [self.tableView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];
     [self.tableView setDataSource:self];
     [self.tableView setDelegate:self];
+    
+    __block SWPeopleListViewController* selfBlock = self;
+    self.uploadPeopleBlock = ^(NSDictionary* dict, NSArray* newContacts){
+        [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
+                                 parameters:dict 
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                        if ([responseObject isKindOfClass:[NSArray class]])
+                                        {
+                                            for (id newObj in responseObject)
+                                            {
+                                                SWPerson* newPerson   = [SWPerson createEntity];                                                
+                                                newPerson.serverID    = [[newObj valueForKey:@"id"] intValue];
+                                                newPerson.originalPhoneNumber = [newObj valueForKey:@"original_phone_number"];
+                                                newPerson.phoneNumber  = [newObj valueForKey:@"phone_number"];
+                                                newPerson.isUser       = [[newObj valueForKey:@"valid"] boolValue];
+                                                newPerson.isBlocked    = [[newObj valueForKey:@"blocked"] boolValue];
+                                                newPerson.isBlocking   = [[newObj valueForKey:@"blocking"] boolValue];
+                                                newPerson.isLinked     = [[newObj valueForKey:@"linked"] boolValue];                                                                                    
+                                                
+                                                // Add additional infos from AddressBook
+                                                for (SWPerson* p in newContacts)
+                                                {
+                                                    if ([p.phoneNumber isEqualToString:newPerson.originalPhoneNumber])
+                                                    {
+                                                        newPerson.firstName = p.firstName;
+                                                        newPerson.lastName  = p.lastName;
+                                                        newPerson.thumbnail = p.thumbnail;
+                                                        break;
+                                                    }
+                                                }
+                                                
+                                            }
+                                            
+                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                                                      
+                                            
+                                            selfBlock.contacts = [SWPerson findAllObjects];
+                                            [selfBlock.tableView reloadData];
+                                            
+                                            // Hide the HUD in the main tread 
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                [MBProgressHUD hideHUDForView:selfBlock.navigationController.view animated:YES];
+                                            });
+                                            
+                                        }                                                                            
+                                    }
+                                    failure:^(AFHTTPRequestOperation *operation2, NSError *error2) {
+                                        NSLog(@"error");
+                                    }
+         ];            
+    };
     
     [self.view addSubview:self.tableView];
 
@@ -242,10 +293,11 @@
         else
             p.thumbnail = [SWPerson defaultImage];
         
-        if (p.firstName || p.lastName)        
+        if (p.firstName || p.lastName)
             [peopleAB addObject:p];
         
-        [phones addObject:p.phoneNumber];
+        if (p.phoneNumber && [p.phoneNumber class] != [NSNull class])
+            [phones addObject:p.phoneNumber];
         
         CFRelease(ref);
     }    
@@ -258,6 +310,8 @@
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                         if ([responseObject isKindOfClass:[NSArray class]])
                                         {
+                                            NSString* totalPages = (NSString*)[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"];
+                                            NSLog(@"Nb Pages: %@", totalPages);
                                             for (id obj in responseObject)
                                             {
                                                 SWPerson* existingObj = [SWPerson findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
@@ -298,7 +352,7 @@
                                             {
                                                 SWPerson* existingContact = [SWPerson findObjectWithOriginalPhoneNumber:p.phoneNumber];
                                                 
-                                                if (!existingContact)
+                                                if (!existingContact && p.phoneNumber && [p.phoneNumber class] != [NSNull class])
                                                 {
                                                     [newPhoneNumbers addObject:p.phoneNumber];
                                                     [newContacts addObject:p];
@@ -308,52 +362,23 @@
                                             // Create new link with this contact
                                             if ([newPhoneNumbers count] > 0)
                                             {
-                                                NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
-                                                [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
-                                                                         parameters:dict 
-                                                                            success:^(AFHTTPRequestOperation *operation2, id responseNewObject) {
-                                                                                if ([responseNewObject isKindOfClass:[NSArray class]])
-                                                                                {
-                                                                                    for (id newObj in responseNewObject)
-                                                                                    {
-                                                                                        SWPerson* newPerson   = [SWPerson createEntity];                                                
-                                                                                        newPerson.serverID    = [[newObj valueForKey:@"id"] intValue];
-                                                                                        newPerson.originalPhoneNumber = [newObj valueForKey:@"original_phone_number"];
-                                                                                        newPerson.phoneNumber  = [newObj valueForKey:@"phone_number"];
-                                                                                        newPerson.isUser       = [[newObj valueForKey:@"valid"] boolValue];
-                                                                                        newPerson.isBlocked    = [[newObj valueForKey:@"blocked"] boolValue];
-                                                                                        newPerson.isBlocking   = [[newObj valueForKey:@"blocking"] boolValue];
-                                                                                        newPerson.isLinked     = [[newObj valueForKey:@"linked"] boolValue];                                                                                    
-                                                                                        
-                                                                                        // Add additional infos from AddressBook
-                                                                                        for (SWPerson* p in newContacts)
-                                                                                        {
-                                                                                            if ([p.phoneNumber isEqualToString:newPerson.originalPhoneNumber])
-                                                                                            {
-                                                                                                newPerson.firstName = p.firstName;
-                                                                                                newPerson.lastName  = p.lastName;
-                                                                                                newPerson.thumbnail = p.thumbnail;
-                                                                                                break;
-                                                                                            }
-                                                                                        }
-                                                                                                                                                                              
-                                                                                    }
-                                                                                    
-                                                                                    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                                                      
-                                                                                    
-                                                                                    self.contacts = [SWPerson findAllObjects];
-                                                                                    [self.tableView reloadData];
-                                                                                    
-                                                                                    // Hide the HUD in the main tread 
-                                                                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                                                    });
-                                                                                }                                                                            
-                                                                            }
-                                                                            failure:^(AFHTTPRequestOperation *operation2, NSError *error2) {
-                                                                                
-                                                                            }
-                                                 ];    
+                                                int nbReq = (int)floor([newPhoneNumbers count] / 50.0f);
+                                                
+                                                if (nbReq > 0)
+                                                {
+                                                    for (int i = 0; i < nbReq; ++i)
+                                                    {
+                                                        NSRange r = NSMakeRange(50 * i, 50);
+                                                        NSArray* sub = [newPhoneNumbers subarrayWithRange:r];
+                                                        NSDictionary* dict = [NSDictionary dictionaryWithObject:sub forKey:@"phone_numbers"];
+                                                        self.uploadPeopleBlock(dict, newContacts);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
+                                                    self.uploadPeopleBlock(dict, newContacts);
+                                                }
                                             }
                                             else
                                             {

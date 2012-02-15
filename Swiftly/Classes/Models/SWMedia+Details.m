@@ -10,6 +10,20 @@
 
 @implementation SWMedia (Details)
 
+- (UIImage*)thumbnailOrDefaultImage
+{
+    if (self.thumbnail)
+        return self.thumbnail;
+    return [UIImage imageNamed:@"photoDefault.png"];
+}
+
+- (NSString*)uploadedTime
+{
+    NSDateFormatter *format = [[NSDateFormatter alloc] init];
+    [format setDateFormat:@"yyyy-MM-dd HH:mm"];
+    return [NSString stringWithFormat:NSLocalizedString(@"uploaded_time", @"uploaded now"), [format stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:self.uploadedDate]]];
+}
+
 // Core Data Helpers
 
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
@@ -25,6 +39,30 @@
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
+    return [context executeFetchRequest:request error:nil];
+}
+
++ (NSArray*)findInProgressObjects
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:NO]];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    
+    return [context executeFetchRequest:request error:nil];
+}
+
++ (NSArray*)findRecentObjects
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:YES]];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    
     return [context executeFetchRequest:request error:nil];
 }
 
@@ -90,17 +128,31 @@
 
 - (void)updateWithObject:(id)obj
 {        
-    self.serverID = [[obj valueForKey:@"id"] intValue];
+    self.serverID       = [[obj valueForKey:@"id"] intValue];
+    self.isReady        = [[obj valueForKey:@"ready"] boolValue];
+    self.creatorID      = [[obj valueForKey:@"creator_id"] intValue];
+    self.isImage        = [[obj valueForKey:@"image"] boolValue];
+    self.isVideo        = [[obj valueForKey:@"video"] boolValue];
+    self.isOpen         = [[obj valueForKey:@"open"] boolValue];
+    
+    id thumb_url = [obj valueForKey:@"thumbnail_url"];
+    if (thumb_url && [thumb_url class] != [NSNull class])
+        self.thumbnailURL   = thumb_url;
+    
+    id res_url = [obj valueForKey:@"url"];
+    if (res_url && [res_url class] != [NSNull class])
+        self.resourceURL = res_url;
     
     id uploadInfo = [obj valueForKey:@"upload_info"];
-    if (uploadInfo)
+    if (uploadInfo && [uploadInfo class] != [NSNull class])
     {
         self.contentType    = [uploadInfo valueForKey:@"content_type"];
         self.signature      = [uploadInfo valueForKey:@"signature"];
         self.policy         = [uploadInfo valueForKey:@"policy"];
         self.acl            = [uploadInfo valueForKey:@"acl"];
         self.filename       = [uploadInfo valueForKey:@"filename"];
-        self.awsAccessKeyID = [uploadInfo valueForKey:@"aws_access_key_id"];        
+        self.awsAccessKeyID = [uploadInfo valueForKey:@"aws_access_key_id"];
+        self.bucketURL      = [uploadInfo valueForKey:@"bucket_url"];
     }
 }
 
