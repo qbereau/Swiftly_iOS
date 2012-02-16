@@ -25,5 +25,6 @@
 + (SWPerson*)findObjectWithOriginalPhoneNumber:(NSString*)phoneNb;
 + (SWPerson*)createEntity; // in context
 + (SWPerson*)newEntity; // no context
+- (void)updateWithObject:(id)obj;
 
 @end

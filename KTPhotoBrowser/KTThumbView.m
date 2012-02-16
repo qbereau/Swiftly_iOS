@@ -10,6 +10,52 @@
 #import "KTThumbsViewController.h"
 #import <QuartzCore/QuartzCore.h>
 
+@implementation KTThumbVideoView
+
+@synthesize duration = _duration;
+
+- (id)initWithFrame:(CGRect)frame
+{
+    self = [super initWithFrame:frame];
+    if (self)
+    {
+        _lblDuration = [[UILabel alloc] initWithFrame:CGRectMake(0, frame.size.height - 12, frame.size.width - 5, 10)];
+        _lblDuration.text = @"";
+        _lblDuration.backgroundColor = [UIColor clearColor];
+        _lblDuration.textColor = [UIColor whiteColor];
+        _lblDuration.textAlignment = UITextAlignmentRight;
+        _lblDuration.font = [UIFont boldSystemFontOfSize:12];
+        [self addSubview:_lblDuration];
+        
+        _camera = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"camera.png"]];
+        _camera.frame = CGRectMake(6, frame.size.height - 12, 16, 8);
+        _camera.contentMode = UIViewContentModeScaleAspectFit;
+        [self addSubview:_camera];
+        
+        self.backgroundColor = [UIColor clearColor];
+    }
+    return self;
+}
+
+- (void)setDuration:(int)duration
+{
+    _duration = duration;
+    
+    long min = (long)duration / 60;
+    long sec = (long)duration % 60;    
+    _lblDuration.text = [NSString stringWithFormat:@"%02d:%02d", min, sec];
+}
+
+- (void)drawRect:(CGRect)rect
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGRect rectangle = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+    CGContextAddRect(ctx, rectangle);
+    CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5].CGColor);
+    CGContextFillRect(ctx, rectangle);
+}
+
+@end
 
 @implementation KTThumbView
 
@@ -37,6 +83,10 @@
       // If the thumbnail needs to be scaled, it should mantain its aspect
       // ratio.
       [[self imageView] setContentMode:UIViewContentModeScaleAspectFill];
+       
+       KTThumbVideoView* videoOverlayView = [[KTThumbVideoView alloc] initWithFrame:CGRectMake(0, frame.size.height - 15, frame.size.width, 15)];
+       videoOverlayView.duration = 10;
+       [self addSubview:videoOverlayView];       
    }
    return self;
 }
@@ -71,5 +121,13 @@
    }
 }
 
+- (void)drawRect:(CGRect)rect
+{
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGRect rectangle = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+    CGContextAddRect(ctx, rectangle);
+    CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5].CGColor);
+    CGContextFillRect(ctx, rectangle);
+}
 
 @end

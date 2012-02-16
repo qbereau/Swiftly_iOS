@@ -27,7 +27,9 @@
 
 - (NSString*)name
 {
-    return [NSString stringWithFormat:@"%@ %@", self.firstName ? self.firstName : @"", self.lastName ? self.lastName : @""];
+    if (self.firstName || self.lastName)
+        return [NSString stringWithFormat:@"%@ %@", self.firstName ? self.firstName : @"", self.lastName ? self.lastName : @""];
+    return NSLocalizedString(@"unknown", @"unknown");
 }
 
 - (NSString*)predicateContactName
@@ -190,6 +192,18 @@
     SWPerson* obj = [[SWPerson alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
     
     return obj;
+}
+
+- (void)updateWithObject:(id)obj
+{    
+    self.serverID       = [[obj valueForKey:@"id"] intValue];
+    self.isUser         = [[obj valueForKey:@"activated"] boolValue];
+    self.isBlocked      = [[obj valueForKey:@"blocked"] boolValue];
+    self.isBlocking     = [[obj valueForKey:@"blocking"] boolValue];
+    self.isLinked       = [[obj valueForKey:@"linked"] boolValue];    
+    
+    self.originalPhoneNumber    = [obj valueForKey:@"original_phone_number"];
+    self.phoneNumber            = [obj valueForKey:@"phone_number"];    
 }
 
 @end

@@ -98,7 +98,7 @@
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ AND isMyMediasAlbum == %@ AND isLocked == %@", [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ AND isMyMediasAlbum == %@ AND (isLocked == %@ OR isLocked == nil)", [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];

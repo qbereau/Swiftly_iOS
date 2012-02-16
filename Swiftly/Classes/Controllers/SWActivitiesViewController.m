@@ -15,7 +15,6 @@
 @synthesize inProgress = _inProgress;
 @synthesize recent = _recent;
 @synthesize uploadDataBlock = _uploadDataBlock;
-@synthesize arrUploadState = _arrUploadState;
 
 - (void)didReceiveMemoryWarning
 {
@@ -29,10 +28,9 @@
 {
     [super viewDidLoad];
     
+    self.navigationBar.topItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(removeMedias:)];    
     self.navigationBar.topItem.title = NSLocalizedString(@"menu_activities", @"Activities");
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
-    
-    self.arrUploadState = [NSMutableArray array];
     
     __block SWActivitiesViewController* blockSelf = self;
     self.uploadDataBlock = ^(SWMedia* m, NSData* data) {
@@ -75,6 +73,14 @@
                                                 [blockSelf reload];
                                             }
                                             failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
+                                                
+                                                m.uploadProgress = 1.0f;
+                                                m.isUploaded = YES;
+                                                m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
+                                                
+                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                [blockSelf reload];                                                
+                                                
                                                 dispatch_async(dispatch_get_main_queue(), ^{
                                                     UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                                     [av show];
@@ -87,6 +93,12 @@
             }];
             [operation start];
     };
+}
+
+- (void)removeMedias:(id)sender
+{
+    [SWMedia deleteAllObjects];
+    [self reload];
 }
 
 - (void)viewDidUnload
@@ -104,8 +116,6 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-
-    //[SWMedia deleteAllObjects];
 
     [self reload];
     [self uploadFiles];
@@ -141,10 +151,9 @@
 {
     for (SWMedia* m in self.inProgress)
     {
-        NSLog(@"Uplaode Progress Here: %f - %@", m.uploadProgress, m);
         if (m.uploadProgress == 0.0f)
         {
-            
+            //__block SWActivitiesViewController* selfBlock = self;
             dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{            
                 ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
                 [assetslibrary assetForURL:[NSURL URLWithString:m.assetURL]
@@ -197,8 +206,14 @@
                                            }
                                        }];
                                        
-                                       NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:m, @"media", exportSession, @"exportSession", nil];
-                                       [self.arrUploadState addObject:dict];
+                                       dispatch_async(dispatch_get_main_queue(), ^{                                                                         
+                                           NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:m, @"media", exportSession, @"exportSession", nil];
+                                           [NSTimer scheduledTimerWithTimeInterval:0.1
+                                                                            target:self
+                                                                          selector:@selector(updateExportProgress:)
+                                                                          userInfo:dict 
+                                                                       	repeats:YES];
+                                       });
                                    }
                                }
                               failureBlock:^(NSError *error) {
@@ -211,45 +226,31 @@
             });
         }        
     }
-    
-    if ([self.arrUploadState count] > 0)
-    {
-        [NSTimer scheduledTimerWithTimeInterval:0.1
-                                         target:self
-                                       selector:@selector(updateExportProgress:)
-                                       userInfo:nil 
-                                        repeats:YES];
-    }
 }
 
 - (void)updateExportProgress:(NSTimer*)timer
 {
-    for (NSDictionary* dict in self.arrUploadState)
-    {
-        AVAssetExportSession* exportSession = (AVAssetExportSession*)[dict objectForKey:@"exportSession"];
-        SWMedia* media                      = (SWMedia*)[dict objectForKey:@"media"];    
-        
-        switch (exportSession.status) {
-            case AVAssetExportSessionStatusFailed:
-            case AVAssetExportSessionStatusCancelled:
-            case AVAssetExportSessionStatusCompleted:
-                [self.arrUploadState removeObject:dict];
-                break;
-            case AVAssetExportSessionStatusExporting:
-                NSLog(@"EXPORTING: %f", exportSession.progress);
-                media.uploadProgress = exportSession.progress / 2.0f;
-                //[[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                //[self reload];                    
-                [self.tableView reloadData];
-                break;
-            default:
-                
-                break;
-        }    
-    }
+    NSLog(@"11");
+    AVAssetExportSession* exportSession = (AVAssetExportSession*)[[timer userInfo] objectForKey:@"exportSession"];
+    SWMedia* media                      = (SWMedia*)[[timer userInfo] objectForKey:@"media"];    
     
-    if ([self.arrUploadState count] == 0)
-        [timer invalidate];
+    switch (exportSession.status) {
+        case AVAssetExportSessionStatusFailed:
+        case AVAssetExportSessionStatusCancelled:
+        case AVAssetExportSessionStatusCompleted:
+            [timer invalidate];
+            break;
+        case AVAssetExportSessionStatusExporting:
+            NSLog(@"EXPORTING: %f", exportSession.progress);
+            media.uploadProgress = exportSession.progress / 2.0f;
+            //[[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+            //[self reload];                    
+            [self.tableView reloadData];
+            break;
+        default:
+            
+            break;
+    }    
 }
 
 #pragma mark - UITableView Delegates

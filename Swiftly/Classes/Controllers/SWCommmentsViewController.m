@@ -82,7 +82,9 @@
     [self.toolbar setItems:[NSArray arrayWithObjects:textFieldItem, btnItem, nil]];
     [self.scrollView addSubview:self.toolbar];
 
-    self.comments = [[NSArray alloc] initWithObjects:@"Test 1", @"Another test with some veryyyyyyy long text to see how stretching works....", @"blabal", @".....", @"other tests...", nil];
+    //self.comments = [[NSArray alloc] initWithObjects:@"Test 1", @"Another test with some veryyyyyyy long text to see how stretching works....", @"blabal", @".....", @"other tests...", nil];
+    if (!self.comments)
+        self.comments = [NSArray array];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)

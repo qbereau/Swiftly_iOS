@@ -56,22 +56,22 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
-    
+    /*
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
-    [keychain setObject:@"9dabb8ff29e9d79997967f1d45678188" forKey:(__bridge id)kSecAttrAccount];
-    [keychain setObject:@"BC1ECF92CA52AA83320FACCA614CC87A" forKey:(__bridge id)kSecValueData];
+    [keychain setObject:@"230f968cc82b07512dbd4fbca171ecfc" forKey:(__bridge id)kSecAttrAccount];
+    [keychain setObject:@"050C8E67053DD789D5641D198BC08757" forKey:(__bridge id)kSecValueData];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
-    
+    */
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
     NSString* key                   = (NSString*)[dict objectForKey:@"key"];
     NSString* token                 = (NSString*)[dict objectForKey:@"token"];
     NSNumber* account_validated     = (NSNumber*)[dict objectForKey:@"account_activated"];
-    
+
     if (key && token && key.length > 0 && token.length > 0 && [account_validated boolValue])
     {
         [self gotoApp];
@@ -261,7 +261,7 @@
                      }];
 }
 
-- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token
+- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token userID:(int)userID
 {
     // Save to Keychain
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
@@ -273,19 +273,30 @@
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
     
-    // Alert user
-    RIButtonItem *btnOK = [RIButtonItem item];
-    btnOK.label = @"OK";
-    btnOK.action = ^{
-        // push view
+    // Still needs to push device token
+    NSString* deviceToken = [defaults valueForKey:@"device_token"];
+    if (deviceToken.length > 0)
+    {
+        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    deviceToken, @"uuid",
+                                    [NSNumber numberWithBool:YES], @"enabled",
+                                nil];
+        NSDictionary* registerDevice = [NSDictionary dictionaryWithObject:params forKey:@"register_device"];
+        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/accounts/%d", userID] 
+                                  parameters:registerDevice 
+                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                         [self gotoApp];
+                                     }
+                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                         [self gotoApp];
+                                         NSLog(@"error");
+                                     }
+         ];         
+    }
+    else
+    {
         [self gotoApp];
-    };
-    
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"login_account_validated_title", @"account validated")
-                                                    message:NSLocalizedString(@"login_account_validated_description", @"you can now use Swiftly")
-                                          cancelButtonItem:btnOK
-                                          otherButtonItems:nil];
-    [alert show];
+    }
 }
 
 - (void)codeNotValidated
@@ -303,7 +314,7 @@
 }
 
 - (void)gotoApp
-{
+{    
     [self performSegueWithIdentifier:@"goto_app" sender:self];
 }
 
@@ -340,8 +351,8 @@
         [self.spinnerLoading startAnimating];
         
         // Check API
-        NSString* phone_nb = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
-        NSDictionary* dict = [NSDictionary dictionaryWithObject:phone_nb forKey:@"phone_number"];
+        _userPhoneNumber = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
+        NSDictionary* dict = [NSDictionary dictionaryWithObject:_userPhoneNumber forKey:@"phone_number"];
         [[SWAPIClient sharedClient] postPath:@"/accounts" 
                                   parameters:dict 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) 
@@ -403,17 +414,22 @@
     [self.spinnerConfirmation startAnimating];
     
     // API Call
-    NSString* phone_nb = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
     NSString* code = self.inputValidationCode.text;
-    NSDictionary* dict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:phone_nb, code, nil] forKeys:[NSArray arrayWithObjects:@"phone_number", @"activation_code", nil]];
+    NSDictionary* dict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:_userPhoneNumber, code, nil] forKeys:[NSArray arrayWithObjects:@"phone_number", @"activation_code", nil]];
     [[SWAPIClient sharedClient] postPath:@"/accounts/activate" 
                               parameters:dict 
                                  success:^(AFHTTPRequestOperation *operation, id responseObject) 
                                         {
                                             NSString* key = (NSString*)[responseObject valueForKey:@"key"];
                                             NSString* token = (NSString*)[responseObject valueForKey:@"token"];
+                                            int userID = [[responseObject valueForKey:@"id"] intValue];
                                             
-                                            [self codeValidatedWithKey:key token:token];
+                                            SWPerson* user = [SWPerson createEntity];
+                                            user.serverID = userID;
+                                            user.phoneNumber = _userPhoneNumber;
+                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                            
+                                            [self codeValidatedWithKey:key token:token userID:userID];
                                         }
                                  failure:^(AFHTTPRequestOperation *operation, NSError *error) 
                                         {

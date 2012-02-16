@@ -1,8 +1,8 @@
 #import "SWAPIClient.h"
 #import "AFJSONRequestOperation.h"
 
-// DevKey: 9dabb8ff29e9d79997967f1d45678188
-// KeyToken: BC1ECF92CA52AA83320FACCA614CC87A
+// DevKey: 230f968cc82b07512dbd4fbca171ecfc
+// KeyToken: 050C8E67053DD789D5641D198BC08757
 
 NSString * const kSWBaseURLString = @"http://swiftly.herokuapp.com";
 
@@ -39,6 +39,7 @@ NSString * const kSWBaseURLString = @"http://swiftly.herokuapp.com";
 
     [self registerHTTPOperationClass:[AFJSONRequestOperation class]];    
 	[self setDefaultHeader:@"Accept" value:@"application/json"];
+    self.parameterEncoding = AFJSONParameterEncoding;
     
     return self;
 }

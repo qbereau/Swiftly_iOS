@@ -2,7 +2,7 @@
 //  SWMedia.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/15/12.
+//  Created by Quentin Bereau on 2/16/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -17,21 +17,22 @@
 @dynamic awsAccessKeyID;
 @dynamic bucketURL;
 @dynamic contentType;
+@dynamic creatorID;
 @dynamic filename;
+@dynamic isImage;
+@dynamic isOpen;
 @dynamic isReady;
+@dynamic isUploaded;
+@dynamic isVideo;
 @dynamic policy;
+@dynamic resourceURL;
 @dynamic serverID;
 @dynamic signature;
 @dynamic thumbnail;
+@dynamic thumbnailURL;
 @dynamic uploadedDate;
 @dynamic uploadProgress;
-@dynamic thumbnailURL;
-@dynamic resourceURL;
-@dynamic isImage;
-@dynamic isVideo;
-@dynamic creatorID;
-@dynamic isOpen;
-@dynamic isUploaded;
+@dynamic isOwner;
 @dynamic album;
 
 @end

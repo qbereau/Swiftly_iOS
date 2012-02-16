@@ -30,6 +30,7 @@
         <attribute name="filename" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="isImage" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOpen" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isReady" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isUploaded" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isVideo" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -60,7 +61,7 @@
     <elements>
         <element name="SWAlbum" positionX="126" positionY="360" width="128" height="180"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="75"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="360"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="375"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="195"/>
     </elements>
 </model>

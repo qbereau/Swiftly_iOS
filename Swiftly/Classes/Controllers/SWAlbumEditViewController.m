@@ -35,6 +35,8 @@
 @synthesize filesToUpload = _filesToUpload;
 @synthesize mode = _mode;
 @synthesize linkableAlbums = _linkableAlbums;
+@synthesize uploadMediasBlock = _uploadMediasBlock;
+@synthesize genericFailureBlock = _genericFailureBlock;
 
 - (id)initWithStyle:(UITableViewStyle)style
 {
@@ -67,6 +69,61 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     self.title = NSLocalizedString(@"edit_album", @"edit album");
+    
+    
+    __block SWAlbumEditViewController* blockSelf = self;
+    self.uploadMediasBlock = ^(int album_id) {
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            __block int processedEntity = 0;
+            for (NSDictionary* media in blockSelf.filesToUpload)
+            {                    
+                NSString* fileType = @"image/jpeg";
+                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
+                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+                    fileType = @"image/png";
+                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
+                    fileType = @"video/quicktime";
+                
+                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
+                
+                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:album_id], @"album_id", nil];
+                
+                [[SWAPIClient sharedClient] postPath:@"/medias"
+                                          parameters:params
+                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                 
+                                                 SWMedia* mediaObj = [SWMedia createEntity];
+                                                 [mediaObj updateWithObject:responseObject];
+                                                 mediaObj.uploadProgress    = 0.0f;
+                                                 mediaObj.isUploaded        = NO;
+                                                 mediaObj.thumbnail         = mediaThumbnail;
+                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                 
+                                                 ++processedEntity;
+                                                 if (processedEntity == [blockSelf.filesToUpload count])
+                                                 {
+                                                     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                     [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
+                                                     
+                                                     blockSelf.tabBarController.selectedIndex = 1;
+                                                     [blockSelf.navigationController popToRootViewControllerAnimated:NO];
+                                                 }                                                     
+                                                 
+                                             } 
+                                             failure:blockSelf.genericFailureBlock
+                 ];                                        
+            }
+        });        
+    };
+    
+    self.genericFailureBlock = ^(AFHTTPRequestOperation *operation, NSError *error) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
+            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+            [av show];                                               
+        });
+    };
 }
 
 - (void)setFilesToUpload:(NSArray *)filesToUpload
@@ -94,38 +151,12 @@
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
-        
+
     }
 }
 
 - (void)done:(id)sender
-{
-    void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
-        
-        BOOL shouldBeLocked = self.album.isLocked;
-        if (self.album.serverID == 0)
-            self.album = [SWAlbum createEntity];
-        
-        self.album.isLocked = shouldBeLocked;
-        [self.album updateWithObject:responseObject];                                               
-        
-        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-        
-        self.tabBarController.selectedIndex = 1;
-        [self.navigationController popToRootViewControllerAnimated:NO];
-    };
-    
-    void (^failure)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, NSError *error) {
-        // Hide the HUD in the main tread 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            
-            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-            [av show];            
-        });
-    };
-
+{    
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
     hud.labelText = NSLocalizedString(@"loading", @"loading");
     
@@ -133,10 +164,23 @@
     {        
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
-                                      parameters:[self.album toDictionnary]
-                                         success:success
-                                         failure:failure             
+            [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
+                                         parameters:[self.album toDictionnary]
+                                            success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                
+                                                BOOL shouldBeLocked = self.album.isLocked;
+                                                if (self.album.serverID == 0)
+                                                    self.album = [SWAlbum createEntity];
+                                                
+                                                self.album.isLocked = shouldBeLocked;
+                                                [self.album updateWithObject:responseObject];                                               
+                                                
+                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                
+                                                [self.navigationController popToRootViewControllerAnimated:NO];
+                                            }
+                                            failure:self.genericFailureBlock
              ];
         });
     }
@@ -144,46 +188,36 @@
     {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            __block int processedEntity = 0;
-            for (NSDictionary* media in self.filesToUpload)
-            {                    
-                NSString* fileType = @"image/jpeg";
-                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
-                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
-                    fileType = @"image/png";
-                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
-                    fileType = @"video/quicktime";
-                
-                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
-                
-                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:_selectedLinkedAlbum.serverID], @"album_id", nil];
-                
-                [[SWAPIClient sharedClient] postPath:@"/medias"
-                                          parameters:params
-                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                 
-                                                 SWMedia* mediaObj = [SWMedia createEntity];
-                                                 [mediaObj updateWithObject:responseObject];
-                                                 mediaObj.uploadProgress    = 0.0f;
-                                                 mediaObj.isUploaded        = NO;
-                                                 mediaObj.thumbnail         = mediaThumbnail;
-                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
-                                                 
-                                                 ++processedEntity;
-                                                 if (processedEntity == [self.filesToUpload count])
-                                                 {
-                                                     [[SWAPIClient sharedClient] postPath:@"/albums"
-                                                                               parameters:[self.album toDictionnary]
-                                                                                  success:success
-                                                                                  failure:failure 
-                                                      ];
-                                                 }                                                     
-                                             } 
-                                             failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                 NSLog(@"error: %@", [error description]);
+            [[SWAPIClient sharedClient] postPath:@"/albums"
+                                      parameters:[self.album toDictionnary]
+                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                             
+                                             NSMutableArray* contacts_arr = [NSMutableArray array];
+                                             for (SWPerson* p in self.album.participants)
+                                             {
+                                                 NSLog(@"Number: %@", p.phoneNumber);
+                                                 [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
                                              }
-                 ];
-            }
+                                             
+                                             BOOL shouldLockAlbum = self.album.isLocked;
+                                             self.album = [SWAlbum createEntity];
+                                             self.album.isLocked = shouldLockAlbum;
+                                             [self.album updateWithObject:responseObject];
+                                             
+                                             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                             
+                                             NSDictionary* contacts = [NSDictionary dictionaryWithObject:contacts_arr forKey:@"add_account_ids"];
+                                             
+                                             [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
+                                                                       parameters:contacts
+                                                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                                              self.uploadMediasBlock(self.album.serverID);
+                                                                          }
+                                                                          failure:self.genericFailureBlock
+                                              ];
+                                         }
+                                         failure:self.genericFailureBlock 
+             ];            
             
         });
     }
@@ -198,54 +232,75 @@
         }
         else
         {
-            dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-                
-                __block int processedEntity = 0;
-                for (NSDictionary* media in self.filesToUpload)
-                {                    
-                    NSString* fileType = @"image/jpeg";
-                    NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
-                    if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
-                        fileType = @"image/png";
-                    else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
-                        fileType = @"video/quicktime";
-                    
-                    UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
-                    
-                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:_selectedLinkedAlbum.serverID], @"album_id", nil];
-                    
-                    [[SWAPIClient sharedClient] postPath:@"/medias"
-                                              parameters:params
-                                                 success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
-                                                     SWMedia* mediaObj = [SWMedia createEntity];
-                                                     [mediaObj updateWithObject:responseObject];
-                                                     mediaObj.uploadProgress    = 0.0f;
-                                                     mediaObj.isUploaded        = NO;
-                                                     mediaObj.thumbnail         = mediaThumbnail;
-                                                     mediaObj.assetURL          = [mediaUrl absoluteString];
-                                                     
-                                                     ++processedEntity;
-                                                     if (processedEntity == [self.filesToUpload count])
-                                                     {
-                                                         [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                                         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                         
-                                                         self.tabBarController.selectedIndex = 1;
-                                                         [self.navigationController popToRootViewControllerAnimated:NO];
-                                                     }                                                     
-                                                 } 
-                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                     NSLog(@"error: %@", [error description]);
-                                                 }
-                     ];                                        
-                }
-            });
+            self.uploadMediasBlock(_selectedLinkedAlbum.serverID);
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
-        NSLog(@"[SWAlbumEditViewController#done] quick share");
+        __block SWAlbumEditViewController* blockSelf = self;
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            __block int processedEntity = 0;
+            __block NSMutableArray* newMedias = [NSMutableArray array];
+            for (NSDictionary* media in blockSelf.filesToUpload)
+            {                    
+                NSString* fileType = @"image/jpeg";
+                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
+                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+                    fileType = @"image/png";
+                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
+                    fileType = @"video/quicktime";
+                
+                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
+                
+                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", nil];
+                
+                [[SWAPIClient sharedClient] postPath:@"/medias"
+                                          parameters:params
+                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                 
+                                                 SWMedia* mediaObj = [SWMedia createEntity];
+                                                 [mediaObj updateWithObject:responseObject];
+                                                 mediaObj.uploadProgress    = 0.0f;
+                                                 mediaObj.isUploaded        = NO;
+                                                 mediaObj.thumbnail         = mediaThumbnail;
+                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                 
+                                                 [newMedias addObject:[NSNumber numberWithInt:mediaObj.serverID]];
+                                                 
+                                                 ++processedEntity;
+                                                 if (processedEntity == [blockSelf.filesToUpload count])
+                                                 {
+                                                     NSMutableArray* accountIDs = [NSMutableArray array]; 
+                                                     for (SWPerson* p in _quickSharePeople)
+                                                     {
+                                                         [accountIDs addObject:[NSNumber numberWithInt:p.serverID]];
+                                                     }
+                                                     
+                                                     NSDictionary* quickshareParams = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                                                       newMedias, @"media_ids",
+                                                                                       accountIDs, @"account_ids"
+                                                                                       , nil];
+                                                     [[SWAPIClient sharedClient] putPath:@"/medias/quickshare"
+                                                                              parameters:quickshareParams
+                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                     
+                                                                                     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                                                     [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
+                                                                                     
+                                                                                     blockSelf.tabBarController.selectedIndex = 1;
+                                                                                     [blockSelf.navigationController popToRootViewControllerAnimated:NO];                                                                                      
+                                                                                     
+                                                                                 } 
+                                                                                 failure:blockSelf.genericFailureBlock
+                                                      ];                                                         
+                                                 }                                                     
+                                                 
+                                             } 
+                                             failure:blockSelf.genericFailureBlock
+                 ];                                        
+            }
+        });
     }
 }
 
@@ -268,15 +323,7 @@
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                            [[self navigationController] popToRootViewControllerAnimated:YES];
                                        }
-                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                           [av show];
-                                           
-                                           // Hide the HUD in the main tread 
-                                           dispatch_async(dispatch_get_main_queue(), ^{
-                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           });
-                                       }
+                                    failure:self.genericFailureBlock
          ];
     });
 }
@@ -297,21 +344,14 @@
         [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/albums/%d%@", self.album.serverID, unlink]
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                           
                                            SWAlbum* album = [SWAlbum findObjectWithServerID:self.album.serverID];
                                            [album deleteEntity];
                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                            [[self navigationController] popToRootViewControllerAnimated:YES];
                                        }
-                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                           [av show];
-                                           
-                                           // Hide the HUD in the main tread 
-                                           dispatch_async(dispatch_get_main_queue(), ^{
-                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           });
-                                       }
+                                       failure:self.genericFailureBlock
          ];
     });
 }

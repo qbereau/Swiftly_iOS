@@ -7,6 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MBProgressHUD.h"
+#import "AFNetworking.h"
+
+typedef void (^GenericFailureBlock)(AFHTTPRequestOperation*, NSError*);
 
 @interface SWAppDelegate : UIResponder <UIApplicationDelegate>
 {

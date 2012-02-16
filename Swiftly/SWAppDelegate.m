@@ -107,25 +107,8 @@
 {
     [self customizeUI];
 
-    /*
-    NSManagedObjectContext *context = self.managedObjectContext;
-
-    NSManagedObject *album1 = [NSEntityDescription
-                                       insertNewObjectForEntityForName:@"SWAlbum" 
-                                       inManagedObjectContext:context];
-    [album1 setValue:@"Amsterdam (40)" forKey:@"name"];
-    //[album1 setValue:@"Testville" forKey:@"city"];
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:(UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound)];
     
-    NSManagedObject *album2 = [NSEntityDescription
-                                          insertNewObjectForEntityForName:@"SWAlbum" 
-                                          inManagedObjectContext:context];
-    [album2 setValue:@"ISE (12)" forKey:@"name"];
-    NSError *error;
-    if (![context save:&error]) {
-        NSLog(@"Whoops, couldn't save: %@", [error localizedDescription]);
-    }
-    */
-
     return YES;
 }
 							
@@ -171,6 +154,27 @@
      See also applicationDidEnterBackground:.
      */
 }
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
+{
+    NSLog(@"Received Data: %@", userInfo);
+    application.applicationIconBadgeNumber = 0;
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken 
+{
+    NSString *token = [[deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    token = [token stringByReplacingOccurrencesOfString:@" " withString:@""];    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setValue:token forKey:@"device_token"];
+    [defaults synchronize];    
+} 
+
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error 
+{
+	NSLog(@"Error in registration. Error: %@", error); 
+}
+
 
 - (void)saveContext
 {

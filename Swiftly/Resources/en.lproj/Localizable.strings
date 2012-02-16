@@ -154,3 +154,4 @@
 
 "uploaded_time"                         = "Uploaded: %@";
 "is_uploading"                          = "Uploading....";
+"unknown"                               = "Unknown";

@@ -8,6 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
+@interface KTThumbVideoView : UIView
+{
+    int             _duration;
+    
+    UILabel*        _lblDuration;
+    UIImageView*    _camera;
+}
+
+@property (nonatomic, assign) int   duration;
+
+@end
+
 @class KTThumbsViewController;
 
 @interface KTThumbView : UIButton <UIGestureRecognizerDelegate> 

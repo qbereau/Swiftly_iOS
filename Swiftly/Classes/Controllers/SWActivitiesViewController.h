@@ -26,16 +26,15 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*);
     NSArray*                _recent;
     
     UploadDataBlock         _uploadDataBlock;
-    NSMutableArray*         _arrUploadState;
 }
 
 @property (nonatomic, strong) NSArray*                  inProgress;
 @property (nonatomic, strong) NSArray*                  recent;
-@property (nonatomic, strong) NSMutableArray*           arrUploadState;
 @property (nonatomic, copy) UploadDataBlock             uploadDataBlock;      
 @property (nonatomic, weak) IBOutlet UINavigationBar*   navigationBar;
 @property (nonatomic, weak) IBOutlet SWTableView*       tableView;
 
+- (void)removeMedias:(id)sender;
 - (void)reload;
 - (void)uploadFiles;
 

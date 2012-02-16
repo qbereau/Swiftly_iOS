@@ -36,4 +36,7 @@
 - (BOOL)thumbsHaveBorder;
 - (UIColor *)imageBackgroundColor;
 
+- (BOOL)isDirty;
+- (void)isDirty:(BOOL)dirty;
+
 @end

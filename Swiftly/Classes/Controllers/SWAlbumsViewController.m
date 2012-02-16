@@ -36,15 +36,18 @@
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
-    [self synchronize];    
+    [self synchronize:YES];    
 }
 
-- (void)synchronize
+- (void)synchronize:(BOOL)modal
 {
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
-    
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-    hud.labelText = NSLocalizedString(@"loading", @"loading");
+ 
+    if (modal)
+    {
+        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
+        hud.labelText = NSLocalizedString(@"loading", @"loading");
+    }
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [[SWAPIClient sharedClient] getPath:@"/albums" 
@@ -66,17 +69,21 @@
                                              }
                                              
                                              [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                              
-                                             self.sharedAlbums  = [SWAlbum findAllSharedAlbums];
+                                             if (modal)
+                                                 [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                             
+                                             self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums];
                                              self.specialAlbums = [SWAlbum findAllSpecialAlbums];   
                                              [self.tableView reloadData];
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        // Hide the HUD in the main tread 
                                         dispatch_async(dispatch_get_main_queue(), ^{
-                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                            
+                                            if (modal)
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                            
                                             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                             [av show];                                            
                                         });
@@ -111,6 +118,7 @@
     
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];    
+    [self.tableView reloadData];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

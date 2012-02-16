@@ -134,6 +134,7 @@
     self.isImage        = [[obj valueForKey:@"image"] boolValue];
     self.isVideo        = [[obj valueForKey:@"video"] boolValue];
     self.isOpen         = [[obj valueForKey:@"open"] boolValue];
+    self.isOwner        = [[obj valueForKey:@"owner"] boolValue];
     
     id thumb_url = [obj valueForKey:@"thumbnail_url"];
     if (thumb_url && [thumb_url class] != [NSNull class])

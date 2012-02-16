@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		191B2BC714EC3DD90058C4F7 /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 191B2BC614EC3DD90058C4F7 /* SWMedia.m */; };
+		1906907414ED6BC40009A325 /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 1906907314ED6BC30009A325 /* SWMedia.m */; };
 		191BC34D14DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */; };
 		191BC34E14DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */; };
 		191BC34F14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */; };
@@ -199,8 +199,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		191B2BC514EC3DD90058C4F7 /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
-		191B2BC614EC3DD90058C4F7 /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
+		1906907214ED6BC30009A325 /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
+		1906907314ED6BC30009A325 /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
 		191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_sel_right_unsel.png; sourceTree = "<group>"; };
 		191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_sel.png; sourceTree = "<group>"; };
 		191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_unsel.png; sourceTree = "<group>"; };
@@ -808,8 +808,8 @@
 				192A6FF614EAE70800B8EACA /* SWGroup.m */,
 				192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */,
 				192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */,
-				191B2BC514EC3DD90058C4F7 /* SWMedia.h */,
-				191B2BC614EC3DD90058C4F7 /* SWMedia.m */,
+				1906907214ED6BC30009A325 /* SWMedia.h */,
+				1906907314ED6BC30009A325 /* SWMedia.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1156,7 +1156,7 @@
 				192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */,
 				192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */,
 				192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */,
-				191B2BC714EC3DD90058C4F7 /* SWMedia.m in Sources */,
+				1906907414ED6BC40009A325 /* SWMedia.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1256,6 +1256,8 @@
 		1950B7FD14D6AFB400302BF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Quentin Bereau (6HBHSJP7YG)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Quentin Bereau (6HBHSJP7YG)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -1264,6 +1266,8 @@
 				GCC_PREFIX_HEADER = "Swiftly/Swiftly-Prefix.pch";
 				INFOPLIST_FILE = "Swiftly/Swiftly-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1271,6 +1275,8 @@
 		1950B7FE14D6AFB400302BF2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Quentin Bereau (6HBHSJP7YG)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Quentin Bereau (6HBHSJP7YG)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
@@ -1279,6 +1285,8 @@
 				GCC_PREFIX_HEADER = "Swiftly/Swiftly-Prefix.pch";
 				INFOPLIST_FILE = "Swiftly/Swiftly-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

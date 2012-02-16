@@ -77,6 +77,9 @@
     viewDidAppearOnce_ = YES;
     navbarWasTranslucent_ = [navbar isTranslucent];
   }
+    if (self.dataSource && [self.dataSource isDirty])
+        [self reloadThumbs];
+    
   // Then ensure translucency to match the look of Apple's Photos app.
   [navbar setTranslucent:YES];
   [super viewWillAppear:animated];
@@ -106,6 +109,7 @@
    [self willLoadThumbs];
    [scrollView_ reloadData];
    [self didLoadThumbs];
+    [self.dataSource isDirty:NO];
 }
 
 - (void)setDataSource:(id <KTPhotoBrowserDataSource>)newDataSource {
@@ -118,7 +122,8 @@
                                                         initWithDataSource:dataSource_ 
                                                   andStartWithPhotoAtIndex:index];
   
-   [[self navigationController] pushViewController:newController animated:YES];
+
+    [[self navigationController] pushViewController:newController animated:YES];
    [newController release];
 }
 

@@ -274,11 +274,11 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 {
    if (dataSource_) {
       // TODO: Animate the deletion of the current photo.
-      
+
       NSInteger photoIndexToDelete = currentIndex_;
       [self unloadPhoto:photoIndexToDelete];
       [dataSource_ deleteImageAtIndex:photoIndexToDelete];
-      
+       
       photoCount_ -= 1;
       if (photoCount_ == 0) {
          [self showChrome];

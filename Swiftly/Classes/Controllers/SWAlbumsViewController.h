@@ -29,6 +29,6 @@
 @property (nonatomic, strong) NSArray*              specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
 
-- (void)synchronize;
+- (void)synchronize:(BOOL)modal;
 
 @end

@@ -48,13 +48,9 @@
         
         // Update Medias
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-
-            NSString* medias_url = [NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID];
-            if (self.selectedAlbum.isMyMediasAlbum)
-                medias_url = [NSString stringWithFormat:@"/medias"];
             
             ++reqCounter;
-            [[SWAPIClient sharedClient] getPath:medias_url
+            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             NSLog(@"obj: %@ - %@", responseObject, [responseObject class]);
@@ -101,7 +97,8 @@
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             NSLog(@"obj: %@", responseObject);
-                                            
+                                           
+                                            [self.selectedAlbum setParticipants:nil];
                                             for (id o in responseObject)
                                             {
                                                 SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];

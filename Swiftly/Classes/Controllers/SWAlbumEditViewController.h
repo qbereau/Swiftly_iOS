@@ -22,6 +22,8 @@
 #define SW_ALBUM_MODE_LINK          2
 #define SW_ALBUM_MODE_QUICK_SHARE   3
 
+typedef void (^UploadMediasBlock)(int);
+
 @interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate>
 {
     SWAlbum*            _album;
@@ -39,12 +41,18 @@
     
     // Datasource
     NSArray*            _linkableAlbums;
+    
+    
+    UploadMediasBlock   _uploadMediasBlock;
+    GenericFailureBlock _genericFailureBlock;
 }
 
-@property (nonatomic, strong) SWAlbum*      album;
-@property (nonatomic, strong) NSArray*      filesToUpload;
-@property (nonatomic, assign) NSInteger     mode;
-@property (nonatomic, strong) NSArray*      linkableAlbums;
+@property (nonatomic, strong) SWAlbum*              album;
+@property (nonatomic, strong) NSArray*              filesToUpload;
+@property (nonatomic, assign) NSInteger             mode;
+@property (nonatomic, strong) NSArray*              linkableAlbums;
+@property (nonatomic, copy)   UploadMediasBlock     uploadMediasBlock;
+@property (nonatomic, copy)   GenericFailureBlock   genericFailureBlock;
 
 - (void)cleanupAlbum:(BOOL)shouldUnlink;
 - (void)deleteAlbum:(BOOL)shouldUnlink;

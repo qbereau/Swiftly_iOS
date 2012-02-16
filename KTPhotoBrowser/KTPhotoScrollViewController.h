@@ -56,5 +56,7 @@
 - (void)setCurrentIndex:(NSInteger)newIndex;
 - (void)layoutScrollViewSubviews;
 - (void)updateToolbarWithOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (void)deleteCurrentPhoto;
+- (void)startChromeDisplayTimer;
 
 @end

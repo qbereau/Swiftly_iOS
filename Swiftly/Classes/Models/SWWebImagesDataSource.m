@@ -15,6 +15,7 @@
 
 @implementation SWWebImagesDataSource
 
+@synthesize isDirty = _isDirty;
 @synthesize allMedias = _allMedias;
 
 - (void)resetFilter
@@ -51,6 +52,12 @@
         }
         _filteredMedias = arr;
     }
+}
+
+- (SWMedia*)mediaAtIndex:(NSInteger)index
+{
+    SWMedia* m = [_filteredMedias objectAtIndex:index];
+    return m;
 }
 
 - (BOOL)isMediaOpenAtIndex:(NSInteger)index
@@ -93,7 +100,9 @@
 
 - (void)deleteImageAtIndex:(NSInteger)index
 {
-    NSLog(@"delete");
+    self.isDirty = YES;
+    [self.allMedias removeObjectAtIndex:index];
+    _filteredMedias = self.allMedias;
 }
 
 - (void)forwardImageAtIndex:(NSInteger)index
@@ -109,6 +118,11 @@
 - (void)showCommentsAtIndex:(NSInteger)index
 {
     NSLog(@"comments");
+}
+
+- (void)isDirty:(BOOL)dirty
+{
+    self.isDirty = dirty;
 }
 
 @end

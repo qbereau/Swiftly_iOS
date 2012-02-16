@@ -15,12 +15,16 @@
 #import "UIAlertView+Blocks.h"
 #import "RIButtonItem.h"
 #import "SWAPIClient.h"
+#import "SWPerson.h"
+#import "SWPerson+Details.h"
 #import "SWTabBarController.h"
 
 @interface SWLoginViewController : UIViewController <UIPickerViewDelegate, UIPickerViewDataSource>
 {
     NSMutableArray*         _countries;
     BOOL                    _alreadySetup;
+    
+    NSString*               _userPhoneNumber;
 }
 
 @property (weak, nonatomic) IBOutlet UIImageView *imgViewLogo;
@@ -52,7 +56,7 @@
 
 - (void)setup;
 - (void)accountValidated;
-- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token;
+- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token userID:(int)userID;
 - (void)codeNotValidated;
 - (void)gotoApp;
 - (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up;
