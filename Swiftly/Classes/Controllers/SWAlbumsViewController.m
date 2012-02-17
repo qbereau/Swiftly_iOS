@@ -13,6 +13,8 @@
 @synthesize sharedAlbums = _sharedAlbums;
 @synthesize specialAlbums = _specialAlbums;
 @synthesize managedObjectContext = _managedObjectContext;
+@synthesize updateAlbumAccounts = _updateAlbumAccounts;
+@synthesize reqOps = _reqOps;
 
 - (void)didReceiveMemoryWarning
 {
@@ -26,6 +28,9 @@
 {
     [super viewDidLoad];
     
+    NSLog(@"%@", [SWPerson findAllObjects]);
+    NSLog(@"%d", [[SWPerson findAllObjects] count]);
+    
     UIBarButtonItem* btnUnlock = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"] style:UIBarButtonItemStylePlain target:self action:@selector(unlockAlbums:)];
     self.navigationItem.leftBarButtonItem = btnUnlock;
     
@@ -36,7 +41,64 @@
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
+    __block SWAlbumsViewController* selfBlock = self;
+    self.updateAlbumAccounts = ^(int album_id) {
+        // Update Accounts
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            
+            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", album_id]
+                                     parameters:nil
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            NSLog(@"obj: %@", responseObject);
+                                            
+                                            SWAlbum* album = [SWAlbum findObjectWithServerID:album_id];
+                                            if (album)   
+                                            {
+                                                [album setParticipants:nil];
+                                            
+                                                for (id o in responseObject)
+                                                {
+                                                    SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
+                                                    if (!p)
+                                                    {
+                                                        p = [SWPerson createEntity];
+                                                        [p updateWithObject:o];
+                                                    }
+                                                    
+                                                    [album addParticipantsObject:p];
+                                                }
+                                            }
+                                            
+                                            --selfBlock.reqOps;
+                                            if (selfBlock.reqOps == 0)
+                                                [selfBlock saveAndUpdate];
+                                        } 
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            NSLog(@"Error: %@", [error description]);
+                                        }
+             ];
+        });    
+    };
+    
     [self synchronize:YES];    
+}
+
+- (void)saveAndUpdate
+{
+    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{    
+        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+    });
+    
+    [self reload];    
+}
+
+- (void)reload
+{
+    self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums];
+    self.specialAlbums = [SWAlbum findAllSpecialAlbums];
+    [self.tableView reloadData];
 }
 
 - (void)synchronize:(BOOL)modal
@@ -49,12 +111,16 @@
         hud.labelText = NSLocalizedString(@"loading", @"loading");
     }
     
+    self.reqOps = 0;    
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [[SWAPIClient sharedClient] getPath:@"/albums" 
                                  parameters:nil 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                          if ([responseObject isKindOfClass:[NSArray class]])
                                          {
+                                             if ([responseObject count] == 0)
+                                                 [self saveAndUpdate];
+                                             
                                              for (id obj in responseObject)
                                              {
                                                  SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
@@ -66,23 +132,16 @@
                                                  }
                                                  
                                                  [albumObj updateWithObject:obj];
+                                                 
+                                                 ++self.reqOps;
+                                                 self.updateAlbumAccounts(albumObj.serverID);
                                              }
-                                             
-                                             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                             
-                                             if (modal)
-                                                 [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                             
-                                             self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums];
-                                             self.specialAlbums = [SWAlbum findAllSpecialAlbums];   
-                                             [self.tableView reloadData];
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                         dispatch_async(dispatch_get_main_queue(), ^{
                                             
-                                            if (modal)
-                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                             
                                             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                             [av show];                                            

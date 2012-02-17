@@ -49,6 +49,7 @@
         <attribute name="isBlocked" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isBlocking" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isLinked" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isSelf" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isUser" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lastName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="originalPhoneNumber" optional="YES" attributeType="String" syncable="YES"/>
@@ -59,9 +60,9 @@
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWGroup" inverseName="contacts" inverseEntity="SWGroup" syncable="YES"/>
     </entity>
     <elements>
-        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="180"/>
-        <element name="SWGroup" positionX="160" positionY="192" width="128" height="75"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="375"/>
-        <element name="SWPerson" positionX="414" positionY="264" width="128" height="195"/>
+        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="240"/>
+        <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="360"/>
+        <element name="SWPerson" positionX="414" positionY="264" width="128" height="240"/>
     </elements>
 </model>

@@ -2,7 +2,7 @@
 //  SWPerson.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/14/12.
+//  Created by Quentin Bereau on 2/17/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -19,10 +19,11 @@
 @property (nonatomic) BOOL isLinked;
 @property (nonatomic) BOOL isUser;
 @property (nonatomic, retain) NSString * lastName;
-@property (nonatomic, retain) NSString * phoneNumber;
-@property (nonatomic, retain) id thumbnail;
-@property (nonatomic) int32_t serverID;
 @property (nonatomic, retain) NSString * originalPhoneNumber;
+@property (nonatomic, retain) NSString * phoneNumber;
+@property (nonatomic) int32_t serverID;
+@property (nonatomic, retain) id thumbnail;
+@property (nonatomic) BOOL isSelf;
 @property (nonatomic, retain) NSSet *albums;
 @property (nonatomic, retain) NSSet *groups;
 @end

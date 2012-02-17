@@ -197,9 +197,11 @@
     {
         if (self.imageView.image)
         {
+            self.imageView.frame = CGRectMake(0, 0, self.frame.size.height, self.frame.size.height);
             posX += self.imageView.frame.size.width; 
         }        
     }
+    
     
     NSInteger cellW = self.frame.size.width - 40;
     NSInteger cellH = self.frame.size.height;    

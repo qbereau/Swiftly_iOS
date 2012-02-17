@@ -66,5 +66,6 @@ typedef void (^CheckNewNumbers)(NSArray*, BOOL, int);
 - (void)pushedButton:(SWSwitchButton*)sender;
 - (void)scrollLeft:(UIButton*)sender;
 - (void)scrollRight:(UIButton*)sender;
+- (NSArray*)findPeople;
 
 @end

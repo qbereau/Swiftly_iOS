@@ -27,7 +27,9 @@
 
 - (NSString*)name
 {
-    if (self.firstName || self.lastName)
+    if (self.isSelf)
+        return NSLocalizedString(@"me", @"me");
+    else if (self.firstName || self.lastName)
         return [NSString stringWithFormat:@"%@ %@", self.firstName ? self.firstName : @"", self.lastName ? self.lastName : @""];
     return NSLocalizedString(@"unknown", @"unknown");
 }
@@ -60,7 +62,7 @@
     UIGraphicsEndImageContext();    
     
     
-    // Merge tow images
+    // Merge two images
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
     
     [thumb drawInRect:CGRectMake(0, 0, thumb.size.width, thumb.size.height)];
@@ -120,6 +122,46 @@
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"originalPhoneNumber IN %@", phones];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];    
+    return [context executeFetchRequest:request error:nil];
+}
+
++ (NSArray *)findValidObjects
+{
+    NSMutableArray* phones = [NSMutableArray array];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
+    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
+    for ( int i = 0; i < nPeople; i++ )
+    {
+        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
+        
+        NSString* phoneNumber = @"";
+        
+        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
+        NSString *mobileNumber;
+        NSString *mobileLabel;
+        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
+        {
+            mobileLabel = (__bridge NSString *)ABMultiValueCopyLabelAtIndex(phoneNumbers, i);
+            if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneMobileLabel] || [mobileNumber isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel]) 
+            {
+                phoneNumber = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
+                break;
+            }
+        }
+        
+        [phones addObject:phoneNumber];
+        
+        CFRelease(ref);
+    }     
+    
+    
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"originalPhoneNumber IN %@ AND isUser == %@", phones, [NSNumber numberWithBool:YES]];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];    
@@ -202,8 +244,15 @@
     self.isBlocking     = [[obj valueForKey:@"blocking"] boolValue];
     self.isLinked       = [[obj valueForKey:@"linked"] boolValue];    
     
-    self.originalPhoneNumber    = [obj valueForKey:@"original_phone_number"];
-    self.phoneNumber            = [obj valueForKey:@"phone_number"];    
+    NSString* origPhone = [obj valueForKey:@"original_phone_number"];
+    if (!origPhone || [origPhone class] == [NSNull class])
+        origPhone = nil;
+    self.originalPhoneNumber    = origPhone;
+
+    NSString* phone = [obj valueForKey:@"phone_number"];
+    if (!phone || [phone class] == [NSNull class])
+        phone = nil;
+    self.phoneNumber            = phone;
 }
 
 @end

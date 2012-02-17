@@ -18,4 +18,7 @@
 @property (nonatomic, assign) CGFloat           progress;
 @property (nonatomic, strong) UIProgressView*   progressView;
 
+- (id)initWithProgressView:(BOOL)pv style:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+- (void)setup:(BOOL)pv;
+
 @end

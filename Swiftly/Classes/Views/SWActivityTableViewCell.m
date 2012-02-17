@@ -16,11 +16,11 @@
 @synthesize progress = _progress;
 @synthesize progressView = _progressView;
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
+- (id)initWithProgressView:(BOOL)pv style:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        [self setup];
+        [self setup:pv];
     }
     return self;
 }
@@ -31,20 +31,24 @@
     
     if (self)
     {
-        [self setup];
+        [self setup:YES];
     }
     
     return self;
 }
 
-- (void)setup
+- (void)setup:(BOOL)pv
 {
     [super setup];
     
     self.subtitle.text = NSLocalizedString(@"waiting_to_upload", @"Waiting to upload");
-    self.progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(PROGRESS_VIEW_POS_X, PROGRESS_VIEW_POS_Y, self.frame.size.width - PROGRESS_VIEW_POS_X - 10, 20)];
-    self.progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    [self addSubview:self.progressView];
+    
+    if (pv)
+    {
+        self.progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(PROGRESS_VIEW_POS_X, PROGRESS_VIEW_POS_Y, self.frame.size.width - PROGRESS_VIEW_POS_X - 10, 20)];
+        self.progressView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        [self addSubview:self.progressView];
+    }
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated
@@ -58,8 +62,8 @@
 - (void)setProgress:(CGFloat)progress
 {
     _progress = progress;
-    
-    self.progressView.progress = _progress;
+
+    self.progressView.progress = _progress;    
 }
 
 - (void)layoutSubviews
@@ -67,7 +71,7 @@
     [super layoutSubviews];
     
     self.title.frame = CGRectMake(PROGRESS_VIEW_POS_X, -20, self.frame.size.width - self.imageView.frame.size.width, self.title.frame.size.height);
-    self.subtitle.frame = CGRectMake(PROGRESS_VIEW_POS_X, 10, self.frame.size.width - self.imageView.frame.size.width, self.subtitle.frame.size.height);
+    self.subtitle.frame = CGRectMake(PROGRESS_VIEW_POS_X, 10, self.frame.size.width - self.imageView.frame.size.width, self.subtitle.frame.size.height);    
 }
 
 @end

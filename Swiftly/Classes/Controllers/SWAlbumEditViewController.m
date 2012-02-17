@@ -118,6 +118,7 @@
     };
     
     self.genericFailureBlock = ^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"Error: %@", [error description]);
         dispatch_async(dispatch_get_main_queue(), ^{
             [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
@@ -312,7 +313,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"&unlink";
+            unlink = @"?unlink";
         else
             unlink = @"";
         
@@ -336,7 +337,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"&unlink";
+            unlink = @"?unlink";
         else
             unlink = @"";
         

@@ -20,6 +20,7 @@
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 + (NSArray *)findAllObjects;
++ (NSArray *)findValidObjects;
 + (void)deleteAllObjects;
 + (SWPerson*)findObjectWithServerID:(int)serverID;
 + (SWPerson*)findObjectWithOriginalPhoneNumber:(NSString*)phoneNb;

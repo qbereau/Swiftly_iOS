@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1906907414ED6BC40009A325 /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 1906907314ED6BC30009A325 /* SWMedia.m */; };
+		1906908014EEAE5E0009A325 /* SWPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 1906907F14EEAE5E0009A325 /* SWPerson.m */; };
 		191BC34D14DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */; };
 		191BC34E14DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */; };
 		191BC34F14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png in Resources */ = {isa = PBXBuildFile; fileRef = 191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */; };
@@ -49,7 +50,6 @@
 		192A6FAE14E9933800B8EACA /* SWGroup+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FAD14E9933800B8EACA /* SWGroup+Details.m */; };
 		192A6FB114EA527D00B8EACA /* SWAlbum+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */; };
 		192A6FEE14EA7A3100B8EACA /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FED14EA7A3000B8EACA /* SWAlbum.m */; };
-		192A6FF114EA9D4800B8EACA /* SWPerson.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF014EA9D4800B8EACA /* SWPerson.m */; };
 		192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */; };
 		192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF614EAE70800B8EACA /* SWGroup.m */; };
 		192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */; };
@@ -201,6 +201,8 @@
 /* Begin PBXFileReference section */
 		1906907214ED6BC30009A325 /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
 		1906907314ED6BC30009A325 /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
+		1906907E14EEAE5D0009A325 /* SWPerson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWPerson.h; sourceTree = "<group>"; };
+		1906907F14EEAE5E0009A325 /* SWPerson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWPerson.m; sourceTree = "<group>"; };
 		191BC34814DBE2850017F9A3 /* segcontrol_left_sel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_sel_right_unsel.png; sourceTree = "<group>"; };
 		191BC34914DBE2850017F9A3 /* segcontrol_left_unsel_right_sel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_sel.png; sourceTree = "<group>"; };
 		191BC34A14DBE2850017F9A3 /* segcontrol_left_unsel_right_unsel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = segcontrol_left_unsel_right_unsel.png; sourceTree = "<group>"; };
@@ -267,8 +269,6 @@
 		192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SWAlbum+Details.m"; sourceTree = "<group>"; };
 		192A6FEC14EA7A3000B8EACA /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
 		192A6FED14EA7A3000B8EACA /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
-		192A6FEF14EA9D4700B8EACA /* SWPerson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWPerson.h; sourceTree = "<group>"; };
-		192A6FF014EA9D4800B8EACA /* SWPerson.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWPerson.m; sourceTree = "<group>"; };
 		192A6FF214EAAFB000B8EACA /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		192A6FF514EAE70700B8EACA /* SWGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroup.h; sourceTree = "<group>"; };
@@ -802,14 +802,14 @@
 				192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */,
 				192A6FEC14EA7A3000B8EACA /* SWAlbum.h */,
 				192A6FED14EA7A3000B8EACA /* SWAlbum.m */,
-				192A6FEF14EA9D4700B8EACA /* SWPerson.h */,
-				192A6FF014EA9D4800B8EACA /* SWPerson.m */,
 				192A6FF514EAE70700B8EACA /* SWGroup.h */,
 				192A6FF614EAE70800B8EACA /* SWGroup.m */,
 				192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */,
 				192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */,
 				1906907214ED6BC30009A325 /* SWMedia.h */,
 				1906907314ED6BC30009A325 /* SWMedia.m */,
+				1906907E14EEAE5D0009A325 /* SWPerson.h */,
+				1906907F14EEAE5E0009A325 /* SWPerson.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1152,11 +1152,11 @@
 				192A6FAE14E9933800B8EACA /* SWGroup+Details.m in Sources */,
 				192A6FB114EA527D00B8EACA /* SWAlbum+Details.m in Sources */,
 				192A6FEE14EA7A3100B8EACA /* SWAlbum.m in Sources */,
-				192A6FF114EA9D4800B8EACA /* SWPerson.m in Sources */,
 				192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */,
 				192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */,
 				192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */,
 				1906907414ED6BC40009A325 /* SWMedia.m in Sources */,
+				1906908014EEAE5E0009A325 /* SWPerson.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -55,6 +55,7 @@
                                             for (id newObj in responseObject)
                                             {
                                                 SWPerson* newPerson   = [SWPerson createEntity];
+                                                newPerson.isSelf = NO;
                                                 [newPerson updateWithObject:newObj];
 
                                                 // Add additional infos from AddressBook
@@ -70,10 +71,10 @@
                                                 }
                                                 
                                             }
+
+                                            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
                                             
-                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                                                      
-                                            
-                                            selfBlock.contacts = [SWPerson findAllObjects];
+                                            selfBlock.contacts = [selfBlock findPeople];
                                             [selfBlock.tableView reloadData];
                                             
                                             // Hide the HUD in the main tread 
@@ -219,7 +220,7 @@
         {
             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
             
-            selfBlock.contacts = [SWPerson findAllObjects];
+            selfBlock.contacts = [selfBlock findPeople];
             [selfBlock.tableView reloadData];
             
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -295,6 +296,14 @@
         
         [self.view addSubview:groupView];
     }
+}
+
+- (NSArray*)findPeople
+{
+    if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE)
+        return [SWPerson findValidObjects];
+    else
+        return [SWPerson findAllObjects];
 }
 
 - (void)pushedButton:(SWSwitchButton*)sender
@@ -380,7 +389,8 @@
         self.selectedContacts = [NSMutableArray array];
     
     // Sync with server
-    self.contacts = [SWPerson findAllObjects];
+    self.contacts = [self findPeople];
+
     if ([self.contacts count] == 0)
     {
         [self synchronize:YES];
@@ -389,7 +399,7 @@
     {
         [self synchronize:NO];
         [self.tableView reloadData];
-    }
+    }   
 }
 
 - (void)synchronize:(BOOL)modal

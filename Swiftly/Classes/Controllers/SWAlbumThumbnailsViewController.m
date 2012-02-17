@@ -44,12 +44,10 @@
     {             
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
         hud.labelText = NSLocalizedString(@"loading", @"loading");
-        __block int reqCounter = 0;
         
         // Update Medias
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            ++reqCounter;
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -69,13 +67,9 @@
                                             [self setDataSource:self.mediaDS]; 
                                             
                                             // Hide the HUD in the main tread 
-                                            --reqCounter;
-                                            if (reqCounter <= 0)
-                                            {
-                                                dispatch_async(dispatch_get_main_queue(), ^{
-                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                });
-                                            }
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                            });
                                         } 
                                         failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                             // Hide the HUD in the main tread 
@@ -88,45 +82,6 @@
              ];  
             
         });
-        
-        // Update Accounts
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
-            ++reqCounter;
-            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", self.selectedAlbum.serverID]
-                                     parameters:nil
-                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            NSLog(@"obj: %@", responseObject);
-                                           
-                                            [self.selectedAlbum setParticipants:nil];
-                                            for (id o in responseObject)
-                                            {
-                                                SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
-                                                if (!p)
-                                                    p = [SWPerson newEntity];
-                                                [self.selectedAlbum addParticipantsObject:p];
-                                            }
-                                            
-                                            // Hide the HUD in the main tread 
-                                            --reqCounter;
-                                            if (reqCounter <= 0)
-                                            {                                            
-                                                dispatch_async(dispatch_get_main_queue(), ^{
-                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                });
-                                            }
-                                        } 
-                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                            // Hide the HUD in the main tread 
-                                            dispatch_async(dispatch_get_main_queue(), ^{
-                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                                [av show];                                                
-                                            });
-                                        }
-             ];  
-            
-        });        
         
     }
     

@@ -288,11 +288,18 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    SWActivityTableViewCell* cell = [tv dequeueReusableCellWithIdentifier:@"ActivityCell"];
+    SWActivityTableViewCell* cell; 
+    if (indexPath.section == 0)    
+        cell = [tv dequeueReusableCellWithIdentifier:@"ActivityCellInProgress"];
+    else
+        cell = [tv dequeueReusableCellWithIdentifier:@"ActivityCellRecent"];
     
     if (!cell)
     {
-        cell = [[SWActivityTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"ActivityCell"];
+        if (indexPath.section == 0)
+            cell = [[SWActivityTableViewCell alloc] initWithProgressView:YES style:UITableViewCellStyleDefault reuseIdentifier:@"ActivityCellInProgress"];
+        else
+            cell = [[SWActivityTableViewCell alloc] initWithProgressView:NO style:UITableViewCellStyleDefault reuseIdentifier:@"ActivityCellRecent"];
         cell.opaque = NO;
     }
             
@@ -306,7 +313,9 @@
     cell.progress = media.uploadProgress;
     
     if (media.isUploaded)
+    {
         cell.subtitle.text = [media uploadedTime];
+    }
     else if (media.uploadProgress > 0.0f)
         cell.subtitle.text = NSLocalizedString(@"is_uploading", @"uploading...");
         
