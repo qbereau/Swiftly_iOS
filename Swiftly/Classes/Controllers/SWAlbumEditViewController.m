@@ -195,7 +195,6 @@
                                              NSMutableArray* contacts_arr = [NSMutableArray array];
                                              for (SWPerson* p in self.album.participants)
                                              {
-                                                 NSLog(@"Number: %@", p.phoneNumber);
                                                  [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
                                              }
                                              
@@ -218,7 +217,7 @@
                                          }
                                          failure:self.genericFailureBlock 
              ];            
-            
+
         });
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
