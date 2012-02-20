@@ -41,6 +41,9 @@
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
+    SWPerson* p = [SWPerson findObjectWithServerID:14];
+    NSLog(@"%@", [p name]);
+    
     __block SWAlbumsViewController* selfBlock = self;
     self.updateAlbumAccounts = ^(int album_id) {
         // Update Accounts
@@ -49,8 +52,7 @@
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", album_id]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            NSLog(@"obj: %@", responseObject);
-                                            
+                                            NSLog(@"[SWAlbumsViewController#updateAlbumAccount] Needs to use pagination....");
                                             SWAlbum* album = [SWAlbum findObjectWithServerID:album_id];
                                             if (album)   
                                             {
@@ -104,7 +106,8 @@
 - (void)synchronize:(BOOL)modal
 {
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
- 
+    [SWAlbum deleteAllObjects];
+    
     if (modal)
     {
         MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];

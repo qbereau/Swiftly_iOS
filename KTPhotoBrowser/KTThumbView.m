@@ -31,7 +31,7 @@
         _camera.frame = CGRectMake(6, frame.size.height - 12, 16, 8);
         _camera.contentMode = UIViewContentModeScaleAspectFit;
         [self addSubview:_camera];
-        
+
         self.backgroundColor = [UIColor clearColor];
     }
     return self;
@@ -49,7 +49,7 @@
 - (void)drawRect:(CGRect)rect
 {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    CGRect rectangle = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
+    CGRect rectangle = CGRectMake(0, self.bounds.size.height - 15, self.bounds.size.width, 15);
     CGContextAddRect(ctx, rectangle);
     CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5].CGColor);
     CGContextFillRect(ctx, rectangle);
@@ -60,6 +60,7 @@
 @implementation KTThumbView
 
 @synthesize controller = controller_;
+@synthesize videoOverlayView = _videoOverlayView;
 
 - (void)dealloc 
 {
@@ -84,9 +85,10 @@
       // ratio.
       [[self imageView] setContentMode:UIViewContentModeScaleAspectFill];
        
-       KTThumbVideoView* videoOverlayView = [[KTThumbVideoView alloc] initWithFrame:CGRectMake(0, frame.size.height - 15, frame.size.width, 15)];
-       videoOverlayView.duration = 10;
-       [self addSubview:videoOverlayView];       
+       _videoOverlayView = [[KTThumbVideoView alloc] initWithFrame:CGRectMake(0, 60, 75, 15)];
+       _videoOverlayView.duration = 0;
+       _videoOverlayView.hidden = YES;
+       [self insertSubview:_videoOverlayView aboveSubview:self.imageView];       
    }
    return self;
 }
@@ -119,15 +121,6 @@
    } else {
       self.layer.borderColor = nil;
    }
-}
-
-- (void)drawRect:(CGRect)rect
-{
-    CGContextRef ctx = UIGraphicsGetCurrentContext();
-    CGRect rectangle = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
-    CGContextAddRect(ctx, rectangle);
-    CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0 green:0 blue:0 alpha:0.5].CGColor);
-    CGContextFillRect(ctx, rectangle);
 }
 
 @end

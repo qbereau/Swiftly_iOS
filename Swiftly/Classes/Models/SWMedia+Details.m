@@ -50,7 +50,6 @@
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
-    
     return [context executeFetchRequest:request error:nil];
 }
 
@@ -61,9 +60,16 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:YES]];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
+    [request setFetchLimit:20];
     [request setPredicate:predicate];
     
-    return [context executeFetchRequest:request error:nil];
+    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSTimeInterval t1 = [(SWMedia*)obj1 uploadedDate];
+        NSTimeInterval t2 = [(SWMedia*)obj2 uploadedDate];
+        return t1 <= t2;
+    }];
+    
+    return arr;
 }
 
 + (void)deleteAllObjects

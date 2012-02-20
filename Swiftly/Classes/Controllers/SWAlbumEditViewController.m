@@ -188,36 +188,31 @@
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
+
+            NSMutableArray* contacts_arr = [NSMutableArray array];
+            for (SWPerson* p in self.album.participants)
+            {
+                [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
+            }
+            NSMutableDictionary* params = [NSMutableDictionary dictionaryWithDictionary:[self.album toDictionnary]];
+            [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:contacts_arr forKey:@"add_account_ids"]];
+
+            BOOL shouldLockAlbum = self.album.isLocked;
+
             [[SWAPIClient sharedClient] postPath:@"/albums"
-                                      parameters:[self.album toDictionnary]
+                                      parameters:params
                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                             
-                                             NSMutableArray* contacts_arr = [NSMutableArray array];
-                                             for (SWPerson* p in self.album.participants)
-                                             {
-                                                 [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
-                                             }
-                                             
-                                             BOOL shouldLockAlbum = self.album.isLocked;
+
                                              self.album = [SWAlbum createEntity];
                                              self.album.isLocked = shouldLockAlbum;
                                              [self.album updateWithObject:responseObject];
-                                             
+
                                              [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                             
-                                             NSDictionary* contacts = [NSDictionary dictionaryWithObject:contacts_arr forKey:@"add_account_ids"];
-                                             
-                                             [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
-                                                                       parameters:contacts
-                                                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                                              self.uploadMediasBlock(self.album.serverID);
-                                                                          }
-                                                                          failure:self.genericFailureBlock
-                                              ];
+
+                                             self.uploadMediasBlock(self.album.serverID);
                                          }
                                          failure:self.genericFailureBlock 
-             ];            
+             ];
 
         });
     }
@@ -313,7 +308,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"?unlink";
+            unlink = @"?unlink=1";
         else
             unlink = @"";
         
@@ -337,7 +332,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"?unlink";
+            unlink = @"?unlink=1";
         else
             unlink = @"";
         

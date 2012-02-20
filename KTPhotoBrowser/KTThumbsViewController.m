@@ -131,16 +131,18 @@
 {
     if (!actionSheet_)
     {
+        SWMedia* m = [(SWWebImagesDataSource*)(self.dataSource) mediaAtIndex:index];
+        SWPerson* p = [SWPerson findObjectWithServerID:m.creatorID];
+        
         actionSheet_ = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"filter_thumb_title", @"view all files")
                                                   delegate:self
                                          cancelButtonTitle:NSLocalizedString(@"Cancel", @"Cancel button text.")
                                     destructiveButtonTitle:nil
-                                         otherButtonTitles:[NSString stringWithFormat:NSLocalizedString(@"filter_thumb", @"view files shared by..."), @"Quentin Bereau"], NSLocalizedString(@"filter_thumb_all", @"view all files"), nil];
+                                         otherButtonTitles:[NSString stringWithFormat:NSLocalizedString(@"filter_thumb", @"view files shared by..."), p.name], NSLocalizedString(@"filter_thumb_all", @"view all files"), nil];
         [actionSheet_ showInView:[UIApplication sharedApplication].keyWindow];
         [actionSheet_ release];
     }
 }
-
 
 #pragma mark -
 #pragma mark UIActionSheetDelegate
@@ -148,7 +150,17 @@
 // Called when a button is clicked. The view will be automatically dismissed after this call returns
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex 
 {
-    NSLog(@"blabla");
+    if (buttonIndex == 0)
+    {
+        // Filter by user
+        //[self.mediaDS videoFilter];
+    }
+    else if (buttonIndex == 1)
+    {
+        // Everyone
+        //[self.mediaDS resetFilter];
+    }
+    
     actionSheet_ = nil;
 }
 
@@ -163,12 +175,15 @@
 
 - (KTThumbView *)thumbsView:(KTThumbsView *)thumbsView thumbForIndex:(NSInteger)index
 {
-   KTThumbView *thumbView = [thumbsView dequeueReusableThumbView];
-   if (!thumbView) {
-      thumbView = [[[KTThumbView alloc] initWithFrame:CGRectZero] autorelease];
-      [thumbView setController:self];
-   }
+    KTThumbView *thumbView = nil;//[thumbsView dequeueReusableThumbView];
+    if (!thumbView) {
+        thumbView = [[[KTThumbView alloc] initWithFrame:CGRectZero] autorelease];
+        [thumbView setController:self];        
+    }
 
+    SWMedia* m = [(SWWebImagesDataSource*)(self.dataSource) mediaAtIndex:index];
+    thumbView.videoOverlayView.hidden = !m.isVideo;
+    
    // Set thumbnail image.
    if ([dataSource_ respondsToSelector:@selector(thumbImageAtIndex:thumbView:)] == NO) {
       // Set thumbnail image synchronously.

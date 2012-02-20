@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SWMedia.h"
+#import "SWWebImagesDataSource.h"
 
 @protocol KTThumbsViewDataSource;
 @class KTThumbsViewController;

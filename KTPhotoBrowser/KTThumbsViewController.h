@@ -9,17 +9,20 @@
 #import <UIKit/UIKit.h>
 #import "KTPhotoBrowserDataSource.h"
 #import "KTThumbsView.h"
+#import "SWPerson.h"
+#import "SWPerson+Details.h"
 
 @class KTThumbsView;
 
 @interface KTThumbsViewController : UIViewController <KTThumbsViewDataSource, UIActionSheetDelegate>
 {
+    UIActionSheet *actionSheet_;
+    
 @private
     id <KTPhotoBrowserDataSource> dataSource_;
     KTThumbsView *scrollView_;
     BOOL viewDidAppearOnce_;
     BOOL navbarWasTranslucent_;
-    UIActionSheet *actionSheet_;
 }
 
 @property (nonatomic, retain) id <KTPhotoBrowserDataSource> dataSource;

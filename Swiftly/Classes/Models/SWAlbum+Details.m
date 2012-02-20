@@ -12,14 +12,20 @@
 
 - (NSArray*)participants_arr
 {
-    NSSortDescriptor* sort = [[NSSortDescriptor alloc] initWithKey:@"predicateContactName" ascending:YES];    
-    return [self.participants sortedArrayUsingDescriptors:[NSArray arrayWithObject:sort]];
+    NSSortDescriptor* sort = [[NSSortDescriptor alloc] initWithKey:@"predicateContactName" ascending:YES];
+    NSArray* arr = [self.participants sortedArrayUsingDescriptors:[NSArray arrayWithObject:sort]];
+    arr = [arr sortedArrayUsingComparator:^(id a, id b){
+        NSString* o1 = [(SWPerson*)a predicateContactName];
+        NSString* o2 = [(SWPerson*)b predicateContactName];
+        return [o1 compare:o2];
+    }];
+    return arr;
 }
 
 - (NSString*)participants_str
 {
     NSMutableString* output = [[NSMutableString alloc] init];
-    for (SWPerson* p in self.participants)
+    for (SWPerson* p in [self participants_arr])
     {
         [output appendFormat:@"%@, ", [p name]];
     }
@@ -90,8 +96,13 @@
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
-    
-    return [context executeFetchRequest:request error:nil];    
+
+    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSString* n1 = [(SWAlbum*)obj1 name];
+        NSString* n2 = [(SWAlbum*)obj2 name];
+        return [n1 compare:n2];        
+    }];    
+    return arr;
 }
 
 + (NSArray*)findUnlockedSharedAlbums
@@ -103,7 +114,12 @@
     [request setEntity:entity];
     [request setPredicate:predicate];
     
-    return [context executeFetchRequest:request error:nil];
+    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSString* n1 = [(SWAlbum*)obj1 name];
+        NSString* n2 = [(SWAlbum*)obj2 name];
+        return [n1 compare:n2];        
+    }];    
+    return arr;
 }
 
 + (NSArray*)findAllSharedAlbums
@@ -114,8 +130,12 @@
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
-    
-    return [context executeFetchRequest:request error:nil];
+    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSString* n1 = [(SWAlbum*)obj1 name];
+        NSString* n2 = [(SWAlbum*)obj2 name];
+        return [n1 compare:n2];        
+    }];
+    return arr;
 }
 
 + (NSArray*)findAllSpecialAlbums
@@ -126,8 +146,12 @@
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
-    
-    return [context executeFetchRequest:request error:nil];
+    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        NSString* n1 = [(SWAlbum*)obj1 name];
+        NSString* n2 = [(SWAlbum*)obj2 name];
+        return [n1 compare:n2];        
+    }];    
+    return arr;
 }
 
 + (SWAlbum*)createEntity

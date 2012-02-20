@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <QuartzCore/QuartzCore.h>
+
+@class KTThumbsViewController;
 
 @interface KTThumbVideoView : UIView
 {
@@ -20,20 +23,19 @@
 
 @end
 
-@class KTThumbsViewController;
-
 @interface KTThumbView : UIButton <UIGestureRecognizerDelegate> 
 {
 @private
     KTThumbsViewController *controller_;
     UILongPressGestureRecognizer *longPressGR_;
+    KTThumbVideoView*               _videoOverlayView;
 }
 
 @property (nonatomic, assign) KTThumbsViewController *controller;
+@property (nonatomic, assign) KTThumbVideoView *videoOverlayView;
 
 - (id)initWithFrame:(CGRect)frame;
 - (void)setThumbImage:(UIImage *)newImage;
 - (void)setHasBorder:(BOOL)hasBorder;
 
 @end
-

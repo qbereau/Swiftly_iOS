@@ -56,15 +56,15 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
-    
+    /*
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
-    [keychain setObject:@"230f968cc82b07512dbd4fbca171ecfc" forKey:(__bridge id)kSecAttrAccount];
-    [keychain setObject:@"050C8E67053DD789D5641D198BC08757" forKey:(__bridge id)kSecValueData];
+    [keychain setObject:@"80A4F23BBF417BBD6E89341E3C7DE195" forKey:(__bridge id)kSecAttrAccount];
+    [keychain setObject:@"622673F034A64C220D08A17CF19D10FB" forKey:(__bridge id)kSecValueData];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
-    
+    */
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
@@ -87,6 +87,18 @@
     NSString *filePath = [[NSBundle mainBundle] pathForResource:@"Countries" ofType:@"plist"];
     NSMutableDictionary* plistDict = [[NSMutableDictionary alloc] initWithContentsOfFile:filePath];
     self.countries = [plistDict objectForKey:@"countries"];    
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(gotoApp)
+                                                 name:@"SWABProcessDone"
+                                               object:nil
+     ];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(gotoApp)
+                                                 name:@"SWABProcessFailed"
+                                               object:nil
+     ];
     
     self.view.hidden = YES;
 }
@@ -262,7 +274,7 @@
 }
 
 - (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token userID:(int)userID
-{
+{ 
     // Save to Keychain
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
     [keychain setObject:key forKey:(__bridge id)kSecAttrAccount];
@@ -285,7 +297,7 @@
         [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/accounts/%d", userID] 
                                   parameters:registerDevice 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                         [self gotoApp];
+                                         [SWPeopleListViewController synchronize];
                                      }
                                      failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                          [self gotoApp];
@@ -315,6 +327,16 @@
 
 - (void)gotoApp
 {    
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                    name:@"SWABProcessDone" 
+                                                  object:nil
+     ];
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                    name:@"SWABProcessFailed" 
+                                                  object:nil
+     ];
+    
     [self performSegueWithIdentifier:@"goto_app" sender:self];
 }
 

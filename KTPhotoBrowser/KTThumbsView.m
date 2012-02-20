@@ -59,6 +59,7 @@
       [[thumbView retain] autorelease];
       [reusableThumbViews_ removeObject:thumbView];
    }
+    
    return thumbView;
 }
 
@@ -173,7 +174,7 @@
          [thumbView setTag:index];
          
          [thumbView setHasBorder:thumbsHaveBorder_];
-         
+          
          [self addSubview:thumbView];
       }
 

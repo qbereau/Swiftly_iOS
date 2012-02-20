@@ -13,7 +13,7 @@
 - (NSString*)contacts_str
 {
     NSMutableString* output = [[NSMutableString alloc] init];
-    for (SWPerson* p in self.contacts)
+    for (SWPerson* p in [self contacts_arr])
     {
         [output appendFormat:@"%@, ", [p name]];
     }
@@ -27,7 +27,13 @@
 - (NSArray*)contacts_arr
 {
     NSSortDescriptor* sort = [[NSSortDescriptor alloc] initWithKey:@"predicateContactName" ascending:YES];
-    return [self.contacts sortedArrayUsingDescriptors:[NSArray arrayWithObject:sort]];
+    NSArray* arr = [self.contacts sortedArrayUsingDescriptors:[NSArray arrayWithObject:sort]];
+    arr = [arr sortedArrayUsingComparator:^(id a, id b){
+        NSString* o1 = [(SWPerson*)a predicateContactName];
+        NSString* o2 = [(SWPerson*)b predicateContactName];
+        return [o1 compare:o2];
+    }];
+    return arr;    
 }
 
 // Core Data Helpers
