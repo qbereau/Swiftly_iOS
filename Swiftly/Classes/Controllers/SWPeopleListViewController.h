@@ -54,7 +54,6 @@
 
 
 + (void)synchronize;
-+ (NSArray*)getPeopleAB;
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results;
 + (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts;
 + (void)checkNewNumbers:(NSArray*)peopleAB itemsParPage:(int)itemsPerPage;

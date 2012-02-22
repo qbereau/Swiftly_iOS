@@ -8,6 +8,8 @@
 
 #import "SWPhotoScrollViewController.h"
 
+#import "SWAlbumEditViewController.h"
+
 #define BUTTON_UNLINKPHOTO 0
 #define BUTTON_DELETEPHOTO 1
 #define BUTTON_CANCEL 2
@@ -20,8 +22,6 @@
 #define BUTTON_EXPORT_CANCEL 2
 
 @implementation SWPhotoScrollViewController
-
-@synthesize comments = _comments;
 
 - (id)initWithDataSource:(id<KTPhotoBrowserDataSource>)dataSource andStartWithPhotoAtIndex:(NSUInteger)index
 {
@@ -41,26 +41,6 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    [self downloadComments];
-}
-
-- (void)downloadComments
-{
-    SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];
-    
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments", m.serverID]
-                                 parameters:nil 
-                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                       
-                                        NSLog(@"%@", responseObject);
-                                    }
-                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        NSLog(@"Error!");
-                                    }
-         ];   
-    });    
 }
 
 - (void)comments:(UIBarButtonItem*)button
@@ -70,7 +50,7 @@
     
     SWCommmentsViewController* newController = [[SWCommmentsViewController alloc] init];
     newController.navigationItem.hidesBackButton = NO;
-    newController.comments = self.comments;
+    newController.media = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];
     [[self navigationController] pushViewController:newController animated:YES];
 }
 
@@ -152,9 +132,13 @@
                 [dataSource_ saveImageAtIndex:currentIndex_];
         }
         else if (buttonIndex == BUTTON_EXPORT_FORWARD_PHOTO)
-        {
-            if ([dataSource_ respondsToSelector:@selector(forwardImageAtIndex:)])
-                [dataSource_ forwardImageAtIndex:currentIndex_];        
+        {     
+            SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];
+            
+            SWAlbumEditViewController* vc = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
+            vc.filesToUpload = [NSArray arrayWithObject:m];
+            vc.mode = SW_ALBUM_MODE_QUICK_SHARE;
+            [self.navigationController pushViewController:vc animated:YES];
         }
         
         [self startChromeDisplayTimer];

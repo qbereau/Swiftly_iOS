@@ -69,7 +69,7 @@
     [moviePlayer_ prepareToPlay];
     [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
     [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
-    [moviePlayer_.view setFrame:CGRectMake(0, 0, [self bounds].size.width, [self bounds].size.height - ([[UIApplication sharedApplication] isStatusBarHidden] ? 0 : 50))];
+    [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
     
     [self turnOffZoom];
 }
@@ -87,8 +87,6 @@
     {
        [imageView_ setFrame:[self bounds]];
     }
-    
-    [moviePlayer_.view setFrame:CGRectMake(0, 0, [self bounds].size.width, [self bounds].size.height - ([[UIApplication sharedApplication] isStatusBarHidden] ? 0 : 50))];
 }
 
 - (void)toggleChromeDisplay

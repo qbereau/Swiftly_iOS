@@ -13,13 +13,7 @@
 #import "SWMedia.h"
 
 @interface SWPhotoScrollViewController : KTPhotoScrollViewController
-{
-    NSArray*        _comments;
-}
 
-@property (nonatomic, strong) NSArray*         comments;
-
-- (void)downloadComments;
 - (void)updateExportPhotoButtonState;
 
 @end

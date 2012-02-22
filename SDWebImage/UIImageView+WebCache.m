@@ -43,6 +43,7 @@
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
     self.image = image;
+    NSLog(@"downloaded image");
 }
 
 @end

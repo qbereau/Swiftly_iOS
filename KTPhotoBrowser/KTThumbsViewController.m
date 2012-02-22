@@ -129,39 +129,7 @@
 
 - (void)didLongPressThumbAtIndex:(NSUInteger)index
 {
-    if (!actionSheet_)
-    {
-        SWMedia* m = [(SWWebImagesDataSource*)(self.dataSource) mediaAtIndex:index];
-        SWPerson* p = [SWPerson findObjectWithServerID:m.creatorID];
-        
-        actionSheet_ = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"filter_thumb_title", @"view all files")
-                                                  delegate:self
-                                         cancelButtonTitle:NSLocalizedString(@"Cancel", @"Cancel button text.")
-                                    destructiveButtonTitle:nil
-                                         otherButtonTitles:[NSString stringWithFormat:NSLocalizedString(@"filter_thumb", @"view files shared by..."), p.name], NSLocalizedString(@"filter_thumb_all", @"view all files"), nil];
-        [actionSheet_ showInView:[UIApplication sharedApplication].keyWindow];
-        [actionSheet_ release];
-    }
-}
-
-#pragma mark -
-#pragma mark UIActionSheetDelegate
-
-// Called when a button is clicked. The view will be automatically dismissed after this call returns
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex 
-{
-    if (buttonIndex == 0)
-    {
-        // Filter by user
-        //[self.mediaDS videoFilter];
-    }
-    else if (buttonIndex == 1)
-    {
-        // Everyone
-        //[self.mediaDS resetFilter];
-    }
     
-    actionSheet_ = nil;
 }
 
 #pragma mark -
@@ -183,6 +151,7 @@
 
     SWMedia* m = [(SWWebImagesDataSource*)(self.dataSource) mediaAtIndex:index];
     thumbView.videoOverlayView.hidden = !m.isVideo;
+    thumbView.videoOverlayView.duration = m.isVideo ? m.duration : 0;
     
    // Set thumbnail image.
    if ([dataSource_ respondsToSelector:@selector(thumbImageAtIndex:thumbView:)] == NO) {

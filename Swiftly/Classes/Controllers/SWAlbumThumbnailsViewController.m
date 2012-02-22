@@ -51,13 +51,15 @@
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            NSLog(@"obj: %@ - %@", responseObject, [responseObject class]);
+
                                             self.mediaDS = [[SWWebImagesDataSource alloc] init];
                                             
                                             NSMutableArray* arrMedias = [NSMutableArray new];
                                             for (id obj in responseObject)
                                             {
-                                                SWMedia* mediaObj = [SWMedia createEntity];
+                                                SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                if (!mediaObj)
+                                                    mediaObj = [SWMedia createEntity];                                          
                                                 [mediaObj updateWithObject:obj];
                                                 [arrMedias addObject:mediaObj];
                                             }
@@ -136,6 +138,7 @@
 {
     SWAlbumEditViewController* vc = [[SWAlbumEditViewController alloc] initWithStyle:UITableViewStyleGrouped];
     vc.album = self.selectedAlbum;
+    vc.mode = SW_ALBUM_MODE_EDIT;
     [[self navigationController] pushViewController:vc animated:YES];
 }
 
@@ -145,7 +148,6 @@
         return;
     
     UISegmentedControl *segmentedControl = (UISegmentedControl*)sender;
-    NSLog(@"%d", segmentedControl.selectedSegmentIndex);
     
     if (segmentedControl.selectedSegmentIndex == 0)
     {
@@ -163,8 +165,48 @@
         [self.mediaDS videoFilter];        
     }
     
-    [self setDataSource:self.mediaDS];    
+    [self setDataSource:self.mediaDS];
 }
+
+
+- (void)didLongPressThumbAtIndex:(NSUInteger)index
+{
+    if (!_actionSheet)
+    {
+        _longPressMedia = [(SWWebImagesDataSource*)(self.dataSource) mediaAtIndex:index];
+        SWPerson* p = [SWPerson findObjectWithServerID:_longPressMedia.creatorID];
+        
+        _actionSheet = [[UIActionSheet alloc] initWithTitle:NSLocalizedString(@"filter_thumb_title", @"view all files")
+                                                   delegate:self
+                                          cancelButtonTitle:NSLocalizedString(@"Cancel", @"Cancel button text.")
+                                     destructiveButtonTitle:nil
+                                          otherButtonTitles:[NSString stringWithFormat:NSLocalizedString(@"filter_thumb", @"view files shared by..."), p.name], NSLocalizedString(@"filter_thumb_all", @"view all files"), nil];
+        [_actionSheet showInView:[UIApplication sharedApplication].keyWindow];
+    }
+}
+
+#pragma mark -
+#pragma mark UIActionSheetDelegate
+
+// Called when a button is clicked. The view will be automatically dismissed after this call returns
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex 
+{
+    if (buttonIndex == 0)
+    {
+        // Filter by user
+        [self.mediaDS filterByCreatorID:_longPressMedia.creatorID];
+        [self setDataSource:self.mediaDS];
+    }
+    else if (buttonIndex == 1)
+    {
+        // Everyone
+        [self.mediaDS resetFilter];
+        [self setDataSource:self.mediaDS];        
+    }
+    
+    _actionSheet = nil;
+}
+
 
 #pragma mark - KTThumbsViewController
 

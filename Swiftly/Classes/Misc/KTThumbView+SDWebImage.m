@@ -10,37 +10,51 @@
 
 @implementation KTThumbView (SDWebImage)
 
-- (void)setImageWithURL:(NSURL *)url {
-   [self setImageWithURL:url placeholderImage:nil];
-}
-
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder {
-   SDWebImageManager *manager = [SDWebImageManager sharedManager];
-   
-   // Remove in progress downloader from queue
-   [manager cancelForDelegate:self];
-   
-   UIImage *cachedImage = nil;
-   if (url) {
-     cachedImage = [manager imageWithURL:url];
-   }
-   
-   if (cachedImage) {
-      [self setThumbImage:cachedImage];
-   }
-   else {
-      if (placeholder) {
-         [self setThumbImage:placeholder];
-      }
-      
-      if (url) {
-        [manager downloadWithURL:url delegate:self];
-      }
-   }
-}
-
-- (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
-   [self setThumbImage:image];
+- (void)setImageWithMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder
+{
+    if (media.localThumbnailURL && [[NSFileManager defaultManager] fileExistsAtPath:media.localThumbnailURL])
+    {
+        UIImage* img = [UIImage imageWithData:[NSData dataWithContentsOfFile:media.localThumbnailURL]];
+        [self setThumbImage:img];
+    }
+    else
+    {
+        SDWebImageManager *manager = [SDWebImageManager sharedManager];
+        [manager cancelForDelegate:self];        
+        
+        if (placeholder) 
+        {
+            [self setThumbImage:placeholder];
+        }        
+        
+        if (media.resourceURL) 
+        {
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                
+                NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:media.thumbnailURL]];
+                if (data)
+                {
+                    UIImage* img = [UIImage imageWithData:data];
+                    
+                    NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                    NSString *documentsDirectoryPath = [dirs objectAtIndex:0];
+                    NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d_th.data", media.serverID]];                        
+                    
+                    if ([data writeToFile:exportPath atomically:YES])
+                    {
+                        media.localThumbnailURL = exportPath;                            
+                        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                    }
+                    
+                    if (img) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [self setThumbImage:img];
+                        });
+                    }
+                }
+            });
+        }
+    }
 }
 
 @end

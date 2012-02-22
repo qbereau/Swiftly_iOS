@@ -22,6 +22,7 @@
 + (SWMedia*)findObjectWithServerID:(int)serverID;
 + (SWMedia*)createEntity; // in context
 + (SWMedia*)newEntity; // no context
+- (void)deleteEntity;
 - (void)updateWithObject:(id)obj;
 
 @end

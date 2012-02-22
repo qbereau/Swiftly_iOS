@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AssetsLibrary/ALAssetsLibrary.h>
+#import <AssetsLibrary/ALAsset.h>
+#import <AssetsLibrary/ALAssetRepresentation.h>
 #import "KTPhotoBrowserDataSource.h"
 #import "SWPhotoScrollViewController.h"
 #import "SWMedia.h"
@@ -19,15 +22,18 @@
     NSArray*                    _filteredMedias;
     
     BOOL                        _isDirty;
+    NSInteger                   _mode;
 }
 
 @property (nonatomic, strong) NSMutableArray*   allMedias;
 @property (nonatomic, assign) BOOL              isDirty;
+@property (nonatomic, assign) NSInteger         mode;
 
 - (void)resetFilter;
 - (void)imageFilter;
 - (void)videoFilter;
 
+- (void)filterByCreatorID:(NSInteger)creator_id;
 - (SWMedia*)mediaAtIndex:(NSInteger)index;
 - (BOOL)isMediaOpenAtIndex:(NSInteger)index;
 

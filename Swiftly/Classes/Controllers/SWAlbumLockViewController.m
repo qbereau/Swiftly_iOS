@@ -132,7 +132,7 @@
     if (!self.albumLock)
     {
         _passcodeController.titleLabel.text = NSLocalizedString(@"album_lock_define_new_lock", @"define a new album lock");
-    }      
+    }
 }
 
 - (void)resetCodesProcess
@@ -192,8 +192,9 @@
         else
         {
             // OK - Entered code and album lock DO match
-            
-            // Should delete album lock!!
+            KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+            [keychain setObject:@"" forKey:(__bridge id)kSecValueData];
+
             self.albumLock = nil;
             [self resetCodesProcess];
       

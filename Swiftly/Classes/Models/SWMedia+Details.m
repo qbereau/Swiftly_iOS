@@ -83,8 +83,18 @@
     NSArray *items = [context executeFetchRequest:request error:&error];
     
     
-    for (NSManagedObject *managedObject in items) 
+    for (SWMedia *managedObject in items) 
     {
+        if (managedObject.localResourceURL && [[NSFileManager defaultManager] fileExistsAtPath:managedObject.localResourceURL])
+        {
+            [[NSFileManager defaultManager] removeItemAtPath:managedObject.localResourceURL error:nil];
+        }
+        
+        if (managedObject.localThumbnailURL && [[NSFileManager defaultManager] fileExistsAtPath:managedObject.localThumbnailURL])
+        {
+            [[NSFileManager defaultManager] removeItemAtPath:managedObject.localThumbnailURL error:nil];
+        }        
+        
         [context deleteObject:managedObject];
     }
     
@@ -128,6 +138,16 @@
 
 - (void)deleteEntity
 {
+    if (self.localResourceURL && [[NSFileManager defaultManager] fileExistsAtPath:self.localResourceURL])
+    {
+        [[NSFileManager defaultManager] removeItemAtPath:self.localResourceURL error:nil];
+    }
+    
+    if (self.localThumbnailURL && [[NSFileManager defaultManager] fileExistsAtPath:self.localThumbnailURL])
+    {
+        [[NSFileManager defaultManager] removeItemAtPath:self.localThumbnailURL error:nil];
+    }
+    
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     [context deleteObject:self];
 }
@@ -141,6 +161,7 @@
     self.isVideo        = [[obj valueForKey:@"video"] boolValue];
     self.isOpen         = [[obj valueForKey:@"open"] boolValue];
     self.isOwner        = [[obj valueForKey:@"owner"] boolValue];
+    self.duration       = (int)round([[obj valueForKey:@"duration"] doubleValue]);
     
     id thumb_url = [obj valueForKey:@"thumbnail_url"];
     if (thumb_url && [thumb_url class] != [NSNull class])

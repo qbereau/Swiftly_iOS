@@ -2,12 +2,13 @@
 //  SWMedia.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/16/12.
+//  Created by Quentin Bereau on 2/22/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "SWMedia.h"
 #import "SWAlbum.h"
+#import "SWComment.h"
 
 
 @implementation SWMedia
@@ -18,9 +19,11 @@
 @dynamic bucketURL;
 @dynamic contentType;
 @dynamic creatorID;
+@dynamic duration;
 @dynamic filename;
 @dynamic isImage;
 @dynamic isOpen;
+@dynamic isOwner;
 @dynamic isReady;
 @dynamic isUploaded;
 @dynamic isVideo;
@@ -32,7 +35,9 @@
 @dynamic thumbnailURL;
 @dynamic uploadedDate;
 @dynamic uploadProgress;
-@dynamic isOwner;
+@dynamic localResourceURL;
+@dynamic localThumbnailURL;
 @dynamic album;
+@dynamic comments;
 
 @end

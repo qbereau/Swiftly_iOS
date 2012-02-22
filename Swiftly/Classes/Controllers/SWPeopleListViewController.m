@@ -211,6 +211,7 @@
 
 - (void)reloadData
 {
+    self.contacts = [self findPeople];    
     [self.tableView reloadData];
 }
 
@@ -329,13 +330,17 @@
     if (!cell)
     {
         cell = [[SWTableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellID];
+        
+        CALayer * l = [cell.imageView layer];
+        [l setMasksToBounds:YES];
+        [l setCornerRadius:2.0];
     }
     
     NSArray* arr = [self sortedContactsAtSection:indexPath.section];
     
     SWPerson* p = [arr objectAtIndex:indexPath.row];
     cell.title.text = [p name];
-    cell.subtitle.text = p.originalPhoneNumber;
+
     cell.imageView.image = [p contactImage];
     
     if (self.mode == PEOPLE_LIST_EDIT_MODE)
@@ -382,7 +387,7 @@
 	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         // Step 1: We get an array of all the people present in AddressBook
-        NSArray* peopleAB = [SWPeopleListViewController getPeopleAB];        
+        NSArray* peopleAB = [SWPerson getPeopleAB];        
         
         [[SWAPIClient sharedClient] getPath:@"/accounts"
                                  parameters:nil
@@ -429,51 +434,6 @@
     });  
 }
 
-+ (NSArray*)getPeopleAB
-{
-    NSMutableArray* peopleAB = [NSMutableArray array];
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
-    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
-    for ( int i = 0; i < nPeople; i++ )
-    {
-        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
-        
-        SWPerson* p = [SWPerson newEntity];
-        p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
-        p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
-        
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        NSString *mobileNumber;
-        NSString *mobileLabel;
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
-        {
-            mobileLabel = (__bridge NSString *)ABMultiValueCopyLabelAtIndex(phoneNumbers, i);
-            if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneMobileLabel] || [mobileNumber isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel]) 
-            {
-                p.phoneNumber = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
-                break;
-            }
-        }
-        
-        if (ABPersonHasImageData(ref))
-        {
-            NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
-            p.thumbnail = [UIImage imageWithData:imageData]; 
-            
-        }
-        else
-            p.thumbnail = [SWPerson defaultImage];
-        
-        if (p.firstName || p.lastName)
-            [peopleAB addObject:p];
-        
-        CFRelease(ref);
-    }
-    
-    return peopleAB;    
-}
-
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results
 {
     for (id obj in results)
@@ -485,15 +445,22 @@
             [existingObj updateWithObject:obj];
             
             // Update infos from AddressBook
+            BOOL shouldBreak = NO;
             for (SWPerson* p in peopleAB)
             {
-                if ([p.phoneNumber isEqualToString:existingObj.originalPhoneNumber])
+                for (NSString* origPhoneNb in p.originalPhoneNumbers)
                 {
-                    existingObj.firstName = p.firstName;
-                    existingObj.lastName  = p.lastName;
-                    existingObj.thumbnail = p.thumbnail;
-                    break;
+                    if ([existingObj.originalPhoneNumbers containsObject:origPhoneNb])
+                    {
+                        existingObj.firstName = p.firstName;
+                        existingObj.lastName  = p.lastName;
+                        existingObj.thumbnail = p.thumbnail;
+                        shouldBreak = YES;
+                        break;
+                    }
                 }
+                if (shouldBreak)
+                    break;
             }
         }
     }
@@ -516,15 +483,22 @@
                                                 [newPerson updateWithObject:newObj];
                                                 
                                                 // Add additional infos from AddressBook
+                                                BOOL shouldBreak = NO;
                                                 for (SWPerson* p in newContacts)
                                                 {
-                                                    if ([p.phoneNumber isEqualToString:newPerson.originalPhoneNumber])
+                                                    for (NSString* origPhoneNb in p.originalPhoneNumbers)
                                                     {
-                                                        newPerson.firstName = p.firstName;
-                                                        newPerson.lastName  = p.lastName;
-                                                        newPerson.thumbnail = p.thumbnail;
-                                                        break;
+                                                        if ([newPerson.originalPhoneNumbers containsObject:origPhoneNb])
+                                                        {
+                                                            newPerson.firstName = p.firstName;
+                                                            newPerson.lastName  = p.lastName;
+                                                            newPerson.thumbnail = p.thumbnail;
+                                                            shouldBreak = YES;
+                                                            break;
+                                                        }
                                                     }
+                                                    if (shouldBreak)
+                                                        break;                                                    
                                                 }
                                                 
                                             }
@@ -553,12 +527,15 @@
     NSMutableArray* newContacts = [NSMutableArray array];
     for (SWPerson* p in peopleAB)
     {
-        SWPerson* existingContact = [SWPerson findObjectWithOriginalPhoneNumber:p.phoneNumber];
-        
-        if (!existingContact && p.phoneNumber && [p.phoneNumber class] != [NSNull class])
+        for (NSString* origPhoneNb in p.originalPhoneNumbers)
         {
-            [newPhoneNumbers addObject:p.phoneNumber];
-            [newContacts addObject:p];
+            SWPerson* existingContact = [SWPerson findObjectWithOriginalPhoneNumber:origPhoneNb];
+        
+            if (!existingContact)
+            {
+                [newPhoneNumbers addObject:origPhoneNb];
+                [newContacts addObject:p];
+            }            
         }
     }
 

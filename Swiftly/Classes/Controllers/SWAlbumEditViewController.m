@@ -72,7 +72,7 @@
     
     
     __block SWAlbumEditViewController* blockSelf = self;
-    self.uploadMediasBlock = ^(int album_id) {
+    self.uploadMediasBlock = ^(int album_id, BOOL canExportMedias) {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
             __block int processedEntity = 0;
@@ -87,7 +87,10 @@
                 
                 UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
                 
-                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", [NSNumber numberWithInt:album_id], @"album_id", nil];
+                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  fileType, @"content_type", 
+                                                                                    [NSNumber numberWithInt:album_id], @"album_id", 
+                                                                                    [NSNumber numberWithBool:canExportMedias], @"open",
+                                        nil];
                 
                 [[SWAPIClient sharedClient] postPath:@"/medias"
                                           parameters:params
@@ -141,6 +144,7 @@
     if (self.mode == SW_ALBUM_MODE_EDIT)
     {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(done:)];        
+        _shouldLockAlbumBeingEditedOrCreated = self.album.isLocked;
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
@@ -169,11 +173,10 @@
                                          parameters:[self.album toDictionnary]
                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                 
-                                                BOOL shouldBeLocked = self.album.isLocked;
                                                 if (self.album.serverID == 0)
                                                     self.album = [SWAlbum createEntity];
                                                 
-                                                self.album.isLocked = shouldBeLocked;
+                                                self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
                                                 [self.album updateWithObject:responseObject];                                               
                                                 
                                                 [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
@@ -197,19 +200,18 @@
             NSMutableDictionary* params = [NSMutableDictionary dictionaryWithDictionary:[self.album toDictionnary]];
             [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:contacts_arr forKey:@"add_account_ids"]];
 
-            BOOL shouldLockAlbum = self.album.isLocked;
 
             [[SWAPIClient sharedClient] postPath:@"/albums"
                                       parameters:params
                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
 
                                              self.album = [SWAlbum createEntity];
-                                             self.album.isLocked = shouldLockAlbum;
+                                             self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
                                              [self.album updateWithObject:responseObject];
 
                                              [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
 
-                                             self.uploadMediasBlock(self.album.serverID);
+                                             self.uploadMediasBlock(self.album.serverID, self.album.canExportMedias);
                                          }
                                          failure:self.genericFailureBlock 
              ];
@@ -227,7 +229,7 @@
         }
         else
         {
-            self.uploadMediasBlock(_selectedLinkedAlbum.serverID);
+            self.uploadMediasBlock(_selectedLinkedAlbum.serverID, _canExportMediasForLinkedAlbum);
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
@@ -382,6 +384,74 @@
 {
     return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
 }
+
+- (void)dismissController:(NSTimer*)timer
+{
+    KVPasscodeViewController* ctrl = [[timer userInfo] objectForKey:@"controller"];
+    [ctrl dismissModalViewControllerAnimated:YES];    
+}
+
+- (void)updateTitleAfterAnimation:(NSTimer*)timer
+{
+    NSString* title = (NSString*)[timer.userInfo objectForKey:@"title"];
+    KVPasscodeViewController* ctrl = [[timer userInfo] objectForKey:@"controller"];
+    ctrl.titleLabel.text = title;
+}
+
+#pragma mark - KVPasscodeDelegate
+
+- (void)passcodeController:(KVPasscodeViewController *)controller passcodeEntered:(NSString *)passCode 
+{
+    // *************************  
+    // New Code Creation Process
+    // *************************        
+    if (!_newAlbumLock)
+    {
+        // First code entered, we need a confirmation step
+        
+        _newAlbumLock = [NSNumber numberWithInt:[passCode intValue]];
+        [controller resetWithAnimation:KVPasscodeAnimationStyleConfirm];
+        NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"album_lock_repeat_new_lock", @"confirm your album lock"), @"title",
+                              controller, @"controller",
+                              nil];
+        [NSTimer scheduledTimerWithTimeInterval:0.3
+                                         target:self
+                                       selector:@selector(updateTitleAfterAnimation:)
+                                       userInfo:dict
+                                        repeats:NO];            
+    }
+    else if ([passCode intValue] != [_newAlbumLock intValue])
+    {
+        // Confirmation code and old code don't match
+        
+        _newAlbumLock = nil;
+        [controller resetWithAnimation:KVPasscodeAnimationStyleInvalid];
+        NSDictionary* info = [NSDictionary dictionaryWithObject:controller forKey:@"controller"];
+        [NSTimer scheduledTimerWithTimeInterval:0.5
+                                         target:self
+                                       selector:@selector(dismissController:)
+                                       userInfo:info
+                                        repeats:NO];  
+    }
+    else
+    {
+        // OK - New Code Created
+        KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+        [keychain setObject:[NSString stringWithFormat:@"%d", [passCode intValue]] forKey:(__bridge id)kSecValueData];        
+        _newAlbumLock = nil;
+        
+        _shouldLockAlbumBeingEditedOrCreated = YES;
+        
+        [self.tableView reloadData];
+        [controller dismissModalViewControllerAnimated:YES];            
+    }    
+}
+
+- (void)didCancelPasscodeController:(KVPasscodeViewController *)controller
+{
+    _newAlbumLock = nil;
+}
+
 
 #pragma mark - Table view data source
 
@@ -905,7 +975,7 @@
     cell.title.text = NSLocalizedString(@"album_settings_lock", @"lock this album");
     cell.subtitle.text = NSLocalizedString(@"album_settings_lock_description", @"you can setup a passcode on the settings page. this will only lock this album for your account.");
     
-    cell.accessoryType = self.album.isLocked ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    cell.accessoryType = _shouldLockAlbumBeingEditedOrCreated ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
 }
 
 - (void)setupSectionSettings:(SWTableViewCell*)cell indexPath:(NSIndexPath*)indexPath
@@ -1005,9 +1075,24 @@
 
 - (void)handleSectionSecurityWithIndexPath:(NSIndexPath*)indexPath
 {
-    self.album.isLocked = !self.album.isLocked;
-    
-    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];
+    // Check if album lock exists
+    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_LOCK_ID accessGroup:nil];
+    NSString* lock = [keychain objectForKey:(__bridge id)kSecValueData];
+    if (!lock || lock.length == 0)
+    {
+        KVPasscodeViewController* passcodeController = [[KVPasscodeViewController alloc] init];
+        passcodeController.delegate = self;        
+        
+        UINavigationController *passcodeNavigationController = [[UINavigationController alloc] initWithRootViewController:passcodeController];        
+        [self.navigationController presentModalViewController:passcodeNavigationController animated:YES];
+        
+        passcodeController.titleLabel.text = NSLocalizedString(@"album_lock_define_new_lock", @"define a new album lock");
+    }
+    else
+    {
+        _shouldLockAlbumBeingEditedOrCreated = !_shouldLockAlbumBeingEditedOrCreated;
+        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];
+    }
 }
 
 - (void)handleSectionSettingsWithIndexPath:(NSIndexPath*)indexPath

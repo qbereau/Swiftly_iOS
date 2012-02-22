@@ -28,12 +28,14 @@
 {
     [super viewDidLoad];
     
+    _arrExportSessions = [NSMutableArray array];
+    
     self.navigationBar.topItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(removeMedias:)];    
     self.navigationBar.topItem.title = NSLocalizedString(@"menu_activities", @"Activities");
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
     __block SWActivitiesViewController* blockSelf = self;
-    self.uploadDataBlock = ^(SWMedia* m, NSData* data) {
+    self.uploadDataBlock = ^(SWMedia* m, NSData* data, NSString* filePath) {
             
             NSDictionary* headers = [NSDictionary dictionaryWithObjectsAndKeys: 
                                      m.filename, @"key", 
@@ -56,8 +58,8 @@
                 else
                     m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
                 
-                //[blockSelf reload];
-                [blockSelf.tableView reloadData];
+                //[blockSelf.tableView reloadData];
+                [blockSelf launchRefreshTimer];
             }];
             [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                 
@@ -69,6 +71,15 @@
                                                 m.isUploaded = YES;
                                                 m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
                                                 
+                                                NSError *errDel;
+                                                if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
+                                                {
+                                                    if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                    {
+                                                        NSLog(@"Delete file error: %@", errDel);
+                                                    }
+                                                }
+                                                
                                                 [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
                                                 [blockSelf reload];
                                             }
@@ -76,7 +87,16 @@
                                                 
                                                 m.uploadProgress = 1.0f;
                                                 m.isUploaded = YES;
-                                                m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
+                                                m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];                                           
+                                                
+                                                NSError *errDel;
+                                                if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
+                                                {
+                                                    if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                    {
+                                                        NSLog(@"Delete file error: %@", errDel);
+                                                    }
+                                                }                                                
                                                 
                                                 [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
                                                 [blockSelf reload];                                                
@@ -124,6 +144,8 @@
 - (void)viewWillDisappear:(BOOL)animated
 {
 	[super viewWillDisappear:animated];
+    
+    [self stopTimer];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -153,33 +175,36 @@
     {
         if (m.uploadProgress == 0.0f)
         {
+            [self launchRefreshTimer];
+            
             //__block SWActivitiesViewController* selfBlock = self;
             dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{            
                 ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
                 [assetslibrary assetForURL:[NSURL URLWithString:m.assetURL]
                                resultBlock:^(ALAsset *asset) {
-
+                                   
                                    if ([m.contentType isEqualToString:@"image/png"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];
                                        NSData* imgData = UIImagePNGRepresentation(img);
-                                       self.uploadDataBlock(m, imgData);
+                                       self.uploadDataBlock(m, imgData, nil);
                                    }
                                    else if ([m.contentType isEqualToString:@"image/jpg"] || [m.contentType isEqualToString:@"image/jpeg"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];                                   
                                        NSData* imgData = UIImageJPEGRepresentation(img, 1);
-                                       self.uploadDataBlock(m, imgData);
+                                       self.uploadDataBlock(m, imgData, nil);
                                    }
                                    else
                                    {
                                        // Video
                                        AVURLAsset* avAsset = [AVURLAsset URLAssetWithURL:[NSURL URLWithString:m.assetURL] options:nil];
-                                       AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPreset960x540];
+                                       AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
                                        NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
                                        NSString *documentsDirectoryPath = [dirs objectAtIndex:0];
                                        NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:m.filename];
                                        [[NSFileManager defaultManager] removeItemAtPath:exportPath error:nil];
+                                       
                                        NSURL* exportURL = [NSURL fileURLWithPath:exportPath];
                                        exportSession.outputURL = exportURL;
                                        exportSession.outputFileType = AVFileTypeQuickTimeMovie;
@@ -188,17 +213,12 @@
                                            
                                            switch ([exportSession status]) {
                                                case AVAssetExportSessionStatusFailed:
-                                                   NSLog(@"Export session failed with error: %@", [exportSession error]);
-                                                   break;
                                                case AVAssetExportSessionStatusCancelled:
-                                                   NSLog(@"cancelled");
+                                               case AVAssetExportSessionStatusWaiting:
                                                    break;
                                                case AVAssetExportSessionStatusCompleted:
                                                    NSLog(@"completed");
-                                                   self.uploadDataBlock(m, [NSData dataWithContentsOfURL:exportURL]);
-                                                   break;
-                                               case AVAssetExportSessionStatusWaiting:
-                                                   NSLog(@"waiting");
+                                                   self.uploadDataBlock(m, [NSData dataWithContentsOfURL:exportURL], [exportURL absoluteString]);
                                                    break;
                                                default:
                                                    
@@ -206,13 +226,13 @@
                                            }
                                        }];
                                        
-                                       dispatch_async(dispatch_get_main_queue(), ^{                                                                         
+                                       dispatch_async(dispatch_get_main_queue(), ^{
                                            NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:m, @"media", exportSession, @"exportSession", nil];
-                                           [NSTimer scheduledTimerWithTimeInterval:0.1
+                                           [NSTimer scheduledTimerWithTimeInterval:0.5
                                                                             target:self
                                                                           selector:@selector(updateExportProgress:)
                                                                           userInfo:dict 
-                                                                       	repeats:YES];
+                                                                           repeats:YES];                                           
                                        });
                                    }
                                }
@@ -228,29 +248,48 @@
     }
 }
 
+- (void)launchRefreshTimer
+{
+    if (!_refreshTimer || ![_refreshTimer isValid])
+    {
+        _refreshTimer = [NSTimer scheduledTimerWithTimeInterval:0.5
+                                                         target:self
+                                                       selector:@selector(updateRefresh:)
+                                                       userInfo:nil 
+                                                        repeats:YES];
+    }
+}
+
+- (void)stopTimer
+{
+    [_refreshTimer invalidate];
+    _refreshTimer = nil;
+}
+
+- (void)updateRefresh:(NSTimer*)timer
+{
+    [self.tableView reloadData];
+}
+
 - (void)updateExportProgress:(NSTimer*)timer
 {
-    NSLog(@"11");
     AVAssetExportSession* exportSession = (AVAssetExportSession*)[[timer userInfo] objectForKey:@"exportSession"];
     SWMedia* media                      = (SWMedia*)[[timer userInfo] objectForKey:@"media"];    
-    
-    switch (exportSession.status) {
+        
+    switch (exportSession.status) 
+    {
         case AVAssetExportSessionStatusFailed:
         case AVAssetExportSessionStatusCancelled:
         case AVAssetExportSessionStatusCompleted:
             [timer invalidate];
             break;
         case AVAssetExportSessionStatusExporting:
-            NSLog(@"EXPORTING: %f", exportSession.progress);
             media.uploadProgress = exportSession.progress / 2.0f;
-            //[[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-            //[self reload];                    
-            [self.tableView reloadData];
             break;
         default:
             
             break;
-    }    
+    }            
 }
 
 #pragma mark - UITableView Delegates

@@ -17,14 +17,16 @@
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 
+#import "KVPasscodeViewController.h"
+
 #define SW_ALBUM_MODE_EDIT          0
 #define SW_ALBUM_MODE_CREATE        1
 #define SW_ALBUM_MODE_LINK          2
 #define SW_ALBUM_MODE_QUICK_SHARE   3
 
-typedef void (^UploadMediasBlock)(int);
+typedef void (^UploadMediasBlock)(int, BOOL);
 
-@interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate>
+@interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate, KVPasscodeViewControllerDelegate>
 {
     SWAlbum*            _album;
     NSInteger           _mode;
@@ -45,6 +47,10 @@ typedef void (^UploadMediasBlock)(int);
     
     UploadMediasBlock   _uploadMediasBlock;
     GenericFailureBlock _genericFailureBlock;
+    
+    
+    NSNumber*           _newAlbumLock;
+    BOOL                _shouldLockAlbumBeingEditedOrCreated;
 }
 
 @property (nonatomic, strong) SWAlbum*              album;
@@ -54,6 +60,8 @@ typedef void (^UploadMediasBlock)(int);
 @property (nonatomic, copy)   UploadMediasBlock     uploadMediasBlock;
 @property (nonatomic, copy)   GenericFailureBlock   genericFailureBlock;
 
+- (void)updateTitleAfterAnimation:(NSTimer*)timer;
+- (void)dismissController:(NSTimer*)timer;
 - (void)cleanupAlbum:(BOOL)shouldUnlink;
 - (void)deleteAlbum:(BOOL)shouldUnlink;
 

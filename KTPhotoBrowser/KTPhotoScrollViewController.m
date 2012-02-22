@@ -129,13 +129,10 @@ const CGFloat ktkDefaultToolbarHeight = 44;
                                                                  action:@selector(trashPhoto)];
    }
    
-   UIBarButtonItem *exportButton = nil;
-   if ([dataSource_ respondsToSelector:@selector(forwardImageAtIndex:)])
-   {
-      exportButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction 
-                                                                   target:self
-                                                                   action:@selector(exportPhoto)];
-   }
+    UIBarButtonItem *exportButton = nil;
+    exportButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction 
+                                                                 target:self
+                                                                 action:@selector(exportPhoto)];
    
 
    UIBarItem *space = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
@@ -657,8 +654,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
         }
         else if (buttonIndex == BUTTON_EXPORT_FORWARD_PHOTO)
         {
-            if ([dataSource_ respondsToSelector:@selector(forwardImageAtIndex:)])
-                [dataSource_ forwardImageAtIndex:currentIndex_];        
+   
         }
         
         [self startChromeDisplayTimer];

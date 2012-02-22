@@ -10,21 +10,6 @@
 
 @implementation SWPerson (Details)
 
-/*
-- (BOOL)isEqual:(id)object
-{
-    if (object == self)
-        return YES;
-    if (!object || ![object isKindOfClass:[self class]])
-        return NO;
-    if (!((SWPerson*)object).phoneNumber || [((SWPerson*)object).phoneNumber length] == 0)
-        return NO;
-    if ([((SWPerson*)object).phoneNumber isEqualToString:self.phoneNumber])
-        return YES;
-    return NO;
-}
- */
-
 - (NSString*)name
 {
     if (self.isSelf)
@@ -74,6 +59,20 @@
     return result;
 }
 
+- (NSString*)displayOriginalPhoneNumbers
+{
+    NSMutableString* str = [NSMutableString string];
+    for (NSString* phone_nb in self.originalPhoneNumbers)
+    {
+        [str appendFormat:@"%@, ", phone_nb];
+    }
+    
+    if ([self.originalPhoneNumbers count] > 0)
+        return [str substringToIndex:[str length] - 2];    
+    
+    return str;
+}
+
 + (UIImage*)defaultImage
 {
     return [UIImage imageNamed:@"user@2x.png"];
@@ -90,82 +89,76 @@
 
 + (NSArray *)findAllObjects
 {
-    NSMutableArray* phones = [NSMutableArray array];
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
-    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
-    for ( int i = 0; i < nPeople; i++ )
-    {
-        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
+    NSMutableArray* output = [NSMutableArray array];
+    
+    // Find all objects
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    NSArray* db_set = [context executeFetchRequest:request error:nil];
+    
+    
+    // Find all contacts in AB 
+    NSArray* people = [SWPerson getPeopleAB];
 
-        NSString* phoneNumber = @"";
+    for (SWPerson* p in people)
+    {
+        // Loop through all persons in AB and check if we can find 
+        // one of their originalPhoneNumbers in db_set
+        // If we can then we add this reference to the output array (containing server state such as blocked etc.)
+        // If we can't then we add AB reference to the output array
         
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        NSString *mobileNumber;
-        NSString *mobileLabel;
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
+        BOOL bFoundInDB = NO;
+        for (NSString* opn in p.originalPhoneNumbers)
         {
-            mobileLabel = (__bridge NSString *)ABMultiValueCopyLabelAtIndex(phoneNumbers, i);
-            if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneMobileLabel] || [mobileNumber isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel]) 
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", opn];
+            NSArray* rez = [db_set filteredArrayUsingPredicate:predicate];
+            if (rez.count > 0)
             {
-                phoneNumber = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
+                [output addObject:(SWPerson*)[rez objectAtIndex:0]];
+                bFoundInDB = YES;
                 break;
             }
         }
         
-        [phones addObject:phoneNumber];
+        if (!bFoundInDB)
+        {
+            [output addObject:p];
+        }
+    }
+    
+    /*
+    for (SWPerson* p in db_set)
+    {
+        BOOL bFoundInDB = NO;
+        for (NSString* origPN in p.originalPhoneNumbers)
+        {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", origPN];
+            NSArray* rez = [people filteredArrayUsingPredicate:predicate];
+            if (rez.count > 0)
+            {
+                [output addObject:p];
+                bFoundInDB = YES;
+                break;
+            }
+        }
         
-        CFRelease(ref);
-    }     
+        if (!bFoundInDB)
+        {
+            
+        }
+    }
+     */
     
-    
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"originalPhoneNumber IN %@", phones];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];    
-    return [context executeFetchRequest:request error:nil];
+    return output;
 }
 
 + (NSArray *)findValidObjects
 {
-    NSMutableArray* phones = [NSMutableArray array];
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
-    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
-    for ( int i = 0; i < nPeople; i++ )
-    {
-        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
-        
-        NSString* phoneNumber = @"";
-        
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        NSString *mobileNumber;
-        NSString *mobileLabel;
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
-        {
-            mobileLabel = (__bridge NSString *)ABMultiValueCopyLabelAtIndex(phoneNumbers, i);
-            if ([mobileLabel isEqualToString:(NSString*)kABPersonPhoneMobileLabel] || [mobileNumber isEqualToString:(NSString*)kABPersonPhoneIPhoneLabel]) 
-            {
-                phoneNumber = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
-                break;
-            }
-        }
-        
-        [phones addObject:phoneNumber];
-        
-        CFRelease(ref);
-    }     
-    
-    
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"originalPhoneNumber IN %@ AND isUser == %@", phones, [NSNumber numberWithBool:YES]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];    
-    return [context executeFetchRequest:request error:nil];
+    NSArray* output = [SWPerson findAllObjects];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser == %@", [NSNumber numberWithBool:YES]];
+    return [output filteredArrayUsingPredicate:predicate];
 }
 
 + (void)deleteAllObjects
@@ -202,17 +195,12 @@
     return (SWPerson*)[items objectAtIndex:0];
 }
 
-+ (SWPerson*)findObjectWithOriginalPhoneNumber:(NSString*)phoneNb
++ (SWPerson*)findObjectWithOriginalPhoneNumber:(NSArray*)phoneNb
 {
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"originalPhoneNumber == %@", phoneNb];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
+    NSArray* people = [SWPerson findAllObjects];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", phoneNb];    
+    NSArray* items = [people filteredArrayUsingPredicate:predicate];
+    if (items.count == 0)
         return nil;
     return (SWPerson*)[items objectAtIndex:0];
 }
@@ -246,13 +234,56 @@
     
     NSString* origPhone = [obj valueForKey:@"original_phone_number"];
     if (!origPhone || [origPhone class] == [NSNull class])
+    {
         origPhone = nil;
-    self.originalPhoneNumber    = origPhone;
+        self.originalPhoneNumbers = [NSMutableArray array];
+    }
+    else
+        self.originalPhoneNumbers = [NSMutableArray arrayWithObject:origPhone];
 
     NSString* phone = [obj valueForKey:@"phone_number"];
     if (!phone || [phone class] == [NSNull class])
         phone = nil;
     self.phoneNumber            = phone;
+}
+
++ (NSArray*)getPeopleAB
+{
+    NSMutableArray* peopleAB = [NSMutableArray array];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
+    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
+    for ( int i = 0; i < nPeople; i++ )
+    {
+        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
+        
+        SWPerson* p = [SWPerson newEntity];
+        p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
+        p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
+        
+        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
+        p.originalPhoneNumbers = [NSMutableArray array];
+        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
+        {
+            [p.originalPhoneNumbers addObject:(__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i)];
+        }
+        
+        if (ABPersonHasImageData(ref))
+        {
+            NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
+            p.thumbnail = [UIImage imageWithData:imageData]; 
+            
+        }
+        else
+            p.thumbnail = [SWPerson defaultImage];
+        
+        if (p.firstName || p.lastName)
+            [peopleAB addObject:p];
+        
+        CFRelease(ref);
+    }
+    
+    return peopleAB;    
 }
 
 @end

@@ -81,6 +81,9 @@
 		[self addSubview:assetImageView];
 		[assetImageView release];
         
+        self.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1.0].CGColor;
+        self.layer.borderWidth = 1;        
+        
         if ([[self.asset valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo])
         {
             videoOverlayView = [[ELCAssetVideoView alloc] initWithFrame:CGRectMake(0, viewFrames.size.height - 15, viewFrames.size.width, 15)];

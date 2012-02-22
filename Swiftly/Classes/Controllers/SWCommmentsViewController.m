@@ -11,6 +11,8 @@
 
 @implementation SWCommmentsViewController
 
+@synthesize textfield = _textField;
+@synthesize media = _media;
 @synthesize tableView = _tableView;
 @synthesize toolbar = _toolbar;
 @synthesize scrollView = _scrollView;
@@ -51,16 +53,16 @@
 
     // --
     
-    UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, (deviceOrientation == UIDeviceOrientationPortrait) ? 210 : 180, 30)];
-    textField.borderStyle = UITextBorderStyleRoundedRect;
-    textField.textColor = [UIColor whiteColor];
-    textField.font = [UIFont systemFontOfSize:17.0];
-    textField.placeholder = NSLocalizedString(@"enter_comment", @"<enter your comment>");
-    textField.backgroundColor = [UIColor blackColor];
-    textField.keyboardType = UIKeyboardTypeDefault;
-    textField.returnKeyType = UIReturnKeyDone;
-    textField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-    textField.delegate = self;
+    self.textfield = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, (deviceOrientation == UIDeviceOrientationPortrait) ? 210 : 180, 30)];
+    self.textfield.borderStyle = UITextBorderStyleRoundedRect;
+    self.textfield.textColor = [UIColor whiteColor];
+    self.textfield.font = [UIFont systemFontOfSize:17.0];
+    self.textfield.placeholder = NSLocalizedString(@"enter_comment", @"<enter your comment>");
+    self.textfield.backgroundColor = [UIColor blackColor];
+    self.textfield.keyboardType = UIKeyboardTypeDefault;
+    self.textfield.returnKeyType = UIReturnKeyDone;
+    self.textfield.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.textfield.delegate = self;
 
     UIButton* btnSend = [UIButton buttonWithType:UIButtonTypeCustom];
     [btnSend setTitle:NSLocalizedString(@"send", @"send") forState:UIControlStateNormal];
@@ -77,14 +79,45 @@
     self.toolbar.frame = CGRectMake(0, (deviceOrientation == UIDeviceOrientationPortrait) ? 371 : 223, 320, 50);
     self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
-    UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:textField];
+    UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:self.textfield];
     UIBarButtonItem *btnItem = [[UIBarButtonItem alloc] initWithCustomView:btnSend];
     [self.toolbar setItems:[NSArray arrayWithObjects:textFieldItem, btnItem, nil]];
     [self.scrollView addSubview:self.toolbar];
 
-    //self.comments = [[NSArray alloc] initWithObjects:@"Test 1", @"Another test with some veryyyyyyy long text to see how stretching works....", @"blabal", @".....", @"other tests...", nil];
-    if (!self.comments)
-        self.comments = [NSArray array];
+    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID];
+    [self reload];
+    
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];        
+        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
+                                                            parameters:nil 
+                                                               success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                                   if ([responseObject isKindOfClass:[NSArray class]])
+                                                                   {
+                                                                       for (id obj in responseObject)
+                                                                       {
+                                                                           SWComment* comment = [SWComment findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                                           
+                                                                           if (!comment)
+                                                                               comment = [SWComment createEntity];
+                                                                           
+                                                                           comment.media = self.media;                                                                           
+                                                                           [comment updateWithObject:obj];
+                                                                       }
+                                                                       
+                                                                       [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                                       self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
+                                                                       
+                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                           [self reload];
+                                                                       });
+                                                                   }
+                                                               } 
+                                                               failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                   
+                                                               }
+         ];
+    });
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -99,7 +132,33 @@
 
 - (void)send:(UIButton*)sender
 {
-    NSLog(@"send message!");
+    [self.textfield resignFirstResponder];
+    
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
+        NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
+        [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
+                                 parameters:param 
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+
+                                        SWComment* comment = [SWComment createEntity];
+                                        comment.media = self.media;
+                                        [comment updateWithObject:responseObject];
+
+                                        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                        
+                                        self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
+                                            
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            self.textfield.text = @"";
+                                            [self reload];
+                                        });
+                                    } 
+                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                        
+                                    }
+         ];
+    });
 }
 
 - (void)viewDidUnload
@@ -114,9 +173,7 @@
     [super viewWillAppear:animated];
     
     
-    [self.tableView reloadData];
-    CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height);
-    [self.tableView setContentOffset:bottomOffset animated:NO];
+    [self reload];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -136,13 +193,15 @@
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    if ((interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown))
-    {
-        self.toolbar.frame = CGRectMake(0, UIDeviceOrientationIsPortrait(interfaceOrientation) ? 371 : 223, UIDeviceOrientationIsPortrait(interfaceOrientation) ? 320 : 480, 50);
+    // Return YES for supported orientations
+    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
 
-        return YES;
-    }
-    return NO;
+- (void)reload
+{
+    [self.tableView reloadData];
+    CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+    [self.tableView setContentOffset:bottomOffset animated:NO];    
 }
 
 #pragma mark - Table view data source
@@ -159,7 +218,8 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat h = [SWCommentTableViewCell cellHeightWithText:[self.comments objectAtIndex:indexPath.row]];
+    SWComment* comment = [self.comments objectAtIndex:indexPath.row];
+    CGFloat h = [SWCommentTableViewCell cellHeightWithText:comment.content];
     if (indexPath.row == [self.comments count])
         self.tableView.contentSize = CGSizeMake(self.tableView.contentSize.width, self.tableView.contentSize.height + 500);
     return h;
@@ -174,10 +234,12 @@
         cell.opaque = NO;
     }
 
+    SWComment* comment = [self.comments objectAtIndex:indexPath.row];
+    
     cell.thumbCommenter.image = [UIImage imageNamed:@"user@2x.png"];
-    cell.commenter.text = @"Quentin Bereau";
-    cell.commented.text = @"01 January, 12:39pm";
-    cell.comment.text = [self.comments objectAtIndex:indexPath.row];
+    cell.commenter.text = [comment.author name];
+    cell.commented.text = comment.createdDT;
+    cell.comment.text = comment.content;
 
     return cell;
 }

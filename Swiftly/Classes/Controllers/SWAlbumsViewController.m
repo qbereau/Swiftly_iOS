@@ -28,9 +28,6 @@
 {
     [super viewDidLoad];
     
-    NSLog(@"%@", [SWPerson findAllObjects]);
-    NSLog(@"%d", [[SWPerson findAllObjects] count]);
-    
     UIBarButtonItem* btnUnlock = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"] style:UIBarButtonItemStylePlain target:self action:@selector(unlockAlbums:)];
     self.navigationItem.leftBarButtonItem = btnUnlock;
     
@@ -40,9 +37,6 @@
     
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
-    
-    SWPerson* p = [SWPerson findObjectWithServerID:14];
-    NSLog(@"%@", [p name]);
     
     __block SWAlbumsViewController* selfBlock = self;
     self.updateAlbumAccounts = ^(int album_id) {
@@ -82,7 +76,7 @@
         });    
     };
     
-    [self synchronize:YES];    
+    [self synchronize:NO];    
 }
 
 - (void)saveAndUpdate
@@ -106,7 +100,6 @@
 - (void)synchronize:(BOOL)modal
 {
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
-    [SWAlbum deleteAllObjects];
     
     if (modal)
     {
@@ -124,6 +117,7 @@
                                              if ([responseObject count] == 0)
                                                  [self saveAndUpdate];
                                              
+                                             NSMutableArray* receivedAlbums = [NSMutableArray array];
                                              for (id obj in responseObject)
                                              {
                                                  SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
@@ -136,9 +130,23 @@
                                                  
                                                  [albumObj updateWithObject:obj];
                                                  
+                                                 [receivedAlbums addObject:albumObj];
+                                                 
                                                  ++self.reqOps;
                                                  self.updateAlbumAccounts(albumObj.serverID);
                                              }
+                                             
+                                             // Remove old albums
+                                             for (SWAlbum* a in [SWAlbum findAllObjects])
+                                             {
+                                                 NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
+                                                 NSArray* rez = [receivedAlbums filteredArrayUsingPredicate:predicate];
+                                                 if (rez.count == 0)
+                                                 {
+                                                     [a deleteEntity];
+                                                 }
+                                             }
+                                             
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {

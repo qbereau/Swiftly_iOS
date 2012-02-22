@@ -15,9 +15,7 @@
 @class KTThumbsView;
 
 @interface KTThumbsViewController : UIViewController <KTThumbsViewDataSource, UIActionSheetDelegate>
-{
-    UIActionSheet *actionSheet_;
-    
+{    
 @private
     id <KTPhotoBrowserDataSource> dataSource_;
     KTThumbsView *scrollView_;

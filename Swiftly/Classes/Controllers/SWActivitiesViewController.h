@@ -18,7 +18,7 @@
 #import "AFNetworking.h"
 #import "SWAPIClient.h"
 
-typedef void (^UploadDataBlock)(SWMedia*, NSData*);
+typedef void (^UploadDataBlock)(SWMedia*, NSData*, NSString*);
 
 @interface SWActivitiesViewController : UIViewController
 {
@@ -26,6 +26,9 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*);
     NSArray*                _recent;
     
     UploadDataBlock         _uploadDataBlock;
+    
+    NSTimer*                _refreshTimer;
+    NSMutableArray*         _arrExportSessions;
 }
 
 @property (nonatomic, strong) NSArray*                  inProgress;
@@ -34,6 +37,9 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*);
 @property (nonatomic, weak) IBOutlet UINavigationBar*   navigationBar;
 @property (nonatomic, weak) IBOutlet SWTableView*       tableView;
 
+- (void)launchRefreshTimer;
+- (void)stopTimer;
+- (void)updateRefresh:(NSTimer*)timer;
 - (void)removeMedias:(id)sender;
 - (void)reload;
 - (void)uploadFiles;

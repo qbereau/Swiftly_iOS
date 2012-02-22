@@ -14,7 +14,7 @@
 - (NSString*)name;
 - (NSString*)predicateContactName;
 - (UIImage*)contactImage;
-
+- (NSString*)displayOriginalPhoneNumbers;
 + (UIImage*)defaultImage;
 
 // Core Data Helpers
@@ -27,5 +27,7 @@
 + (SWPerson*)createEntity; // in context
 + (SWPerson*)newEntity; // no context
 - (void)updateWithObject:(id)obj;
+
++ (NSArray*)getPeopleAB;
 
 @end

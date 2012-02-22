@@ -7,10 +7,10 @@
 
 #import "KTThumbView.h"
 #import "SDWebImageManagerDelegate.h"
+#import "SWMedia.h"
 
 @interface  KTThumbView (SDWebImage) <SDWebImageManagerDelegate>
 
-- (void)setImageWithURL:(NSURL *)url;
-- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder;
+- (void)setImageWithMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder;
 
 @end

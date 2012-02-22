@@ -20,6 +20,9 @@
     SWWebImagesDataSource*      _mediaDS;
     
     BOOL                        _allowAlbumEditition;
+    UIActionSheet*              _actionSheet;
+    
+    SWMedia*                    _longPressMedia;
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
