@@ -71,7 +71,7 @@
     NSSortDescriptor *sorter = [[NSSortDescriptor alloc]
                                 initWithKey:@"createdDT"
                                 ascending:NO
-                                selector:@selector(compare:)];    
+                                selector:@selector(compare:)];
     
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setSortDescriptors:[NSArray arrayWithObject:sorter]];

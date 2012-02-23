@@ -100,7 +100,7 @@
 
 - (void)imageAtIndex:(NSInteger)index photoView:(KTPhotoView *)photoView {
     SWMedia* m = [_filteredMedias objectAtIndex:index];
-    [photoView setImageWithMedia:m placeholderImage:[UIImage imageNamed:@"photoDefault.png"]];
+    [photoView setMedia:m placeholderImage:[UIImage imageNamed:@"photoDefault.png"]];
 }
 
 - (void)mediaAtIndex:(NSInteger)index photoView:(KTPhotoView*)photoView 
@@ -120,7 +120,7 @@
 
 - (void)thumbImageAtIndex:(NSInteger)index thumbView:(KTThumbView *)thumbView {
     SWMedia* m = [_filteredMedias objectAtIndex:index];
-    [thumbView setImageWithMedia:m placeholderImage:[UIImage imageNamed:@"photoDefault.png"]];
+    [thumbView setMedia:m placeholderImage:[UIImage imageNamed:@"photoDefault.png"]];    
 }
 
 - (void)deleteImageAtIndex:(NSInteger)index

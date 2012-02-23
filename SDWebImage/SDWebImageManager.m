@@ -63,7 +63,7 @@ static SDWebImageManager *instance;
  */
 - (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate retryFailed:(BOOL)retryFailed
 {
-    [self downloadWithURL:url delegate:delegate options:(retryFailed ? SDWebImageRetryFailed : 0)];
+    [self downloadWithURL:url delegate:delegate options:(retryFailed ? SDWebImageRetryFailed : 0) cacheKey:nil];
 }
 
 /**
@@ -74,15 +74,20 @@ static SDWebImageManager *instance;
     SDWebImageOptions options = 0;
     if (retryFailed) options |= SDWebImageRetryFailed;
     if (lowPriority) options |= SDWebImageLowPriority;
-    [self downloadWithURL:url delegate:delegate options:options];
+    [self downloadWithURL:url delegate:delegate options:options cacheKey:nil];
+}
+
+- (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate cacheKey:(NSString*)cacheKey
+{
+    [self downloadWithURL:url delegate:delegate options:0 cacheKey:cacheKey];
 }
 
 - (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate
 {
-    [self downloadWithURL:url delegate:delegate options:0];
+    [self downloadWithURL:url delegate:delegate options:0 cacheKey:nil];
 }
 
-- (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate options:(SDWebImageOptions)options
+- (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate options:(SDWebImageOptions)options cacheKey:(NSString*)cacheKey
 {
     // Very common mistake is to send the URL using NSString object instead of NSURL. For some strange reason, XCode won't
     // throw any warning for this type mismatch. Here we failsafe this error by allowing URLs to be passed as NSString.
@@ -99,8 +104,9 @@ static SDWebImageManager *instance;
     // Check the on-disk cache async so we don't block the main thread
     [cacheDelegates addObject:delegate];
     [cacheURLs addObject:url];
-    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:delegate, @"delegate", url, @"url", [NSNumber numberWithInt:options], @"options", nil];
-    [[SDImageCache sharedImageCache] queryDiskCacheForKey:[url absoluteString] delegate:self userInfo:info];
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:delegate, @"delegate", url, @"url", [NSNumber numberWithInt:options], @"options", cacheKey, @"cacheKey", nil];
+    NSString* key = cacheKey ? cacheKey : [url absoluteString];
+    [[SDImageCache sharedImageCache] queryDiskCacheForKey:key delegate:self userInfo:info];
 }
 
 - (void)cancelForDelegate:(id<SDWebImageManagerDelegate>)delegate
@@ -241,9 +247,12 @@ static SDWebImageManager *instance;
     if (image)
     {
         // Store the image in the cache
+        NSString* key = [downloader.userInfo objectForKey:@"cacheKey"];
+        if (!key || key.length == 0)
+            key = [downloader.url absoluteString];
         [[SDImageCache sharedImageCache] storeImage:image
                                           imageData:downloader.imageData
-                                             forKey:[downloader.url absoluteString]
+                                             forKey:key
                                              toDisk:!(options & SDWebImageCacheMemoryOnly)];
     }
     else if (!(options & SDWebImageRetryFailed))

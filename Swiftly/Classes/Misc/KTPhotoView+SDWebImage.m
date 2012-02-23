@@ -10,51 +10,64 @@
 
 @implementation KTPhotoView (SDWebImage)
 
-- (void)setImageWithMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder
+- (void)setImageWithURL:(NSURL *)url {
+    [self setImageWithURL:url placeholderImage:nil];
+}
+
+- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder 
 {
-    if (media.localResourceURL && [[NSFileManager defaultManager] fileExistsAtPath:media.localResourceURL])
-    {
-        UIImage* img = [UIImage imageWithData:[NSData dataWithContentsOfFile:media.localResourceURL]];
-        [self setImage:img];
+    SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    
+    // Remove in progress downloader from queue
+    [manager cancelForDelegate:self];
+    
+    UIImage *cachedImage = nil;
+    if (url) {
+        cachedImage = [manager imageWithURL:url];
     }
-    else
-    {
-        SDWebImageManager *manager = [SDWebImageManager sharedManager];
-        [manager cancelForDelegate:self];        
-        
-        if (placeholder) 
-        {
+    
+    if (cachedImage) {
+        [self setImage:cachedImage];
+    }
+    else {
+        if (placeholder) {
             [self setImage:placeholder];
-        }        
+        }
         
-        if (media.resourceURL) 
-        {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                
-                NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:media.resourceURL]];
-                if (data)
-                {
-                    UIImage* img = [UIImage imageWithData:data];
-                    
-                    NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                    NSString *documentsDirectoryPath = [dirs objectAtIndex:0];
-                    NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%d.data", media.serverID]];                        
-                    
-                    if ([data writeToFile:exportPath atomically:YES])
-                    {
-                        media.localResourceURL = exportPath;
-                        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                    }
-                    
-                    if (img) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [self setImage:img];
-                        });
-                    }
-                }
-            });
+        if (url) {
+            [manager downloadWithURL:url delegate:self];
         }
     }
+}
+
+- (void)setMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder
+{
+    SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    
+    // Remove in progress downloader from queue
+    [manager cancelForDelegate:self];
+    
+    UIImage *cachedImage = nil;
+    if (media.resourceURL) {
+        cachedImage = [manager imageWithURL:[NSURL URLWithString:media.resourceURL]];
+    }
+    
+    if (cachedImage) {
+        [self setImage:cachedImage];
+    }
+    else {
+        if (placeholder) {
+            [self setImage:placeholder];
+        }
+        
+        if (media.resourceURL) {
+            [manager downloadWithURL:[NSURL URLWithString:media.resourceURL] delegate:self cacheKey:[NSString stringWithFormat:@"medias/%d", media.serverID]];
+        }
+    }
+}
+
+- (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image {
+    [self setImage:image];
 }
 
 @end

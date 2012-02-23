@@ -31,7 +31,7 @@
 
     if (url)
     {
-        [manager downloadWithURL:url delegate:self options:options];
+        [manager downloadWithURL:url delegate:self options:options cacheKey:nil];
     }
 }
 

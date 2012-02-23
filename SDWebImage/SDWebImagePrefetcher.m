@@ -35,7 +35,7 @@ static SDWebImagePrefetcher *instance;
 {
     if (index >= [self.prefetchURLs count]) return;
     _requestedCount++;
-    [imageManager downloadWithURL:[self.prefetchURLs objectAtIndex:index] delegate:self options:SDWebImageLowPriority];
+    [imageManager downloadWithURL:[self.prefetchURLs objectAtIndex:index] delegate:self options:SDWebImageLowPriority cacheKey:nil];
 }
 
 - (void)reportStatus

@@ -11,6 +11,9 @@
 
 @interface KTPhotoView (SDWebImage) <SDWebImageManagerDelegate>
 
-- (void)setImageWithMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder;
+- (void)setImageWithURL:(NSURL *)url;
+- (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder;
+- (void)setMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder;
+//- (void)setImageWithMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder;
 
 @end
