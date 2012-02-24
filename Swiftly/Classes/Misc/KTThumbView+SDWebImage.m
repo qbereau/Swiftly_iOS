@@ -10,6 +10,11 @@
 
 @implementation KTThumbView (SDWebImage)
 
++ (NSString*)cacheKeyForIndex:(NSInteger)index
+{
+    return [NSString stringWithFormat:@"medias/%d_thumbnail", index];
+}
+
 - (void)setImageWithURL:(NSURL *)url {
     [self setImageWithURL:url placeholderImage:nil];
 }
@@ -42,13 +47,14 @@
 - (void)setMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder
 {
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
+    NSString* cacheKey = [KTThumbView cacheKeyForIndex:media.serverID];
     
     // Remove in progress downloader from queue
     [manager cancelForDelegate:self];
     
     UIImage *cachedImage = nil;
     if (media.thumbnailURL) {
-        cachedImage = [manager imageWithURL:[NSURL URLWithString:media.thumbnailURL]];
+        cachedImage = [manager imageWithCacheKey:cacheKey];
     }
     
     if (cachedImage) {
@@ -60,7 +66,7 @@
         }
         
         if (media.thumbnailURL) {
-            [manager downloadWithURL:[NSURL URLWithString:media.thumbnailURL] delegate:self cacheKey:[NSString stringWithFormat:@"medias/%d_thumbnail", media.serverID]];
+            [manager downloadWithURL:[NSURL URLWithString:media.thumbnailURL] delegate:self cacheKey:cacheKey];
         }
     }
 }

@@ -17,6 +17,8 @@
 {
     SWAlbum*                    _selectedAlbum;
     
+    NSMutableArray*             _arrMedias;
+    
     SWWebImagesDataSource*      _mediaDS;
     
     BOOL                        _allowAlbumEditition;
@@ -26,7 +28,11 @@
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
+@property (nonatomic, strong) NSMutableArray*           arrMedias;
 @property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
+
+- (void)updateMedias:(id)responseObject;
+- (void)finishedUpdateMedias;
 
 @end

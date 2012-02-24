@@ -194,7 +194,7 @@
     self.ownerID            = [[obj valueForKey:@"owner_id"] intValue];
     self.isOwner            = [[obj valueForKey:@"owner"] boolValue];    
     self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
-    self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];   
+    self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];
     
     NSString* thumbnail_url = [obj valueForKey:@"thumbnail_url"];
     if (thumbnail_url && [thumbnail_url class] != [NSNull class])
@@ -218,6 +218,8 @@
         [dict setObject:[NSNumber numberWithBool:self.canEditPeople] forKey:@"edit_accounts"];
         [dict setObject:[NSNumber numberWithBool:self.canEditMedias] forKey:@"edit_medias"];        
     }
+    
+    [dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
     
     return dict;
 }

@@ -10,13 +10,15 @@
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <AssetsLibrary/ALAsset.h>
 #import <AssetsLibrary/ALAssetRepresentation.h>
+#import "SDWebImageManager.h"
+#import "SDWebImageManagerDelegate.h"
 #import "KTPhotoBrowserDataSource.h"
 #import "SWPhotoScrollViewController.h"
 #import "SWMedia.h"
 #import "SWMedia+Details.h"
 #import "SWAPIClient.h"
 
-@interface SWWebImagesDataSource : NSObject <KTPhotoBrowserDataSource>
+@interface SWWebImagesDataSource : NSObject <KTPhotoBrowserDataSource, SDWebImageManagerDelegate>
 {
     NSMutableArray*             _allMedias;
     NSArray*                    _filteredMedias;

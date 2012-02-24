@@ -29,6 +29,7 @@ typedef enum
 }
 
 + (id)sharedManager;
+- (UIImage *)imageWithCacheKey:(NSString *)cacheKey;
 - (UIImage *)imageWithURL:(NSURL *)url;
 - (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate cacheKey:(NSString*)cacheKey;
 - (void)downloadWithURL:(NSURL *)url delegate:(id<SDWebImageManagerDelegate>)delegate;

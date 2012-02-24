@@ -50,6 +50,11 @@ static SDWebImageManager *instance;
     return instance;
 }
 
+- (UIImage *)imageWithCacheKey:(NSString *)cacheKey
+{
+    return [[SDImageCache sharedImageCache] imageFromKey:cacheKey];
+}
+
 /**
  * @deprecated
  */

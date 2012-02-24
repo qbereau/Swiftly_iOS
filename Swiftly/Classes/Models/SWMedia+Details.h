@@ -18,6 +18,7 @@
 + (NSArray *)findAllObjects;
 + (NSArray *)findInProgressObjects;
 + (NSArray *)findRecentObjects;
++ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID;
 + (void)deleteAllObjects;
 + (SWMedia*)findObjectWithServerID:(int)serverID;
 + (SWMedia*)createEntity; // in context

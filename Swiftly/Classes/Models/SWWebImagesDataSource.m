@@ -141,11 +141,10 @@
     [library assetForURL:[NSURL URLWithString:m.assetURL] resultBlock:^(ALAsset *asset) {
         if (m.isImage)
         {
-            UIImage* img;
-            if (m.localResourceURL)
-                img = [UIImage imageWithData:[NSData dataWithContentsOfFile:m.localResourceURL]];
-            else
-                img = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:m.resourceURL]]];
+            SDWebImageManager *manager = [SDWebImageManager sharedManager];
+
+            UIImage *img = [manager imageWithCacheKey:[KTPhotoView cacheKeyForIndex:m.serverID]];
+            
             [library writeImageToSavedPhotosAlbum:img.CGImage metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
 
             }];

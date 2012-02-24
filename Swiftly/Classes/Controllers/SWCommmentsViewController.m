@@ -34,8 +34,6 @@
     
     self.navigationItem.title = NSLocalizedString(@"comments", @"Comments");
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
-
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
     
     self.view.autoresizesSubviews = YES;
     self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
@@ -53,7 +51,7 @@
 
     // --
     
-    self.textfield = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, (deviceOrientation == UIDeviceOrientationPortrait) ? 210 : 180, 30)];
+    self.textfield = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 210, 30)];
     self.textfield.borderStyle = UITextBorderStyleRoundedRect;
     self.textfield.textColor = [UIColor whiteColor];
     self.textfield.font = [UIFont systemFontOfSize:17.0];
@@ -68,7 +66,7 @@
     [btnSend setTitle:NSLocalizedString(@"send", @"send") forState:UIControlStateNormal];
     btnSend.titleLabel.shadowColor = [UIColor blackColor];
     btnSend.titleLabel.shadowOffset = CGSizeMake(1, 1);
-    [btnSend setFrame:CGRectMake( (deviceOrientation == UIDeviceOrientationPortrait) ? 230 : 230, 30, 80, 30)];
+    [btnSend setFrame:CGRectMake(230, 30, 80, 30)];
     [btnSend setBackgroundImage:[[UIImage imageNamed:@"rounded_button"] stretchableImageWithLeftCapWidth:4 topCapHeight:4] forState:UIControlStateNormal];
     [btnSend addTarget:self action:@selector(send:) forControlEvents:UIControlEventTouchUpInside];
     btnSend.autoresizingMask = UIViewAutoresizingFlexibleRightMargin;
@@ -76,7 +74,7 @@
     self.toolbar = [UIToolbar new];
     self.toolbar.barStyle = UIBarStyleDefault;
     [self.toolbar sizeToFit];
-    self.toolbar.frame = CGRectMake(0, (deviceOrientation == UIDeviceOrientationPortrait) ? 371 : 223, 320, 50);
+    self.toolbar.frame = CGRectMake(0, 371, 320, 50);
     self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
     UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:self.textfield];

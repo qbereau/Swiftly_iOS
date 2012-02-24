@@ -10,6 +10,7 @@
 
 @implementation SWAlbumThumbnailsViewController
 
+@synthesize arrMedias           = _arrMedias;
 @synthesize selectedAlbum       = _selectedAlbum;
 @synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
@@ -48,30 +49,41 @@
         // Update Medias
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
+            self.arrMedias = [NSMutableArray array];
+            self.mediaDS = [[SWWebImagesDataSource alloc] init];            
+            
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
-                                            self.mediaDS = [[SWWebImagesDataSource alloc] init];
                                             
-                                            NSMutableArray* arrMedias = [NSMutableArray new];
-                                            for (id obj in responseObject)
-                                            {
-                                                SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-                                                if (!mediaObj)
-                                                    mediaObj = [SWMedia createEntity];                                          
-                                                [mediaObj updateWithObject:obj];
-                                                [arrMedias addObject:mediaObj];
+                                            int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
+                                            
+                                            if (iTotalPages > 1)
+                                            {   
+                                                for (int i = 2; i <= iTotalPages; ++i)
+                                                {
+                                                    __block int opReq = iTotalPages - 2;
+                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias?page=%d", self.selectedAlbum.serverID, i]
+                                                                             parameters:nil
+                                                                                success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                    
+                                                                                    [self updateMedias:responseObject];
+                                                                                    --opReq;
+                                                                                    if (opReq == 0)
+                                                                                        [self finishedUpdateMedias];
+                                                                                }
+                                                                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                    NSLog(@"error");
+                                                                                }
+                                                     ];
+                                                }
                                             }
-                                            
-                                            self.mediaDS.allMedias = arrMedias;
-                                            [self.mediaDS resetFilter];
-                                            [self setDataSource:self.mediaDS]; 
-                                            
-                                            // Hide the HUD in the main tread 
-                                            dispatch_async(dispatch_get_main_queue(), ^{
-                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                            });
+                                            else
+                                            {
+                                                [self updateMedias:responseObject];
+                                                [self finishedUpdateMedias];
+                                            }
+
                                         } 
                                         failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                             // Hide the HUD in the main tread 
@@ -96,6 +108,41 @@
     segmentedControl.segmentedControlStyle = UISegmentedControlStyleBar;
     segmentedControl.selectedSegmentIndex = 0;
     self.navigationItem.titleView = segmentedControl;
+}
+
+- (void)updateMedias:(id)responseObject
+{
+    for (id obj in responseObject)
+    {
+        SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+        if (!mediaObj)
+            mediaObj = [SWMedia createEntity];
+        mediaObj.album = self.selectedAlbum;
+        [mediaObj updateWithObject:obj];        
+        [self.arrMedias addObject:mediaObj];
+    }
+}
+
+- (void)finishedUpdateMedias
+{
+    self.mediaDS.allMedias = self.arrMedias;
+    [self.mediaDS resetFilter];
+    [self setDataSource:self.mediaDS]; 
+    
+    for (SWMedia* m in [SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID])
+    {
+        if (![self.arrMedias containsObject:m])
+        {
+            [m deleteEntity];
+        }
+    }
+    
+    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];    
+    
+    // Hide the HUD in the main tread 
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+    });
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

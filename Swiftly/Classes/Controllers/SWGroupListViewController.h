@@ -22,5 +22,7 @@
 @property (nonatomic, strong) NSArray*          groups;
 
 - (void)synchronize;
+- (void)updateGroups:(id)responseObject;
+- (void)finishedUpdateGroups;
 
 @end

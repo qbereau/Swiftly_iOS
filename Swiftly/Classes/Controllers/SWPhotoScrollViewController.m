@@ -32,15 +32,14 @@
 {
     [super loadView];
     
-    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), 0] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
-    self.navigationItem.rightBarButtonItem = btnComments;
-    
     [self updateExportPhotoButtonState];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    [self updateExportPhotoButtonState];    
 }
 
 - (void)comments:(UIBarButtonItem*)button
@@ -76,6 +75,12 @@
 
 - (void)updateExportPhotoButtonState
 {
+    SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];    
+    NSInteger iComments = [[SWComment findLatestCommentsForMediaID:m.serverID] count];
+    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), iComments] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
+    self.navigationItem.rightBarButtonItem = btnComments;
+    
+    
     // Check if the button exportPhoto should be here or not
     for (UIBarButtonItem* bbi in toolbar_.items)
     {

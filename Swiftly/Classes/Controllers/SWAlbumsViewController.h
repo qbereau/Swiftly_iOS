@@ -14,8 +14,6 @@
 #import "JSLockScreenViewController.h"
 #import "SWAPIClient.h"
 
-typedef void (^UpdateAlbumAccounts)(int);
-
 @interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
 {
     NSArray*                        _sharedAlbums;
@@ -26,16 +24,20 @@ typedef void (^UpdateAlbumAccounts)(int);
     
     NSManagedObjectContext*         _managedObjectContext;
     
-    UpdateAlbumAccounts             _updateAlbumAccounts;
     int                             _reqOps;
+    NSMutableArray*                 _receivedAlbums;
 }
 
+@property (nonatomic, strong) NSMutableArray*           receivedAlbums;
 @property (nonatomic, strong) NSArray*                  sharedAlbums;
 @property (nonatomic, strong) NSArray*                  specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
-@property (nonatomic, copy) UpdateAlbumAccounts         updateAlbumAccounts;
 @property (nonatomic, assign) int                       reqOps;
 
+- (void)processAlbums:(id)responseObject;
+- (void)updateAlbumAccounts:(int)albumID;
+- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject;
+- (void)removeOldAlbums;
 - (void)saveAndUpdate;
 - (void)reload;
 - (void)synchronize:(BOOL)modal;

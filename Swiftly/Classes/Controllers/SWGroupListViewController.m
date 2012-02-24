@@ -89,43 +89,38 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-    //[SWGroup deleteAllObjects];
-    
-	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                         if ([responseObject isKindOfClass:[NSArray class]])
                                         {   
-                                            NSMutableArray* arrID = [NSMutableArray array];
-                                            for (id obj in responseObject)
-                                            {
-                                                [arrID addObject:[obj valueForKey:@"id"]];
-                                                
-                                                SWGroup* groupObj = [SWGroup findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-                                                
-                                                if (!groupObj)
-                                                    groupObj = [SWGroup createEntity];
-                                                
-                                                [groupObj updateWithObject:obj];
+                                            int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
+                                            if (iTotalPages > 1)
+                                            {   
+                                                for (int i = 2; i <= iTotalPages; ++i)
+                                                {
+                                                    __block int opReq = iTotalPages - 2;
+                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/groups?page=%d", i]
+                                                                             parameters:nil
+                                                                                success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                    
+                                                                                    [self updateGroups:responseObject];
+                                                                                    --opReq;
+                                                                                    if (opReq == 0)
+                                                                                        [self finishedUpdateGroups];
+                                                                                }
+                                                                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                    NSLog(@"error");
+                                                                                }
+                                                     ];
+                                                }
                                             }
-                                            
-                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                            
-                                            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrID];
-                                            NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
-                                            BOOL shouldResync = NO;
-                                            for (SWGroup* g in arr)
+                                            else
                                             {
-                                                shouldResync = YES;
-                                                [g deleteEntity];
-                                            }
-                                            
-                                            if (shouldResync)
-                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                            
-                                            self.groups = [SWGroup findAllObjects];
-                                            [self.tableView reloadData];                                            
+                                                [self updateGroups:responseObject];
+                                                [self finishedUpdateGroups];
+                                            }                                           
                                             
                                         }
                                     }
@@ -134,12 +129,45 @@
                                         [av show];
                                         
                                         // Hide the HUD in the main tread 
-                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                        //dispatch_async(dispatch_get_main_queue(), ^{
                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                        });         
+                                        //});
                                     }
          ];
-    });
+    //});
+}
+
+- (void)updateGroups:(id)responseObject
+{
+    NSMutableArray* arrID = [NSMutableArray array];
+    
+    for (id obj in responseObject)
+    {        
+        [arrID addObject:[obj valueForKey:@"id"]];
+        
+        SWGroup* groupObj = [SWGroup findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+        
+        if (!groupObj)
+            groupObj = [SWGroup createEntity];
+        
+        [groupObj updateWithObject:obj];
+    }   
+    
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrID];
+    NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
+    
+    for (SWGroup* g in arr)
+    {
+        [g deleteEntity];
+    }    
+    
+    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];    
+}
+
+- (void)finishedUpdateGroups
+{
+    self.groups = [SWGroup findAllObjects];
+    [self.tableView reloadData];  
 }
 
 #pragma mark - UITableView Delegates

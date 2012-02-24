@@ -63,7 +63,7 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
             
@@ -72,9 +72,13 @@
             
             [self.group updateWithObject:responseObject];
             
-            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            [[self navigationController] popViewControllerAnimated:YES];            
+            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+            
+            //dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+            //});
+            
+            [[self navigationController] popViewControllerAnimated:YES];
         };
         
         void (^failure)(AFHTTPRequestOperation*, NSError*) = ^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -82,9 +86,9 @@
             [av show];
             
             // Hide the HUD in the main tread 
-            dispatch_async(dispatch_get_main_queue(), ^{
+            //dispatch_async(dispatch_get_main_queue(), ^{
                 [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            });
+            //});
         };
         
         NSMutableArray* arr_ids = [NSMutableArray array];
@@ -110,7 +114,7 @@
                                         failure:failure
              ];
         }
-    });
+    //});
 }
 
 - (void)deleteGroup
@@ -118,15 +122,21 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                           
                                            SWGroup* g = [SWGroup findObjectWithServerID:self.group.serverID];
                                            [g deleteEntity];
-                                           [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           
+                                           //[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+
+                                           //dispatch_async(dispatch_get_main_queue(), ^{
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                           //});                                           
+                                           
                                            [[self navigationController] popViewControllerAnimated:YES];
                                        }
                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -134,12 +144,12 @@
                                            [av show];
                                            
                                            // Hide the HUD in the main tread 
-                                           dispatch_async(dispatch_get_main_queue(), ^{
+                                           //dispatch_async(dispatch_get_main_queue(), ^{
                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           });
+                                           //});
                                        }
          ];
-    });
+    //});
 }
 
 - (void)viewDidUnload

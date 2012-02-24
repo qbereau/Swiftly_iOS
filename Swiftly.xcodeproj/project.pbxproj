@@ -47,11 +47,11 @@
 		192A6FAB14E9905300B8EACA /* SWPerson+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FAA14E9905300B8EACA /* SWPerson+Details.m */; };
 		192A6FAE14E9933800B8EACA /* SWGroup+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FAD14E9933800B8EACA /* SWGroup+Details.m */; };
 		192A6FB114EA527D00B8EACA /* SWAlbum+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */; };
-		192A6FEE14EA7A3100B8EACA /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FED14EA7A3000B8EACA /* SWAlbum.m */; };
 		192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */; };
 		192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF614EAE70800B8EACA /* SWGroup.m */; };
 		192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */; };
 		192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A702014EC06A500B8EACA /* AVFoundation.framework */; };
+		1939B24B14F7EE520078DE68 /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 1939B24A14F7EE520078DE68 /* SWAlbum.m */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
@@ -262,8 +262,6 @@
 		192A6FAD14E9933800B8EACA /* SWGroup+Details.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SWGroup+Details.m"; sourceTree = "<group>"; };
 		192A6FAF14EA527C00B8EACA /* SWAlbum+Details.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SWAlbum+Details.h"; sourceTree = "<group>"; };
 		192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SWAlbum+Details.m"; sourceTree = "<group>"; };
-		192A6FEC14EA7A3000B8EACA /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
-		192A6FED14EA7A3000B8EACA /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
 		192A6FF214EAAFB000B8EACA /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		192A6FF514EAE70700B8EACA /* SWGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroup.h; sourceTree = "<group>"; };
@@ -271,6 +269,8 @@
 		192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SWMedia+Details.h"; sourceTree = "<group>"; };
 		192A6FFE14EB15D400B8EACA /* SWMedia+Details.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SWMedia+Details.m"; sourceTree = "<group>"; };
 		192A702014EC06A500B8EACA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		1939B24914F7EE520078DE68 /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
+		1939B24A14F7EE520078DE68 /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -797,8 +797,6 @@
 				192A6FAD14E9933800B8EACA /* SWGroup+Details.m */,
 				192A6FAF14EA527C00B8EACA /* SWAlbum+Details.h */,
 				192A6FB014EA527C00B8EACA /* SWAlbum+Details.m */,
-				192A6FEC14EA7A3000B8EACA /* SWAlbum.h */,
-				192A6FED14EA7A3000B8EACA /* SWAlbum.m */,
 				192A6FF514EAE70700B8EACA /* SWGroup.h */,
 				192A6FF614EAE70800B8EACA /* SWGroup.m */,
 				192A6FFD14EB15D300B8EACA /* SWMedia+Details.h */,
@@ -811,6 +809,8 @@
 				198697EA14F5610600806D95 /* SWMedia.m */,
 				198697EC14F5610700806D95 /* SWComment.h */,
 				198697ED14F5610700806D95 /* SWComment.m */,
+				1939B24914F7EE520078DE68 /* SWAlbum.h */,
+				1939B24A14F7EE520078DE68 /* SWAlbum.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1149,7 +1149,6 @@
 				192A6FAB14E9905300B8EACA /* SWPerson+Details.m in Sources */,
 				192A6FAE14E9933800B8EACA /* SWGroup+Details.m in Sources */,
 				192A6FB114EA527D00B8EACA /* SWAlbum+Details.m in Sources */,
-				192A6FEE14EA7A3100B8EACA /* SWAlbum.m in Sources */,
 				192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */,
 				192A6FF714EAE70900B8EACA /* SWGroup.m in Sources */,
 				192A6FFF14EB15D600B8EACA /* SWMedia+Details.m in Sources */,
@@ -1157,6 +1156,7 @@
 				198697E514F55BE700806D95 /* SWComment+Details.m in Sources */,
 				198697EB14F5610600806D95 /* SWMedia.m in Sources */,
 				198697EE14F5610800806D95 /* SWComment.m in Sources */,
+				1939B24B14F7EE520078DE68 /* SWAlbum.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

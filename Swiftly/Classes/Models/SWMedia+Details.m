@@ -7,6 +7,9 @@
 //
 
 #import "SWMedia+Details.h"
+#import "SDImageCache.h"
+#import "KTPhotoView+SDWebImage.h"
+#import "KTThumbView+SDWebImage.h"
 
 @implementation SWMedia (Details)
 
@@ -85,15 +88,8 @@
     
     for (SWMedia *managedObject in items) 
     {
-        if (managedObject.localResourceURL && [[NSFileManager defaultManager] fileExistsAtPath:managedObject.localResourceURL])
-        {
-            [[NSFileManager defaultManager] removeItemAtPath:managedObject.localResourceURL error:nil];
-        }
-        
-        if (managedObject.localThumbnailURL && [[NSFileManager defaultManager] fileExistsAtPath:managedObject.localThumbnailURL])
-        {
-            [[NSFileManager defaultManager] removeItemAtPath:managedObject.localThumbnailURL error:nil];
-        }        
+        [[SDImageCache sharedImageCache] removeImageForKey:[KTPhotoView cacheKeyForIndex:managedObject.serverID]];
+        [[SDImageCache sharedImageCache] removeImageForKey:[KTThumbView cacheKeyForIndex:managedObject.serverID]];
         
         [context deleteObject:managedObject];
     }
@@ -114,6 +110,18 @@
     if ([items count] == 0)
         return nil;
     return (SWMedia*)[items objectAtIndex:0];
+}
+
++ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID == %d", serverID];
+    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    return [context executeFetchRequest:request error:nil];
 }
 
 + (SWMedia*)createEntity
@@ -138,15 +146,8 @@
 
 - (void)deleteEntity
 {
-    if (self.localResourceURL && [[NSFileManager defaultManager] fileExistsAtPath:self.localResourceURL])
-    {
-        [[NSFileManager defaultManager] removeItemAtPath:self.localResourceURL error:nil];
-    }
-    
-    if (self.localThumbnailURL && [[NSFileManager defaultManager] fileExistsAtPath:self.localThumbnailURL])
-    {
-        [[NSFileManager defaultManager] removeItemAtPath:self.localThumbnailURL error:nil];
-    }
+    [[SDImageCache sharedImageCache] removeImageForKey:[KTPhotoView cacheKeyForIndex:self.serverID]];
+    [[SDImageCache sharedImageCache] removeImageForKey:[KTThumbView cacheKeyForIndex:self.serverID]];
     
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     [context deleteObject:self];

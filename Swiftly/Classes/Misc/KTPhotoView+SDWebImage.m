@@ -10,6 +10,11 @@
 
 @implementation KTPhotoView (SDWebImage)
 
++ (NSString*)cacheKeyForIndex:(NSInteger)index
+{
+    return [NSString stringWithFormat:@"medias/%d", index];
+}
+
 - (void)setImageWithURL:(NSURL *)url {
     [self setImageWithURL:url placeholderImage:nil];
 }
@@ -43,13 +48,13 @@
 - (void)setMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder
 {
     SDWebImageManager *manager = [SDWebImageManager sharedManager];
-    
+    NSString* cacheKey = [KTPhotoView cacheKeyForIndex:media.serverID];
     // Remove in progress downloader from queue
     [manager cancelForDelegate:self];
     
     UIImage *cachedImage = nil;
     if (media.resourceURL) {
-        cachedImage = [manager imageWithURL:[NSURL URLWithString:media.resourceURL]];
+        cachedImage = [manager imageWithCacheKey:cacheKey];
     }
     
     if (cachedImage) {
@@ -61,7 +66,7 @@
         }
         
         if (media.resourceURL) {
-            [manager downloadWithURL:[NSURL URLWithString:media.resourceURL] delegate:self cacheKey:[NSString stringWithFormat:@"medias/%d", media.serverID]];
+            [manager downloadWithURL:[NSURL URLWithString:media.resourceURL] delegate:self cacheKey:cacheKey];
         }
     }
 }

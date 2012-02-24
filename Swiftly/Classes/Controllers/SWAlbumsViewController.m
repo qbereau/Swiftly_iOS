@@ -10,10 +10,10 @@
 
 @implementation SWAlbumsViewController
 
+@synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
 @synthesize specialAlbums = _specialAlbums;
 @synthesize managedObjectContext = _managedObjectContext;
-@synthesize updateAlbumAccounts = _updateAlbumAccounts;
 @synthesize reqOps = _reqOps;
 
 - (void)didReceiveMemoryWarning
@@ -38,45 +38,73 @@
     self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
     self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
     
-    __block SWAlbumsViewController* selfBlock = self;
-    self.updateAlbumAccounts = ^(int album_id) {
-        // Update Accounts
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
-            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", album_id]
-                                     parameters:nil
-                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            NSLog(@"[SWAlbumsViewController#updateAlbumAccount] Needs to use pagination....");
-                                            SWAlbum* album = [SWAlbum findObjectWithServerID:album_id];
-                                            if (album)   
-                                            {
-                                                [album setParticipants:nil];
-                                            
-                                                for (id o in responseObject)
-                                                {
-                                                    SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
-                                                    if (!p)
-                                                    {
-                                                        p = [SWPerson createEntity];
-                                                        [p updateWithObject:o];
-                                                    }
-                                                    
-                                                    [album addParticipantsObject:p];
-                                                }
-                                            }
-                                            
-                                            --selfBlock.reqOps;
-                                            if (selfBlock.reqOps == 0)
-                                                [selfBlock saveAndUpdate];
-                                        } 
-                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                            NSLog(@"Error: %@", [error description]);
-                                        }
-             ];
-        });    
-    };
-    
     [self synchronize:NO];    
+}
+
+- (void)updateAlbumAccounts:(int)albumID
+{
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", albumID]
+                                 parameters:nil
+                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                        
+                                        int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
+                                        
+                                        if (iTotalPages > 1)
+                                        {   
+                                            for (int i = 2; i <= iTotalPages; ++i)
+                                            {
+                                                ++self.reqOps;
+                                                [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts?page=%d", albumID, i]
+                                                                         parameters:nil
+                                                                            success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                
+                                                                                [self processAlbumID:albumID accounts:respObj2];
+                                                                                --self.reqOps;
+                                                                                if (self.reqOps == 0)
+                                                                                    [self saveAndUpdate];
+                                                                            }
+                                                                            failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                NSLog(@"error");
+                                                                            }
+                                                 ];
+                                            }
+                                        }
+                                        else
+                                        {
+                                            [self processAlbumID:albumID accounts:responseObject];
+                                            --self.reqOps;
+                                            if (self.reqOps == 0)
+                                                [self saveAndUpdate];
+                                        }
+                                    } 
+                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                        NSLog(@"Error: %@", [error description]);
+                                    }
+         ];
+    });
+}
+
+- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject
+{
+    SWAlbum* album = [SWAlbum findObjectWithServerID:albumID];
+    if (album)   
+    {
+        [album setParticipants:nil];
+        
+        for (id o in responseObject)
+        {
+            SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
+            if (!p)
+            {
+                p = [SWPerson createEntity];
+                [p updateWithObject:o];
+            }
+            
+            [album addParticipantsObject:p];
+        }
+    }    
 }
 
 - (void)saveAndUpdate
@@ -109,6 +137,9 @@
     
     self.reqOps = 0;    
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        self.receivedAlbums = [NSMutableArray array];
+        
         [[SWAPIClient sharedClient] getPath:@"/albums" 
                                  parameters:nil 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -117,36 +148,33 @@
                                              if ([responseObject count] == 0)
                                                  [self saveAndUpdate];
                                              
-                                             NSMutableArray* receivedAlbums = [NSMutableArray array];
-                                             for (id obj in responseObject)
-                                             {
-                                                 SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-                                                 
-                                                 if (!albumObj)
-                                                 {
-                                                     albumObj = [SWAlbum createEntity];
-                                                     albumObj.isLocked = NO;                                                     
-                                                 }
-                                                 
-                                                 [albumObj updateWithObject:obj];
-                                                 
-                                                 [receivedAlbums addObject:albumObj];
-                                                 
-                                                 ++self.reqOps;
-                                                 self.updateAlbumAccounts(albumObj.serverID);
-                                             }
+                                             int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
                                              
-                                             // Remove old albums
-                                             for (SWAlbum* a in [SWAlbum findAllObjects])
-                                             {
-                                                 NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
-                                                 NSArray* rez = [receivedAlbums filteredArrayUsingPredicate:predicate];
-                                                 if (rez.count == 0)
+                                             if (iTotalPages > 1)
+                                             {   
+                                                 __block int opReq = iTotalPages - 2;
+                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                  {
-                                                     [a deleteEntity];
+                                                     [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums?page=%d", i]
+                                                                              parameters:nil
+                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                     
+                                                                                     [self processAlbums:respObj2];
+                                                                                     --opReq;
+                                                                                     if (opReq == 0)
+                                                                                         [self removeOldAlbums];
+                                                                                 }
+                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                     NSLog(@"error");
+                                                                                 }
+                                                      ];
                                                  }
                                              }
-                                             
+                                             else
+                                             {
+                                                 [self processAlbums:responseObject];
+                                                 [self removeOldAlbums];
+                                             }
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -160,6 +188,40 @@
                                     }
          ];   
     });
+}
+
+- (void)processAlbums:(id)responseObject
+{
+    for (id obj in responseObject)
+    {
+        SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+        
+        if (!albumObj)
+        {
+            albumObj = [SWAlbum createEntity];
+            albumObj.isLocked = NO;                                                     
+        }
+        
+        [albumObj updateWithObject:obj];
+        
+        [self.receivedAlbums addObject:albumObj];
+        
+        ++self.reqOps;
+        [self updateAlbumAccounts:albumObj.serverID];
+    }
+}
+
+- (void)removeOldAlbums
+{
+    for (SWAlbum* a in [SWAlbum findAllObjects])
+    {
+        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
+        NSArray* rez = [self.receivedAlbums filteredArrayUsingPredicate:predicate];
+        if (rez.count == 0)
+        {
+            [a deleteEntity];
+        }
+    }    
 }
 
 - (void)unlockAlbums:(UIButton*)sender

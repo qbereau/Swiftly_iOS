@@ -76,7 +76,7 @@
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setSortDescriptors:[NSArray arrayWithObject:sorter]];
     [request setEntity:entity];
-    [request setFetchLimit:7];
+    [request setFetchLimit:25];
     [request setPredicate:predicate];
     
     return [[[context executeFetchRequest:request error:nil] reverseObjectEnumerator] allObjects];

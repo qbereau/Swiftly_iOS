@@ -11,6 +11,8 @@
 
 @interface  KTThumbView (SDWebImage) <SDWebImageManagerDelegate>
 
++ (NSString*)cacheKeyForIndex:(NSInteger)index;
+
 - (void)setImageWithURL:(NSURL *)url;
 - (void)setImageWithURL:(NSURL *)url placeholderImage:(UIImage *)placeholder;
 - (void)setMedia:(SWMedia*)media placeholderImage:(UIImage *)placeholder;
