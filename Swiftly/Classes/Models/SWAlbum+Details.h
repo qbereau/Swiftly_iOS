@@ -9,6 +9,8 @@
 #import "SWAlbum.h"
 #import "SWAppDelegate.h"
 #import "SWPerson+Details.h"
+#import "SWMedia.h"
+#import "SWMedia+Details.h"
 
 @interface ImageToDataTransformer : NSValueTransformer
 
@@ -18,6 +20,7 @@
 
 - (NSArray*)participants_arr;
 - (NSString*)participants_str;
+- (NSArray*)sortedMedias;
 
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;

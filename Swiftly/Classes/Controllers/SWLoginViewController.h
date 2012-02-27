@@ -19,6 +19,8 @@
 #import "SWPerson+Details.h"
 #import "SWTabBarController.h"
 #import "SWPeopleListViewController.h"
+#import "SWPhoneNumber.h"
+#import "SWPhoneNumber+Details.h"
 
 @interface SWLoginViewController : UIViewController <UIPickerViewDelegate, UIPickerViewDataSource>
 {

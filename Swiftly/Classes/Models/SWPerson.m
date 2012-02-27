@@ -2,7 +2,7 @@
 //  SWPerson.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/22/12.
+//  Created by Quentin Bereau on 2/27/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -10,6 +10,7 @@
 #import "SWAlbum.h"
 #import "SWComment.h"
 #import "SWGroup.h"
+#import "SWPhoneNumber.h"
 
 
 @implementation SWPerson
@@ -21,12 +22,11 @@
 @dynamic isSelf;
 @dynamic isUser;
 @dynamic lastName;
-@dynamic originalPhoneNumbers;
-@dynamic phoneNumber;
 @dynamic serverID;
 @dynamic thumbnail;
 @dynamic albums;
-@dynamic groups;
 @dynamic comments;
+@dynamic groups;
+@dynamic phoneNumbers;
 
 @end

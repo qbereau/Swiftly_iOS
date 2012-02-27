@@ -42,7 +42,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    NSLog(@"%@", self.contact.originalPhoneNumbers);
+
     self.navigationItem.title = [self.contact name];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
@@ -50,7 +50,8 @@
     self.scroller.contentSize = CGSizeMake(self.view.frame.size.width, self.cellBlock.frame.origin.y + self.cellBlock.frame.size.height + 10);
     
     self.lblName.text = [self.contact name];
-    self.lblPhoneNumber.text = self.contact.phoneNumber;
+    //self.lblPhoneNumber.text = self.contact.phoneNumber;
+    self.lblPhoneNumber.text = @"";
     self.thumbnail.image = self.contact.thumbnail;
     CALayer * l = [self.thumbnail layer];
     [l setMasksToBounds:YES];
@@ -178,7 +179,8 @@
         MFMessageComposeViewController *picker = [[MFMessageComposeViewController alloc] init];
         picker.messageComposeDelegate = self;
         picker.body = NSLocalizedString(@"share_sms", @"Get swiftly now....");
-        picker.recipients = [NSArray arrayWithObjects:self.contact.phoneNumber, nil];
+        SWPhoneNumber* pn = [self.contact normalizedPhoneNumber];
+        picker.recipients = [NSArray arrayWithObjects:pn.phoneNumber, nil];
         [self presentModalViewController:picker animated:YES];
     }
     

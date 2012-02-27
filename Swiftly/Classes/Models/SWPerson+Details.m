@@ -61,6 +61,7 @@
 
 - (NSString*)displayOriginalPhoneNumbers
 {
+    /*
     NSMutableString* str = [NSMutableString string];
     for (NSString* phone_nb in self.originalPhoneNumbers)
     {
@@ -71,6 +72,8 @@
         return [str substringToIndex:[str length] - 2];    
     
     return str;
+     */
+    return @"TODO";
 }
 
 + (UIImage*)defaultImage
@@ -110,9 +113,9 @@
         // If we can't then we add AB reference to the output array
         
         BOOL bFoundInDB = NO;
-        for (NSString* opn in p.originalPhoneNumbers)
+        for (SWPhoneNumber* pn in p.phoneNumbers)
         {
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", opn];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", pn.phoneNumber];
             NSArray* rez = [db_set filteredArrayUsingPredicate:predicate];
             if (rez.count > 0)
             {
@@ -127,29 +130,6 @@
             [output addObject:p];
         }
     }
-    
-    /*
-    for (SWPerson* p in db_set)
-    {
-        BOOL bFoundInDB = NO;
-        for (NSString* origPN in p.originalPhoneNumbers)
-        {
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", origPN];
-            NSArray* rez = [people filteredArrayUsingPredicate:predicate];
-            if (rez.count > 0)
-            {
-                [output addObject:p];
-                bFoundInDB = YES;
-                break;
-            }
-        }
-        
-        if (!bFoundInDB)
-        {
-            
-        }
-    }
-     */
     
     return output;
 }
@@ -195,10 +175,10 @@
     return (SWPerson*)[items objectAtIndex:0];
 }
 
-+ (SWPerson*)findObjectWithOriginalPhoneNumber:(NSArray*)phoneNb
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb
 {
     NSArray* people = [SWPerson findAllObjects];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN originalPhoneNumbers", phoneNb];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", phoneNb];
     NSArray* items = [people filteredArrayUsingPredicate:predicate];
     if (items.count == 0)
         return nil;
@@ -230,21 +210,53 @@
     self.isUser         = [[obj valueForKey:@"activated"] boolValue];
     self.isBlocked      = [[obj valueForKey:@"blocked"] boolValue];
     self.isBlocking     = [[obj valueForKey:@"blocking"] boolValue];
-    self.isLinked       = [[obj valueForKey:@"linked"] boolValue];    
+    self.isLinked       = [[obj valueForKey:@"linked"] boolValue];
     
     NSString* origPhone = [obj valueForKey:@"original_phone_number"];
-    if (!origPhone || [origPhone class] == [NSNull class])
+    if (origPhone && [origPhone class] != [NSNull class])
     {
-        origPhone = nil;
-        self.originalPhoneNumbers = [NSMutableArray array];
+        SWPhoneNumber* pn   = [SWPhoneNumber findObjectWithPhoneNumber:origPhone];
+        if (!pn || pn.person.serverID != self.serverID)
+        {
+            SWPhoneNumber* pn   = [SWPhoneNumber createEntity];
+            pn.phoneNumber      = origPhone;
+            pn.normalized       = NO;
+            pn.invalid          = NO;
+            pn.person           = self;
+            [self addPhoneNumbersObject:pn];
+        }
     }
-    else
-        self.originalPhoneNumbers = [NSMutableArray arrayWithObject:origPhone];
 
     NSString* phone = [obj valueForKey:@"phone_number"];
-    if (!phone || [phone class] == [NSNull class])
-        phone = nil;
-    self.phoneNumber            = phone;
+    if (phone && [phone class] != [NSNull class])
+    {
+        SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:phone];
+        if (!pn || pn.person.serverID != self.serverID)
+        {
+            pn              = [SWPhoneNumber createEntity];
+            pn.phoneNumber  = phone;
+            pn.invalid      = NO;
+            pn.normalized   = YES;
+            pn.person       = self;
+            
+            [self addPhoneNumbersObject:pn];
+        }
+    }
+}
+
+- (SWPhoneNumber*)normalizedPhoneNumber
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [SWPerson entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.normalized == %@", [NSNumber numberWithBool:YES], self.serverID];
+    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    NSArray* items = [context executeFetchRequest:request error:nil];
+    if (items.count == 0)
+        return nil;
+    return (SWPhoneNumber*)[items objectAtIndex:0];
 }
 
 + (NSArray*)getPeopleAB
@@ -262,10 +274,14 @@
         p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
         
         ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        p.originalPhoneNumbers = [NSMutableArray array];
         for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
         {
-            [p.originalPhoneNumbers addObject:(__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i)];
+            SWPhoneNumber* pn = [SWPhoneNumber newEntity];
+            pn.phoneNumber  = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
+            pn.normalized   = NO;
+            pn.invalid      = NO;
+            pn.person       = p;
+            [p addPhoneNumbersObject:pn];
         }
         
         if (ABPersonHasImageData(ref))

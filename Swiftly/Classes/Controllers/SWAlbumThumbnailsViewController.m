@@ -14,6 +14,7 @@
 @synthesize selectedAlbum       = _selectedAlbum;
 @synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
+@synthesize operationQueue      = _operationQueue;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -40,17 +41,22 @@
     [super viewDidLoad];
 
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
+
+    if (self.operationQueue == nil)
+        self.operationQueue = [[NSOperationQueue alloc] init];
     
     if (self.selectedAlbum)
     {             
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-        hud.labelText = NSLocalizedString(@"loading", @"loading");
+        [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
         // Update Medias
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
             self.arrMedias = [NSMutableArray array];
-            self.mediaDS = [[SWWebImagesDataSource alloc] init];            
+            self.mediaDS = [[SWWebImagesDataSource alloc] init];        
+            
+            
+            [self reload];
             
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
                                      parameters:nil
@@ -67,10 +73,26 @@
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
-                                                                                    [self updateMedias:responseObject];
+                                                                                    //[self updateMedias:responseObject];
+                                                                                    
+                                                                                    --opReq;
+                                                                                    BOOL shouldUpdate = (opReq == 0) ? YES : NO;
+                                                                                    
+                                                                                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
+                                                                                                            [NSNumber numberWithBool:shouldUpdate], @"shouldUpdate",
+                                                                                                            nil];                                                                                    
+                                                                                    
+                                                                                    NSInvocationOperation* operation;
+                                                                                    operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                                                     selector:@selector(updateMedias:)
+                                                                                                                                       object:params];
+                                                                                    [self.operationQueue addOperation:operation];
+                                                                                    
+                                                                                    /*
                                                                                     --opReq;
                                                                                     if (opReq == 0)
                                                                                         [self finishedUpdateMedias];
+                                                                                    */
                                                                                 }
                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                     NSLog(@"error");
@@ -80,15 +102,25 @@
                                             }
                                             else
                                             {
-                                                [self updateMedias:responseObject];
-                                                [self finishedUpdateMedias];
+                                                //[self updateMedias:responseObject];
+                                                
+                                                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
+                                                                                                                    [NSNumber numberWithBool:YES], @"shouldUpdate",
+                                                                        nil];
+                                                NSInvocationOperation* operation;
+                                                operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                 selector:@selector(updateMedias:)
+                                                                                                   object:params];
+                                                [self.operationQueue addOperation:operation];
+                                                
+                                                
+                                                //[self finishedUpdateMedias];
                                             }
 
                                         } 
                                         failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                             // Hide the HUD in the main tread 
                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                                 UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                                 [av show];                                                
                                             });
@@ -110,39 +142,118 @@
     self.navigationItem.titleView = segmentedControl;
 }
 
-- (void)updateMedias:(id)responseObject
+- (void)updateMedias:(NSDictionary*)dict
 {
+    id responseObject = [dict objectForKey:@"objects"];
+    BOOL shouldUpdate = [[dict objectForKey:@"shouldUpdate"] boolValue];    
+    
+    NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    [context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+    
+    [context performBlock:^{
+        
+        SWAlbum* selAlbum = (SWAlbum*)[context existingObjectWithID:self.selectedAlbum.objectID error:nil];
+        for (id obj in responseObject)
+        {
+            SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+            if (!mediaObj)
+                mediaObj = [SWMedia createEntityInContext:context];
+            [mediaObj updateWithObject:obj];
+            if (!mediaObj.album)
+            {
+                mediaObj.album = selAlbum;
+                [selAlbum addMediasObject:mediaObj];
+            }
+            [self.arrMedias addObject:mediaObj];
+        }
+        
+        if (shouldUpdate)
+        {
+            for (SWMedia* m in [SWMedia findMediasFromAlbumID:selAlbum.serverID])
+            {
+                if (![self.arrMedias containsObject:m])
+                {
+                    [m deleteEntityInContext:context];
+                }
+            }
+            
+            [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                     selector:@selector(contextDidSave:) 
+                                                         name:NSManagedObjectContextDidSaveNotification 
+                                                       object:context];
+            
+            [context save:nil];
+            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+            
+            [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                            name:NSManagedObjectContextDidSaveNotification 
+                                                          object:context];
+        }        
+    }];    
+    
+    /*
+    NSManagedObjectContext* context     = [[NSManagedObjectContext alloc] init];
+    [context setPersistentStoreCoordinator:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] persistentStoreCoordinator]];
+    
+    id responseObject = [dict objectForKey:@"objects"];
+    BOOL shouldUpdate = [[dict objectForKey:@"shouldUpdate"] boolValue];
+    
+    SWAlbum* selAlbum = (SWAlbum*)[context existingObjectWithID:self.selectedAlbum.objectID error:nil];
+    
     for (id obj in responseObject)
     {
         SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
         if (!mediaObj)
-            mediaObj = [SWMedia createEntity];
-        mediaObj.album = self.selectedAlbum;
-        [mediaObj updateWithObject:obj];        
+            mediaObj = [SWMedia createEntityInContext:context];
+        [mediaObj updateWithObject:obj];
+        mediaObj.album = selAlbum;
+        [selAlbum addMediasObject:mediaObj];
         [self.arrMedias addObject:mediaObj];
     }
+    
+    NSError* err;
+    [context save:&err];
+    NSLog(@"Error: %@", [err description]);
+    
+    if (shouldUpdate)
+    {
+        [self finishedUpdateMedias];
+    }
+     */
+}
+
+- (void)contextDidSave:(NSNotification*)notif
+{
+    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
+
+    [self reload];
+}
+
+- (void)reload
+{
+    self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
+    [self.mediaDS resetFilter];
+    [self setDataSource:self.mediaDS];
 }
 
 - (void)finishedUpdateMedias
 {
-    self.mediaDS.allMedias = self.arrMedias;
-    [self.mediaDS resetFilter];
-    [self setDataSource:self.mediaDS]; 
+    NSManagedObjectContext* context     = [[NSManagedObjectContext alloc] init];
+    [context setPersistentStoreCoordinator:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] persistentStoreCoordinator]];
     
     for (SWMedia* m in [SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID])
     {
         if (![self.arrMedias containsObject:m])
         {
-            [m deleteEntity];
+            [m deleteEntityInContext:context];
         }
     }
     
-    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];    
+    [context save:nil];
     
-    // Hide the HUD in the main tread 
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-    });
+    [self performSelectorOnMainThread:@selector(reload)
+                           withObject:nil
+                        waitUntilDone:YES];
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

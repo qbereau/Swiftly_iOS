@@ -64,7 +64,6 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
-    
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
@@ -446,10 +445,14 @@
                                             NSString* token = (NSString*)[responseObject valueForKey:@"token"];
                                             int userID = [[responseObject valueForKey:@"id"] intValue];
                                             
+                                            SWPhoneNumber* pn = [SWPhoneNumber createEntity];
+                                            pn.phoneNumber = _userPhoneNumber;
+                                            
                                             SWPerson* user = [SWPerson createEntity];
                                             user.serverID       = userID;
-                                            user.phoneNumber    = _userPhoneNumber;
                                             user.isSelf         = YES;
+                                            [user addPhoneNumbersObject:pn];
+                                            
                                             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
                                             
                                             [self codeValidatedWithKey:key token:token userID:userID];

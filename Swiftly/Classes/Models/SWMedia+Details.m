@@ -115,6 +115,11 @@
 + (NSArray *)findMediasFromAlbumID:(NSInteger)serverID
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [self findMediasFromAlbumID:serverID inContext:context];
+}
+
++ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID inContext:(NSManagedObjectContext*)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID == %d", serverID];
     
@@ -127,13 +132,17 @@
 + (SWMedia*)createEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWMedia createEntityInContext:context];
+}
+
++ (SWMedia*)createEntityInContext:(NSManagedObjectContext*)context
+{
     SWMedia* obj = [NSEntityDescription
                     insertNewObjectForEntityForName:NSStringFromClass([self class])
                     inManagedObjectContext:context];
     
     return (SWMedia*)obj;
 }
-
 
 + (SWMedia*)newEntity
 {
@@ -146,10 +155,15 @@
 
 - (void)deleteEntity
 {
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [self deleteEntityInContext:context];
+}
+
+- (void)deleteEntityInContext:(NSManagedObjectContext*)context
+{
     [[SDImageCache sharedImageCache] removeImageForKey:[KTPhotoView cacheKeyForIndex:self.serverID]];
     [[SDImageCache sharedImageCache] removeImageForKey:[KTThumbView cacheKeyForIndex:self.serverID]];
     
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     [context deleteObject:self];
 }
 

@@ -25,14 +25,18 @@
     UIActionSheet*              _actionSheet;
     
     SWMedia*                    _longPressMedia;
+    
+    NSOperationQueue*           _operationQueue;
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
 @property (nonatomic, strong) NSMutableArray*           arrMedias;
 @property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
+@property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
 
-- (void)updateMedias:(id)responseObject;
+- (void)updateMedias:(NSDictionary*)dict;
 - (void)finishedUpdateMedias;
+- (void)reload;
 
 @end

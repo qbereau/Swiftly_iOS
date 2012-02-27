@@ -89,7 +89,7 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -128,13 +128,10 @@
                                         UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                         [av show];
                                         
-                                        // Hide the HUD in the main tread 
-                                        //dispatch_async(dispatch_get_main_queue(), ^{
-                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                        //});
+                                        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                     }
          ];
-    //});
+    });
 }
 
 - (void)updateGroups:(id)responseObject
@@ -160,12 +157,14 @@
     {
         [g deleteEntity];
     }    
-    
-    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];    
 }
 
 - (void)finishedUpdateGroups
 {
+    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+    
+    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+    
     self.groups = [SWGroup findAllObjects];
     [self.tableView reloadData];  
 }

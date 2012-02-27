@@ -2,14 +2,14 @@
 //  SWPerson.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/22/12.
+//  Created by Quentin Bereau on 2/27/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class SWAlbum, SWComment, SWGroup;
+@class SWAlbum, SWComment, SWGroup, SWPhoneNumber;
 
 @interface SWPerson : NSManagedObject
 
@@ -20,13 +20,12 @@
 @property (nonatomic) BOOL isSelf;
 @property (nonatomic) BOOL isUser;
 @property (nonatomic, retain) NSString * lastName;
-@property (nonatomic, retain) id originalPhoneNumbers;
-@property (nonatomic, retain) NSString * phoneNumber;
 @property (nonatomic) int32_t serverID;
 @property (nonatomic, retain) id thumbnail;
 @property (nonatomic, retain) NSSet *albums;
-@property (nonatomic, retain) NSSet *groups;
 @property (nonatomic, retain) NSSet *comments;
+@property (nonatomic, retain) NSSet *groups;
+@property (nonatomic, retain) NSSet *phoneNumbers;
 @end
 
 @interface SWPerson (CoreDataGeneratedAccessors)
@@ -35,12 +34,16 @@
 - (void)removeAlbumsObject:(SWAlbum *)value;
 - (void)addAlbums:(NSSet *)values;
 - (void)removeAlbums:(NSSet *)values;
-- (void)addGroupsObject:(SWGroup *)value;
-- (void)removeGroupsObject:(SWGroup *)value;
-- (void)addGroups:(NSSet *)values;
-- (void)removeGroups:(NSSet *)values;
 - (void)addCommentsObject:(SWComment *)value;
 - (void)removeCommentsObject:(SWComment *)value;
 - (void)addComments:(NSSet *)values;
 - (void)removeComments:(NSSet *)values;
+- (void)addGroupsObject:(SWGroup *)value;
+- (void)removeGroupsObject:(SWGroup *)value;
+- (void)addGroups:(NSSet *)values;
+- (void)removeGroups:(NSSet *)values;
+- (void)addPhoneNumbersObject:(SWPhoneNumber *)value;
+- (void)removePhoneNumbersObject:(SWPhoneNumber *)value;
+- (void)addPhoneNumbers:(NSSet *)values;
+- (void)removePhoneNumbers:(NSSet *)values;
 @end

@@ -63,7 +63,7 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
             
@@ -74,9 +74,7 @@
             
             [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
             
-            //dispatch_async(dispatch_get_main_queue(), ^{
-                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            //});
+            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
             
             [[self navigationController] popViewControllerAnimated:YES];
         };
@@ -86,9 +84,7 @@
             [av show];
             
             // Hide the HUD in the main tread 
-            //dispatch_async(dispatch_get_main_queue(), ^{
-                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            //});
+            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
         };
         
         NSMutableArray* arr_ids = [NSMutableArray array];
@@ -114,7 +110,7 @@
                                         failure:failure
              ];
         }
-    //});
+    });
 }
 
 - (void)deleteGroup
@@ -122,7 +118,7 @@
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
                                     parameters:nil
@@ -130,12 +126,10 @@
                                            
                                            SWGroup* g = [SWGroup findObjectWithServerID:self.group.serverID];
                                            [g deleteEntity];
-                                           
-                                           //[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
 
-                                           //dispatch_async(dispatch_get_main_queue(), ^{
-                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           //});                                           
+                                           [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+                                           
+                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                            
                                            [[self navigationController] popViewControllerAnimated:YES];
                                        }
@@ -143,13 +137,10 @@
                                            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                            [av show];
                                            
-                                           // Hide the HUD in the main tread 
-                                           //dispatch_async(dispatch_get_main_queue(), ^{
-                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           //});
+                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                        }
          ];
-    //});
+    });
 }
 
 - (void)viewDidUnload

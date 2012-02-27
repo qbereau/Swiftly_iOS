@@ -52,7 +52,6 @@
             
             AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
             [operation setUploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
-                NSLog(@"bytes Written: %d - %d - %d", bytesWritten, totalBytesWritten, totalBytesExpectedToWrite);
                 if (m.isVideo)
                     m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite / 2 + 0.5f;
                 else

@@ -2,7 +2,7 @@
 //  SWMedia.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/22/12.
+//  Created by Quentin Bereau on 2/27/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -27,6 +27,8 @@
 @dynamic isReady;
 @dynamic isUploaded;
 @dynamic isVideo;
+@dynamic localResourceURL;
+@dynamic localThumbnailURL;
 @dynamic policy;
 @dynamic resourceURL;
 @dynamic serverID;
@@ -35,8 +37,6 @@
 @dynamic thumbnailURL;
 @dynamic uploadedDate;
 @dynamic uploadProgress;
-@dynamic localResourceURL;
-@dynamic localThumbnailURL;
 @dynamic album;
 @dynamic comments;
 

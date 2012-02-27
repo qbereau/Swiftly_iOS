@@ -2,7 +2,7 @@
 //  SWMedia.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/22/12.
+//  Created by Quentin Bereau on 2/27/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -27,6 +27,8 @@
 @property (nonatomic) BOOL isReady;
 @property (nonatomic) BOOL isUploaded;
 @property (nonatomic) BOOL isVideo;
+@property (nonatomic, retain) NSString * localResourceURL;
+@property (nonatomic, retain) NSString * localThumbnailURL;
 @property (nonatomic, retain) NSString * policy;
 @property (nonatomic, retain) NSString * resourceURL;
 @property (nonatomic) int32_t serverID;
@@ -35,8 +37,6 @@
 @property (nonatomic, retain) NSString * thumbnailURL;
 @property (nonatomic) NSTimeInterval uploadedDate;
 @property (nonatomic) float uploadProgress;
-@property (nonatomic, retain) NSString * localResourceURL;
-@property (nonatomic, retain) NSString * localThumbnailURL;
 @property (nonatomic, retain) SWAlbum *album;
 @property (nonatomic, retain) NSSet *comments;
 @end

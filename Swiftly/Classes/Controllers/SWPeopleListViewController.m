@@ -388,7 +388,7 @@
         
         // Step 1: We get an array of all the people present in AddressBook
         NSArray* peopleAB = [SWPerson getPeopleAB];        
-        
+
         [[SWAPIClient sharedClient] getPath:@"/accounts"
                                  parameters:nil
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -440,28 +440,28 @@
         {
             SWPerson* existingObj = [SWPerson findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
             
-            if (existingObj)
+            if (!existingObj)
             {
-                [existingObj updateWithObject:obj];
-                
-                // Update infos from AddressBook
-                BOOL shouldBreak = NO;
-                for (SWPerson* p in peopleAB)
-                {
-                    for (NSString* origPhoneNb in p.originalPhoneNumbers)
-                    {
-                        if ([existingObj.originalPhoneNumbers containsObject:origPhoneNb])
-                        {
-                            existingObj.firstName = p.firstName;
-                            existingObj.lastName  = p.lastName;
-                            existingObj.thumbnail = p.thumbnail;
-                            shouldBreak = YES;
-                            break;
-                        }
-                    }
-                    if (shouldBreak)
-                        break;
-                }
+                existingObj = [SWPerson createEntity];
+            }
+            
+            [existingObj updateWithObject:obj];
+            
+            // Update infos from AddressBook
+            NSMutableArray* arrPN = [NSMutableArray array];
+            for (SWPhoneNumber* pn in existingObj.phoneNumbers)
+            {
+                [arrPN addObject:pn.phoneNumber];
+            }
+            
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY %@ IN phoneNumbers.phoneNumber", arrPN];
+            NSArray* arr = [peopleAB filteredArrayUsingPredicate:predicate];
+            if (arr && [arr count] > 0)
+            {
+                SWPerson* p = [arr objectAtIndex:0];
+                existingObj.firstName = p.firstName;
+                existingObj.lastName  = p.lastName;
+                existingObj.thumbnail = p.thumbnail;
             }
         }
         
@@ -472,36 +472,56 @@
 + (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts
 {
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+
         [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
                                  parameters:dict 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                         if ([responseObject isKindOfClass:[NSArray class]])
                                         {
+                                            NSMutableArray* arrAddedOrigPhoneNumbers = [NSMutableArray array];
+                                            
                                             for (id newObj in responseObject)
                                             {
                                                 SWPerson* newPerson   = [SWPerson createEntity];
                                                 newPerson.isSelf = NO;
                                                 [newPerson updateWithObject:newObj];
                                                 
+                                                [arrAddedOrigPhoneNumbers addObject:[newObj valueForKey:@"original_phone_number"]];
+                                                
+                                                NSLog(@"newPerson: %@", newPerson.phoneNumbers);
                                                 // Add additional infos from AddressBook
-                                                BOOL shouldBreak = NO;
-                                                for (SWPerson* p in newContacts)
+                                                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", [newObj valueForKey:@"original_phone_number"]];
+                                                NSArray* arr = [newContacts filteredArrayUsingPredicate:predicate];
+                                                if (arr && [arr count] > 0)
                                                 {
-                                                    for (NSString* origPhoneNb in p.originalPhoneNumbers)
+                                                    SWPerson* p = [arr objectAtIndex:0];
+                                                    newPerson.firstName = p.firstName;
+                                                    newPerson.lastName  = p.lastName;
+                                                    newPerson.thumbnail = p.thumbnail;
+                                                    NSLog(@"%@ %@", p.firstName, p.lastName);
+                                                }                                              
+                                            }
+                                            
+                                            for (NSString* link_pn in [dict objectForKey:@"phone_numbers"])
+                                            {    
+                                                BOOL bFound = NO;
+                                                for (NSString* opn in arrAddedOrigPhoneNumbers)
+                                                {
+                                                    if ([opn isEqualToString:link_pn])
                                                     {
-                                                        if ([newPerson.originalPhoneNumbers containsObject:origPhoneNb])
-                                                        {
-                                                            newPerson.firstName = p.firstName;
-                                                            newPerson.lastName  = p.lastName;
-                                                            newPerson.thumbnail = p.thumbnail;
-                                                            shouldBreak = YES;
-                                                            break;
-                                                        }
+                                                        bFound = YES;
+                                                        break;
                                                     }
-                                                    if (shouldBreak)
-                                                        break;                                                    
                                                 }
                                                 
+                                                if (!bFound)
+                                                {
+                                                    SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:link_pn];
+                                                    if (pn)
+                                                    {
+                                                        pn.invalid = YES;                                                        
+                                                    }                                                    
+                                                }
                                             }
                                             
                                             [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
@@ -524,22 +544,29 @@
         //          In that case, we need to relink the new phone number
         //          In the end we'll only display contacts coming from AddressBook
         //          With phone numbers matching the ones that the app have
-        
+    
         NSMutableArray* newPhoneNumbers = [NSMutableArray array];
         NSMutableArray* newContacts = [NSMutableArray array];
         for (SWPerson* p in peopleAB)
         {
-            for (NSString* origPhoneNb in p.originalPhoneNumbers)
+            BOOL addNewPN = NO;
+            for (SWPhoneNumber* pn in [p.phoneNumbers allObjects])
             {
-                SWPerson* existingContact = [SWPerson findObjectWithOriginalPhoneNumber:origPhoneNb];
-            
-                if (!existingContact)
+                SWPhoneNumber* localPN = [SWPhoneNumber findValidObjectWithPhoneNumber:pn.phoneNumber];
+                if (!localPN)
                 {
-                    [newPhoneNumbers addObject:origPhoneNb];
-                    [newContacts addObject:p];
-                }            
+                    addNewPN                = YES;
+                    localPN                 = [SWPhoneNumber createEntity];
+                    localPN.phoneNumber     = pn.phoneNumber;
+                    localPN.normalized      = NO;
+                    localPN.invalid         = NO;
+                    
+                    [newPhoneNumbers addObject:pn.phoneNumber];
+                }
             }
-        }
+            if (addNewPN)
+                [newContacts addObject:p];
+        }    
 
         // Create new link with this contact
         if ([newPhoneNumbers count] > 0)
@@ -569,6 +596,7 @@
             [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
         }   
+
     //});
 }
 

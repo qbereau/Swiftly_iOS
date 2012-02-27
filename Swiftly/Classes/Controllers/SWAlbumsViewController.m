@@ -221,7 +221,7 @@
         {
             [a deleteEntity];
         }
-    }    
+    }
 }
 
 - (void)unlockAlbums:(UIButton*)sender

@@ -15,15 +15,28 @@
 
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
+
 + (NSArray *)findAllObjects;
+
 + (NSArray *)findInProgressObjects;
+
 + (NSArray *)findRecentObjects;
+
 + (NSArray *)findMediasFromAlbumID:(NSInteger)serverID;
++ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID inContext:(NSManagedObjectContext*)context;
+
 + (void)deleteAllObjects;
+
 + (SWMedia*)findObjectWithServerID:(int)serverID;
+
 + (SWMedia*)createEntity; // in context
++ (SWMedia*)createEntityInContext:(NSManagedObjectContext*)context; // in context
+
 + (SWMedia*)newEntity; // no context
+
 - (void)deleteEntity;
+- (void)deleteEntityInContext:(NSManagedObjectContext*)context;
+
 - (void)updateWithObject:(id)obj;
 
 @end

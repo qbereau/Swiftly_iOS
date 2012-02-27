@@ -36,6 +36,15 @@
     return output;
 }
 
+- (NSArray*)sortedMedias
+{
+    return [[self.medias allObjects] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        SWMedia* m1 = (SWMedia*)obj1;
+        SWMedia* m2 = (SWMedia*)obj2;
+        return m1.serverID < m2.serverID;
+    }];
+}
+
 // Core Data Helpers
 
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context

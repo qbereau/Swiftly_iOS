@@ -7,6 +7,8 @@
 //
 
 #import "SWPerson.h"
+#import "SWPhoneNumber.h"
+#import "SWPhoneNumber+Details.h"
 #import <AddressBook/AddressBook.h>
 
 @interface SWPerson (Details)
@@ -23,11 +25,11 @@
 + (NSArray *)findValidObjects;
 + (void)deleteAllObjects;
 + (SWPerson*)findObjectWithServerID:(int)serverID;
-+ (SWPerson*)findObjectWithOriginalPhoneNumber:(NSString*)phoneNb;
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb;
 + (SWPerson*)createEntity; // in context
 + (SWPerson*)newEntity; // no context
 - (void)updateWithObject:(id)obj;
-
+- (SWPhoneNumber*)normalizedPhoneNumber;
 + (NSArray*)getPeopleAB;
 
 @end
