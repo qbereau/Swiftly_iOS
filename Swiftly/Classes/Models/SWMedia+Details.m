@@ -99,7 +99,12 @@
 
 + (SWMedia*)findObjectWithServerID:(int)serverID
 {
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
+    return [self findObjectWithServerID:serverID inContext:context];
+}
+
++ (SWMedia*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext*)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
     

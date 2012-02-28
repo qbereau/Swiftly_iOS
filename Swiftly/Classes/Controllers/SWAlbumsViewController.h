@@ -26,6 +26,8 @@
     
     int                             _reqOps;
     NSMutableArray*                 _receivedAlbums;
+    
+    NSOperationQueue*               _operationQueue;    
 }
 
 @property (nonatomic, strong) NSMutableArray*           receivedAlbums;
@@ -33,7 +35,9 @@
 @property (nonatomic, strong) NSArray*                  specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
 @property (nonatomic, assign) int                       reqOps;
+@property (nonatomic, strong) NSOperationQueue*         operationQueue;
 
+- (void)processAlbumsWithDict:(NSDictionary*)dict;
 - (void)processAlbums:(id)responseObject;
 - (void)updateAlbumAccounts:(int)albumID;
 - (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject;

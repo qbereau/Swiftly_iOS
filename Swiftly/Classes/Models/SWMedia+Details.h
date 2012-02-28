@@ -27,6 +27,7 @@
 
 + (void)deleteAllObjects;
 
++ (SWMedia*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext*)context;
 + (SWMedia*)findObjectWithServerID:(int)serverID;
 
 + (SWMedia*)createEntity; // in context

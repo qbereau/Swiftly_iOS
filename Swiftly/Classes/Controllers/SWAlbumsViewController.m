@@ -10,6 +10,7 @@
 
 @implementation SWAlbumsViewController
 
+@synthesize operationQueue = _operationQueue;
 @synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
 @synthesize specialAlbums = _specialAlbums;
@@ -27,6 +28,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    if (self.operationQueue == nil)
+        self.operationQueue = [[NSOperationQueue alloc] init];    
     
     UIBarButtonItem* btnUnlock = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"] style:UIBarButtonItemStylePlain target:self action:@selector(unlockAlbums:)];
     self.navigationItem.leftBarButtonItem = btnUnlock;
@@ -152,17 +156,37 @@
                                              
                                              if (iTotalPages > 1)
                                              {   
-                                                 __block int opReq = iTotalPages - 2;
+                                                 // Update for first page
+                                                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:responseObject, @"objects", 
+                                                                         [NSNumber numberWithBool:NO], @"shouldRemoveOldAlbums",
+                                                                         nil];
+                                                 NSInvocationOperation* operation;
+                                                 operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                  selector:@selector(processAlbumsWithDict:)
+                                                                                                    object:params];
+                                                 [self.operationQueue addOperation:operation];                                                 
+                                                 // -------
+                                                 
+                                                 __block int opReq = iTotalPages - 1;
                                                  for (int i = 2; i <= iTotalPages; ++i)
                                                  {
                                                      [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums?page=%d", i]
                                                                               parameters:nil
                                                                                  success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                      
-                                                                                     [self processAlbums:respObj2];
+                                                                                     // Update for first page
                                                                                      --opReq;
-                                                                                     if (opReq == 0)
-                                                                                         [self removeOldAlbums];
+                                                                                     BOOL shouldCleanup = (opReq == 0) ? YES : NO;                                                                                     
+                                                                                     
+                                                                                     NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", 
+                                                                                                             [NSNumber numberWithBool:shouldCleanup], @"shouldRemoveOldAlbums",
+                                                                                                             nil];
+                                                                                     NSInvocationOperation* operation;
+                                                                                     operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                                                      selector:@selector(processAlbumsWithDict:)
+                                                                                                                                        object:params];
+                                                                                     [self.operationQueue addOperation:operation];
+                                                                                     // ------
                                                                                  }
                                                                                  failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                      NSLog(@"error");
@@ -172,8 +196,14 @@
                                              }
                                              else
                                              {
-                                                 [self processAlbums:responseObject];
-                                                 [self removeOldAlbums];
+                                                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
+                                                                         [NSNumber numberWithBool:YES], @"shouldRemoveOldAlbums",
+                                                                         nil];
+                                                 NSInvocationOperation* operation;
+                                                 operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                  selector:@selector(processAlbumsWithDict:)
+                                                                                                    object:params];
+                                                 [self.operationQueue addOperation:operation];                                                 
                                              }
                                          }
                                      }
@@ -188,6 +218,77 @@
                                     }
          ];   
     });
+}
+
+- (void)processAlbumsWithDict:(NSDictionary *)dict
+{
+    id responseObject   = [dict objectForKey:@"objects"];
+    BOOL shouldCleanup  = [[dict objectForKey:@"shouldRemoveOldAlbums"] boolValue];
+    
+    NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    [context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+    
+    [context performBlock:^{
+        
+        for (id obj in responseObject)
+        {
+            SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue] inContext:context];
+            
+            if (!albumObj)
+            {
+                albumObj = [SWAlbum createEntityInContext:context];
+                albumObj.isLocked = NO;                                                     
+            }
+            
+            [albumObj updateWithObject:obj];
+            
+            [self.receivedAlbums addObject:albumObj];
+            
+            ++self.reqOps;
+            [self updateAlbumAccounts:albumObj.serverID];
+        }        
+        
+        if (shouldCleanup)
+        {
+            for (SWAlbum* a in [SWAlbum findAllObjectsInContext:context])
+            {
+                NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
+                NSArray* rez = [self.receivedAlbums filteredArrayUsingPredicate:predicate];
+                if (rez.count == 0)
+                {
+                    [a deleteEntityInContext:context];
+                }
+            }
+        }
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                 selector:@selector(contextDidSave:) 
+                                                     name:NSManagedObjectContextDidSaveNotification 
+                                                   object:context];
+        
+        [context save:nil];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                        name:NSManagedObjectContextDidSaveNotification 
+                                                      object:context];        
+        
+    }];     
+}
+
+- (void)contextDidSave:(NSNotification*)notif
+{
+    if (![NSThread isMainThread]) {
+        [self performSelectorOnMainThread:@selector(contextDidSave:)
+                               withObject:notif
+                            waitUntilDone:NO];
+        return;
+    }
+    
+    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
+    
+    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+    
+    [self reload];
 }
 
 - (void)processAlbums:(id)responseObject
@@ -210,6 +311,8 @@
         [self updateAlbumAccounts:albumObj.serverID];
     }
 }
+
+
 
 - (void)removeOldAlbums
 {

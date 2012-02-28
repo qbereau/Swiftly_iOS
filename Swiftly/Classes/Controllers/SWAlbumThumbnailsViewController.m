@@ -11,6 +11,7 @@
 @implementation SWAlbumThumbnailsViewController
 
 @synthesize arrMedias           = _arrMedias;
+@synthesize arrBeforeSyncMedias = _arrBeforeSyncMedias;
 @synthesize selectedAlbum       = _selectedAlbum;
 @synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
@@ -55,6 +56,7 @@
             self.arrMedias = [NSMutableArray array];
             self.mediaDS = [[SWWebImagesDataSource alloc] init];        
             
+            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID]];
             
             [self reload];
             
@@ -66,33 +68,32 @@
                                             
                                             if (iTotalPages > 1)
                                             {   
+                                                _shouldUpdate = NO;
+                                                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:responseObject, @"objects", nil];
+                                                
+                                                NSInvocationOperation* operation;
+                                                operation = [[NSInvocationOperation alloc] initWithTarget:self
+                                                                                                 selector:@selector(updateMediasWithDict:)
+                                                                                                   object:params];
+                                                [self.operationQueue addOperation:operation];                                                
+                                                
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
-                                                    __block int opReq = iTotalPages - 2;
+                                                    __block int opReq = iTotalPages - 1;
                                                     [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias?page=%d", self.selectedAlbum.serverID, i]
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
-                                                                                    //[self updateMedias:responseObject];
-                                                                                    
                                                                                     --opReq;
-                                                                                    BOOL shouldUpdate = (opReq == 0) ? YES : NO;
+                                                                                    _shouldUpdate = (opReq == 0) ? YES : NO;
                                                                                     
-                                                                                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
-                                                                                                            [NSNumber numberWithBool:shouldUpdate], @"shouldUpdate",
-                                                                                                            nil];                                                                                    
+                                                                                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  respObj2, @"objects", nil];                                                                                    
                                                                                     
                                                                                     NSInvocationOperation* operation;
                                                                                     operation = [[NSInvocationOperation alloc] initWithTarget:self
-                                                                                                                                     selector:@selector(updateMedias:)
+                                                                                                                                     selector:@selector(updateMediasWithDict:)
                                                                                                                                        object:params];
                                                                                     [self.operationQueue addOperation:operation];
-                                                                                    
-                                                                                    /*
-                                                                                    --opReq;
-                                                                                    if (opReq == 0)
-                                                                                        [self finishedUpdateMedias];
-                                                                                    */
                                                                                 }
                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                     NSLog(@"error");
@@ -102,19 +103,14 @@
                                             }
                                             else
                                             {
-                                                //[self updateMedias:responseObject];
-                                                
-                                                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
-                                                                                                                    [NSNumber numberWithBool:YES], @"shouldUpdate",
-                                                                        nil];
+                                                _shouldUpdate = YES;
+                                                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", nil];
                                                 NSInvocationOperation* operation;
                                                 operation = [[NSInvocationOperation alloc] initWithTarget:self
-                                                                                                 selector:@selector(updateMedias:)
+                                                                                                 selector:@selector(updateMediasWithDict:)
                                                                                                    object:params];
                                                 [self.operationQueue addOperation:operation];
                                                 
-                                                
-                                                //[self finishedUpdateMedias];
                                             }
 
                                         } 
@@ -142,89 +138,89 @@
     self.navigationItem.titleView = segmentedControl;
 }
 
-- (void)updateMedias:(NSDictionary*)dict
+- (void)updateMediasWithDict:(NSDictionary*)dict
 {
     id responseObject = [dict objectForKey:@"objects"];
-    BOOL shouldUpdate = [[dict objectForKey:@"shouldUpdate"] boolValue];    
     
     NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
     
     [context performBlock:^{
         
-        SWAlbum* selAlbum = (SWAlbum*)[context existingObjectWithID:self.selectedAlbum.objectID error:nil];
+        SWAlbum* selAlbum = (SWAlbum*)[context objectWithID:self.selectedAlbum.objectID];
         for (id obj in responseObject)
         {
-            SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+            SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue] inContext:context];
             if (!mediaObj)
                 mediaObj = [SWMedia createEntityInContext:context];
             [mediaObj updateWithObject:obj];
-            if (!mediaObj.album)
-            {
-                mediaObj.album = selAlbum;
-                [selAlbum addMediasObject:mediaObj];
-            }
+            mediaObj.album = selAlbum;
+            [selAlbum addMediasObject:mediaObj];
             [self.arrMedias addObject:mediaObj];
         }
         
-        if (shouldUpdate)
-        {
-            for (SWMedia* m in [SWMedia findMediasFromAlbumID:selAlbum.serverID])
-            {
-                if (![self.arrMedias containsObject:m])
-                {
-                    [m deleteEntityInContext:context];
-                }
-            }
-            
-            [[NSNotificationCenter defaultCenter] addObserver:self 
-                                                     selector:@selector(contextDidSave:) 
-                                                         name:NSManagedObjectContextDidSaveNotification 
-                                                       object:context];
-            
-            [context save:nil];
-            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-            
-            [[NSNotificationCenter defaultCenter] removeObserver:self 
-                                                            name:NSManagedObjectContextDidSaveNotification 
-                                                          object:context];
-        }        
-    }];    
-    
-    /*
-    NSManagedObjectContext* context     = [[NSManagedObjectContext alloc] init];
-    [context setPersistentStoreCoordinator:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] persistentStoreCoordinator]];
-    
-    id responseObject = [dict objectForKey:@"objects"];
-    BOOL shouldUpdate = [[dict objectForKey:@"shouldUpdate"] boolValue];
-    
-    SWAlbum* selAlbum = (SWAlbum*)[context existingObjectWithID:self.selectedAlbum.objectID error:nil];
-    
+        [[NSNotificationCenter defaultCenter] addObserver:self 
+                                                 selector:@selector(contextDidSave:) 
+                                                     name:NSManagedObjectContextDidSaveNotification 
+                                                   object:context];
+        
+        [context save:nil];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self 
+                                                        name:NSManagedObjectContextDidSaveNotification 
+                                                      object:context];        
+        
+    }];      
+}
+
+- (void)updateMedias:(id)responseObject
+{
     for (id obj in responseObject)
     {
         SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
         if (!mediaObj)
-            mediaObj = [SWMedia createEntityInContext:context];
+            mediaObj = [SWMedia createEntity];
         [mediaObj updateWithObject:obj];
-        mediaObj.album = selAlbum;
-        [selAlbum addMediasObject:mediaObj];
+        mediaObj.album = self.selectedAlbum;
+        [self.selectedAlbum addMediasObject:mediaObj];
         [self.arrMedias addObject:mediaObj];
     }
-    
-    NSError* err;
-    [context save:&err];
-    NSLog(@"Error: %@", [err description]);
-    
-    if (shouldUpdate)
-    {
-        [self finishedUpdateMedias];
-    }
-     */
 }
 
 - (void)contextDidSave:(NSNotification*)notif
 {
+    if (![NSThread isMainThread]) {
+        [self performSelectorOnMainThread:@selector(contextDidSave:)
+                               withObject:notif
+                            waitUntilDone:NO];
+        return;
+    }
+    
     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
+    
+    if (_shouldUpdate)
+    {
+        _shouldUpdate = NO;
+        
+        for (SWMedia* m1 in self.arrBeforeSyncMedias)
+        {
+            BOOL bFound = NO;
+            for (SWMedia* m2 in [SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID])
+            {
+                if (m1.serverID == m2.serverID)
+                {
+                    bFound = YES;
+                    break;
+                }
+            }
+            if (!bFound)
+            {
+                [m1 deleteEntity];
+            }
+        }
+    }
+    
+    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];    
 
     [self reload];
 }
@@ -234,26 +230,6 @@
     self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
     [self.mediaDS resetFilter];
     [self setDataSource:self.mediaDS];
-}
-
-- (void)finishedUpdateMedias
-{
-    NSManagedObjectContext* context     = [[NSManagedObjectContext alloc] init];
-    [context setPersistentStoreCoordinator:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] persistentStoreCoordinator]];
-    
-    for (SWMedia* m in [SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID])
-    {
-        if (![self.arrMedias containsObject:m])
-        {
-            [m deleteEntityInContext:context];
-        }
-    }
-    
-    [context save:nil];
-    
-    [self performSelectorOnMainThread:@selector(reload)
-                           withObject:nil
-                        waitUntilDone:YES];
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

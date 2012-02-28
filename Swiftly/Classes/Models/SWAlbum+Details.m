@@ -57,6 +57,11 @@
 + (NSArray *)findAllObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWAlbum findAllObjectsInContext:context];
+}
+
++ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -85,9 +90,14 @@
 + (SWAlbum*)findObjectWithServerID:(int)serverID
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWAlbum findObjectWithServerID:serverID inContext:context];
+}
+
++ (SWAlbum*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
-
+    
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
@@ -166,11 +176,16 @@
 + (SWAlbum*)createEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWAlbum createEntityInContext:context];
+}
+
++ (SWAlbum*)createEntityInContext:(NSManagedObjectContext *)context
+{
     SWAlbum* obj = [NSEntityDescription
                     insertNewObjectForEntityForName:NSStringFromClass([self class])
                     inManagedObjectContext:context];
     
-    return (SWAlbum*)obj;
+    return (SWAlbum*)obj;    
 }
 
 + (SWAlbum*)newEntity
@@ -185,6 +200,11 @@
 - (void)deleteEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [self deleteEntityInContext:context];
+}
+
+- (void)deleteEntityInContext:(NSManagedObjectContext*)context
+{
     [context deleteObject:self];
 }
 

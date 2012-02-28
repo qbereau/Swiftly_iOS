@@ -18,6 +18,7 @@
     SWAlbum*                    _selectedAlbum;
     
     NSMutableArray*             _arrMedias;
+    NSMutableArray*             _arrBeforeSyncMedias;
     
     SWWebImagesDataSource*      _mediaDS;
     
@@ -27,16 +28,18 @@
     SWMedia*                    _longPressMedia;
     
     NSOperationQueue*           _operationQueue;
+    BOOL                        _shouldUpdate;
 }
 
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
 @property (nonatomic, strong) NSMutableArray*           arrMedias;
+@property (nonatomic, strong) NSMutableArray*           arrBeforeSyncMedias;
 @property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
 
-- (void)updateMedias:(NSDictionary*)dict;
-- (void)finishedUpdateMedias;
+- (void)updateMediasWithDict:(NSDictionary*)dict;
+- (void)updateMedias:(id)reponseObject;
 - (void)reload;
 
 @end

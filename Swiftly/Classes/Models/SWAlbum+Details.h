@@ -24,17 +24,29 @@
 
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
+
 + (NSArray *)findAllObjects;
++ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context;
+
 + (NSArray *)findAllLinkableAlbums;
 + (NSArray*)findUnlockedSharedAlbums;
 + (NSArray *)findAllSharedAlbums;
 + (NSArray *)findAllSpecialAlbums;
+
 + (void)deleteAllObjects;
+
 + (SWAlbum*)findObjectWithServerID:(int)serverID;
-+ (SWAlbum*)createEntity; // in context
++ (SWAlbum*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext*)context;
+
++ (SWAlbum*)createEntity;
++ (SWAlbum*)createEntityInContext:(NSManagedObjectContext*)context;
+
 + (SWAlbum*)newEntity; // no context
+
 - (void)updateWithObject:(id)obj;
 - (NSDictionary*)toDictionnary;
+
 - (void)deleteEntity;
+- (void)deleteEntityInContext:(NSManagedObjectContext*)context;
 
 @end
