@@ -29,6 +29,8 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*, NSString*);
     
     NSTimer*                _refreshTimer;
     NSMutableArray*         _arrExportSessions;
+    
+    NSInteger               _nbUploadElements;
 }
 
 @property (nonatomic, strong) NSArray*                  inProgress;
@@ -36,6 +38,7 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*, NSString*);
 @property (nonatomic, copy) UploadDataBlock             uploadDataBlock;      
 @property (nonatomic, weak) IBOutlet UINavigationBar*   navigationBar;
 @property (nonatomic, weak) IBOutlet SWTableView*       tableView;
+@property (nonatomic, assign) NSInteger                 nbUploadElements;
 
 - (void)launchRefreshTimer;
 - (void)stopTimer;

@@ -15,6 +15,7 @@
 @synthesize inProgress = _inProgress;
 @synthesize recent = _recent;
 @synthesize uploadDataBlock = _uploadDataBlock;
+@synthesize nbUploadElements = _nbUploadElements;
 
 - (void)didReceiveMemoryWarning
 {
@@ -57,12 +58,15 @@
                 else
                     m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
                 
-                //[blockSelf.tableView reloadData];
                 [blockSelf launchRefreshTimer];
             }];
             [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                 
-                NSDictionary* params = [NSDictionary dictionaryWithObject:m.signature forKey:@"signature"];
+                NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObject:m.signature forKey:@"signature"];
+                --blockSelf.nbUploadElements;
+                if (blockSelf.nbUploadElements <= 0)
+                    [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:@"notify"]];
+                
                 [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/medias/%d/confirm_upload", m.serverID]
                                          parameters:params
                                             success:^(AFHTTPRequestOperation *opReq, id respObjReq) {
@@ -172,6 +176,7 @@
 
 - (void)uploadFiles
 {
+    _nbUploadElements = 0;
     for (SWMedia* m in self.inProgress)
     {
         if (m.uploadProgress == 0.0f)
@@ -188,12 +193,14 @@
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];
                                        NSData* imgData = UIImagePNGRepresentation(img);
+                                       ++self.nbUploadElements;
                                        self.uploadDataBlock(m, imgData, nil);
                                    }
                                    else if ([m.contentType isEqualToString:@"image/jpg"] || [m.contentType isEqualToString:@"image/jpeg"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];                                   
                                        NSData* imgData = UIImageJPEGRepresentation(img, 1);
+                                       ++self.nbUploadElements;
                                        self.uploadDataBlock(m, imgData, nil);
                                    }
                                    else
@@ -218,7 +225,7 @@
                                                case AVAssetExportSessionStatusWaiting:
                                                    break;
                                                case AVAssetExportSessionStatusCompleted:
-                                                   NSLog(@"completed");
+                                                   ++self.nbUploadElements;
                                                    self.uploadDataBlock(m, [NSData dataWithContentsOfURL:exportURL], [exportURL absoluteString]);
                                                    break;
                                                default:
