@@ -27,15 +27,21 @@
     int                             _reqOps;
     NSMutableArray*                 _receivedAlbums;
     
-    NSOperationQueue*               _operationQueue;    
+    NSOperationQueue*               _operationQueue;
+    NSArray*                        _arrAlbumsBeforeSync;
+    BOOL                            _shouldCleanup;
+    
+    BOOL                            _shouldResync;
 }
 
+@property (nonatomic, strong) NSArray*                  arrAlbumsBeforeSync;
 @property (nonatomic, strong) NSMutableArray*           receivedAlbums;
 @property (nonatomic, strong) NSArray*                  sharedAlbums;
 @property (nonatomic, strong) NSArray*                  specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
 @property (nonatomic, assign) int                       reqOps;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
+@property (nonatomic, assign) BOOL                      shouldResync;
 
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
 - (void)processAlbums:(id)responseObject;

@@ -10,6 +10,8 @@
 
 @implementation SWAlbumThumbnailsViewController
 
+@synthesize contact             = _contact;
+@synthesize displayMode         = _displayMode;
 @synthesize arrMedias           = _arrMedias;
 @synthesize arrBeforeSyncMedias = _arrBeforeSyncMedias;
 @synthesize selectedAlbum       = _selectedAlbum;
@@ -46,7 +48,9 @@
     if (self.operationQueue == nil)
         self.operationQueue = [[NSOperationQueue alloc] init];
     
-    if (self.selectedAlbum)
+    if ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
+         (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
+       )
     {             
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
@@ -56,11 +60,18 @@
             self.arrMedias = [NSMutableArray array];
             self.mediaDS = [[SWWebImagesDataSource alloc] init];        
             
-            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID]];
-            
             [self reload];
             
-            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID]
+            NSString* uri = @"";
+            if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+            {
+                self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia findMediasFromAlbumID:self.selectedAlbum.serverID]];
+                uri = [NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID];
+            }
+            else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
+                uri = [NSString stringWithFormat:@"/accounts/%d/medias", self.contact.serverID];
+            
+            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:uri, self.selectedAlbum.serverID]
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             
@@ -80,7 +91,7 @@
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
                                                     __block int opReq = iTotalPages - 1;
-                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/medias?page=%d", self.selectedAlbum.serverID, i]
+                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"%@?page=%d", uri, self.selectedAlbum.serverID, i]
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
@@ -147,15 +158,29 @@
     
     [context performBlock:^{
         
-        SWAlbum* selAlbum = (SWAlbum*)[context objectWithID:self.selectedAlbum.objectID];
+        SWAlbum* selAlbum;
+        SWPerson* selContact;
+        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+            selAlbum = (SWAlbum*)[context objectWithID:self.selectedAlbum.objectID];
+        else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
+            selContact = (SWPerson*)[context objectWithID:self.contact.objectID];
+        
         for (id obj in responseObject)
         {
             SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue] inContext:context];
             if (!mediaObj)
                 mediaObj = [SWMedia createEntityInContext:context];
             [mediaObj updateWithObject:obj];
-            mediaObj.album = selAlbum;
-            [selAlbum addMediasObject:mediaObj];
+            if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && selAlbum)
+            {
+                mediaObj.album = selAlbum;
+                [selAlbum addMediasObject:mediaObj];
+            }
+            else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
+            {
+                [mediaObj addSharedPeopleObject:selContact];
+                [selContact addSharedMediasObject:mediaObj];
+            }
             [self.arrMedias addObject:mediaObj];
         }
         
@@ -173,20 +198,6 @@
     }];      
 }
 
-- (void)updateMedias:(id)responseObject
-{
-    for (id obj in responseObject)
-    {
-        SWMedia* mediaObj = [SWMedia findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-        if (!mediaObj)
-            mediaObj = [SWMedia createEntity];
-        [mediaObj updateWithObject:obj];
-        mediaObj.album = self.selectedAlbum;
-        [self.selectedAlbum addMediasObject:mediaObj];
-        [self.arrMedias addObject:mediaObj];
-    }
-}
-
 - (void)contextDidSave:(NSNotification*)notif
 {
     if (![NSThread isMainThread]) {
@@ -198,7 +209,7 @@
     
     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
     
-    if (_shouldUpdate)
+    if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
     {
         _shouldUpdate = NO;
         
@@ -227,7 +238,11 @@
 
 - (void)reload
 {
-    self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
+    if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
+    else
+        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
+    
     [self.mediaDS resetFilter];
     [self setDataSource:self.mediaDS];
 }

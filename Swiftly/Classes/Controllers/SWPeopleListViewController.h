@@ -55,7 +55,9 @@
 
 + (void)synchronize;
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results;
-+ (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts;
++ (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts peopleAB:(NSArray*)peopleAB;
 + (void)checkNewNumbers:(NSArray*)peopleAB itemsParPage:(int)itemsPerPage;
+
++ (void)contextDidSave:(NSNotification*)notif;
 
 @end

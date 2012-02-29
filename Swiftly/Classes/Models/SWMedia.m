@@ -2,13 +2,14 @@
 //  SWMedia.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/27/12.
+//  Created by Quentin Bereau on 2/28/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "SWMedia.h"
 #import "SWAlbum.h"
 #import "SWComment.h"
+#import "SWPerson.h"
 
 
 @implementation SWMedia
@@ -39,5 +40,6 @@
 @dynamic uploadProgress;
 @dynamic album;
 @dynamic comments;
+@dynamic sharedPeople;
 
 @end

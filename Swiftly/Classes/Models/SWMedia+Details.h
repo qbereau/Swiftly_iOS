@@ -18,6 +18,8 @@
 
 + (NSArray *)findAllObjects;
 
++ (NSArray *)findAllFromCreatorID:(NSInteger)creatorID;
+
 + (NSArray *)findInProgressObjects;
 
 + (NSArray *)findRecentObjects;

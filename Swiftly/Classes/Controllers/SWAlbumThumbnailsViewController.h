@@ -13,6 +13,9 @@
 #import "SWPhotoScrollViewController.h"
 #import "SWAlbumEditViewController.h"
 
+#define ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM      0
+#define ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT    1
+
 @interface SWAlbumThumbnailsViewController : KTThumbsViewController
 {
     SWAlbum*                    _selectedAlbum;
@@ -29,17 +32,21 @@
     
     NSOperationQueue*           _operationQueue;
     BOOL                        _shouldUpdate;
+    
+    NSInteger                   _displayMode;
+    SWPerson*                   _contact;
 }
 
+@property (nonatomic, strong) SWPerson*                 contact;
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
 @property (nonatomic, strong) NSMutableArray*           arrMedias;
 @property (nonatomic, strong) NSMutableArray*           arrBeforeSyncMedias;
 @property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
+@property (nonatomic, assign) NSInteger                 displayMode;
 
 - (void)updateMediasWithDict:(NSDictionary*)dict;
-- (void)updateMedias:(id)reponseObject;
 - (void)reload;
 
 @end

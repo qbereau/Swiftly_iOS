@@ -2,14 +2,14 @@
 //  SWMedia.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/27/12.
+//  Created by Quentin Bereau on 2/28/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class SWAlbum, SWComment;
+@class SWAlbum, SWComment, SWPerson;
 
 @interface SWMedia : NSManagedObject
 
@@ -39,6 +39,7 @@
 @property (nonatomic) float uploadProgress;
 @property (nonatomic, retain) SWAlbum *album;
 @property (nonatomic, retain) NSSet *comments;
+@property (nonatomic, retain) NSSet *sharedPeople;
 @end
 
 @interface SWMedia (CoreDataGeneratedAccessors)
@@ -47,4 +48,8 @@
 - (void)removeCommentsObject:(SWComment *)value;
 - (void)addComments:(NSSet *)values;
 - (void)removeComments:(NSSet *)values;
+- (void)addSharedPeopleObject:(SWPerson *)value;
+- (void)removeSharedPeopleObject:(SWPerson *)value;
+- (void)addSharedPeople:(NSSet *)values;
+- (void)removeSharedPeople:(NSSet *)values;
 @end

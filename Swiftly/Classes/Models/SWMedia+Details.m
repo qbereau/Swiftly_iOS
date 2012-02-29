@@ -45,6 +45,18 @@
     return [context executeFetchRequest:request error:nil];
 }
 
++ (NSArray *)findAllFromCreatorID:(NSInteger)creatorID
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"creatorID == %d", creatorID];    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setPredicate:predicate];
+    [request setEntity:entity];
+    return [context executeFetchRequest:request error:nil];    
+}
+
 + (NSArray*)findInProgressObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];

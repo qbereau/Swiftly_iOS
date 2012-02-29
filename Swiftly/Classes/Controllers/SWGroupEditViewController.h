@@ -17,9 +17,13 @@
 @interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate, UIAlertViewDelegate>
 {
     SWGroup*            _group;
+    
+    UITextField*        _inputGroupName;
 }
 
 @property (nonatomic, strong) SWGroup*              group;
+
+@property (strong, nonatomic) UITextField *inputGroupName;
 
 - (void)deleteGroup;
 

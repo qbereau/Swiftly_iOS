@@ -199,14 +199,7 @@
     if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE && !self.selectedContacts)
         self.selectedContacts = [NSMutableArray array];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadData)
-                                                 name:@"SWABProcessDone"
-                                               object:nil
-     ];    
-    
     self.contacts = [self findPeople];
-    [SWPeopleListViewController synchronize];
 }
 
 - (void)reloadData
@@ -225,6 +218,12 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(reloadData)
+                                                 name:@"SWABProcessDone"
+                                               object:nil
+     ];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -384,221 +383,292 @@
 + (void)synchronize
 {
     // Step 2: We download the user accounts list for update
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         // Step 1: We get an array of all the people present in AddressBook
-        NSArray* peopleAB = [SWPerson getPeopleAB];        
+    
+        //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+        //[context performBlock:^{
+        NSManagedObjectContext* context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    
+            NSArray* peopleAB = [SWPerson getPeopleABInContext:context];        
 
-        [[SWAPIClient sharedClient] getPath:@"/accounts"
-                                 parameters:nil
-                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                        if ([responseObject isKindOfClass:[NSArray class]])
-                                        {
-                                            int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
-                                            int iItemsPerPage = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-per-page"] intValue];
-                                            
-                                            if (iTotalPages > 1)
-                                            {   
-                                                [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
-                                                __block int opReq = iTotalPages - 2;
-                                                for (int i = 2; i <= iTotalPages; ++i)
+            [[SWAPIClient sharedClient] getPath:@"/accounts"
+                                     parameters:nil
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            if ([responseObject isKindOfClass:[NSArray class]])
+                                            {
+                                                int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
+                                                int iItemsPerPage = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-per-page"] intValue];
+                                                
+                                                if (iTotalPages > 1)
+                                                {   
+                                                    [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
+                                                    
+                                                    __block int opReq = iTotalPages - 2;
+                                                    for (int i = 2; i <= iTotalPages; ++i)
+                                                    {
+                                                        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/accounts?page=%d", i]
+                                                                                 parameters:nil
+                                                                                    success:^(AFHTTPRequestOperation *op2, id respObj2) {
+
+                                                                                        [SWPeopleListViewController processAddressBook:peopleAB results:respObj2];
+                                                                                        --opReq;
+                                                                                        if (opReq == 0)
+                                                                                            [SWPeopleListViewController checkNewNumbers:peopleAB itemsParPage:iItemsPerPage];
+                                                                                    }
+                                                                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                        NSLog(@"error");
+                                                                                    }
+                                                         ];
+                                                    }
+                                                }
+                                                else
                                                 {
-                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/accounts?page=%d", i]
-                                                                             parameters:nil
-                                                                                success:^(AFHTTPRequestOperation *op2, id respObj2) {
-
-                                                                                    [SWPeopleListViewController processAddressBook:peopleAB results:respObj2];
-                                                                                    --opReq;
-                                                                                    if (opReq == 0)
-                                                                                        [SWPeopleListViewController checkNewNumbers:peopleAB itemsParPage:iItemsPerPage];
-                                                                                }
-                                                                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                                                                    NSLog(@"error");
-                                                                                }
-                                                     ];
+                                                    [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
+                                                    [SWPeopleListViewController checkNewNumbers:peopleAB itemsParPage:iItemsPerPage];
                                                 }
                                             }
-                                            else
-                                            {
-                                                [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
-                                                [SWPeopleListViewController checkNewNumbers:peopleAB itemsParPage:iItemsPerPage];
-                                            }
                                         }
-                                    }
-                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        NSLog(@"error");
-                                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessFailed" object:nil];                                        
-                                    }
-         ];
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            NSLog(@"error");
+                                            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessFailed" object:nil];                                        
+                                        }
+             ];
+        
+    //}];
+        
     //});  
 }
 
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results
 {
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{    
-        for (id obj in results)
-        {
-            SWPerson* existingObj = [SWPerson findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-            
-            if (!existingObj)
-            {
-                existingObj = [SWPerson createEntity];
-            }
-            
-            [existingObj updateWithObject:obj];
-            
-            // Update infos from AddressBook
-            NSMutableArray* arrPN = [NSMutableArray array];
-            for (SWPhoneNumber* pn in existingObj.phoneNumbers)
-            {
-                [arrPN addObject:pn.phoneNumber];
-            }
-            
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY %@ IN phoneNumbers.phoneNumber", arrPN];
-            NSArray* arr = [peopleAB filteredArrayUsingPredicate:predicate];
-            if (arr && [arr count] > 0)
-            {
-                SWPerson* p = [arr objectAtIndex:0];
-                existingObj.firstName = p.firstName;
-                existingObj.lastName  = p.lastName;
-                existingObj.thumbnail = p.thumbnail;
-            }
-        }
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{    
         
-        [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+        //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+        //[context performBlock:^{
+        NSManagedObjectContext* context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];        
+            
+            for (id obj in results)
+            {
+                SWPerson* existingObj = [SWPerson findObjectWithServerID:[[obj valueForKey:@"id"] intValue] inContext:context];
+                
+                if (!existingObj)
+                {
+                    existingObj = [SWPerson createEntityInContext:context];
+                }
+                
+                [existingObj updateWithObject:obj];
+                
+                // Update infos from AddressBook
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY %@ IN phoneNumbers.phoneNumber", [existingObj arrStrPhoneNumbers]];
+                NSArray* arr = [peopleAB filteredArrayUsingPredicate:predicate];
+                if (arr && [arr count] > 0)
+                {
+                    SWPerson* p = [arr objectAtIndex:0];
+                    existingObj.firstName = p.firstName;
+                    existingObj.lastName  = p.lastName;
+                    existingObj.thumbnail = p.thumbnail;
+                }
+            }
+
+            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+            /*
+            [[NSNotificationCenter defaultCenter] addObserver:[SWPeopleListViewController class] 
+                                                     selector:@selector(contextDidSave:) 
+                                                         name:NSManagedObjectContextDidSaveNotification 
+                                                       object:context];
+            
+            [context save:nil];
+            
+            [[NSNotificationCenter defaultCenter] removeObserver:[SWPeopleListViewController class] 
+                                                            name:NSManagedObjectContextDidSaveNotification 
+                                                          object:context];        
+            */
+        //}];
+  
     //});
 }
 
-+ (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts
++ (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts peopleAB:(NSArray *)peopleAB
 {
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
-        [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
-                                 parameters:dict 
-                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                        if ([responseObject isKindOfClass:[NSArray class]])
-                                        {
-                                            NSMutableArray* arrAddedOrigPhoneNumbers = [NSMutableArray array];
-                                            
-                                            for (id newObj in responseObject)
+        //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+        //[context performBlock:^{
+        
+        NSManagedObjectContext* context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+        
+            [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
+                                     parameters:dict 
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            if ([responseObject isKindOfClass:[NSArray class]])
                                             {
-                                                SWPerson* newPerson   = [SWPerson createEntity];
-                                                newPerson.isSelf = NO;
-                                                [newPerson updateWithObject:newObj];
+                                                NSMutableArray* arrAddedOrigPhoneNumbers = [NSMutableArray array];
                                                 
-                                                [arrAddedOrigPhoneNumbers addObject:[newObj valueForKey:@"original_phone_number"]];
+                                                for (id newObj in responseObject)
+                                                {
+                                                    SWPerson* abPerson = [SWPerson findObjectWithPhoneNumber:[newObj valueForKey:@"original_phone_number"] inContext:context people:peopleAB];
+                                                    SWPerson* newPerson = [SWPerson findObjectWithServerID:[[newObj valueForKey:@"id"] intValue] inContext:context];
+                                                    if (!newPerson)
+                                                        newPerson   = [SWPerson createEntityInContext:context];
+                                                    
+                                                    [newPerson updateWithObject:newObj inContext:context];
+                                                    
+                                                    newPerson.isSelf = NO;
+                                                    newPerson.firstName = abPerson.firstName;
+                                                    newPerson.lastName  = abPerson.lastName;
+                                                    newPerson.thumbnail = abPerson.thumbnail;
+                                                }
                                                 
-                                                NSLog(@"newPerson: %@", newPerson.phoneNumbers);
-                                                // Add additional infos from AddressBook
-                                                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", [newObj valueForKey:@"original_phone_number"]];
-                                                NSArray* arr = [newContacts filteredArrayUsingPredicate:predicate];
-                                                if (arr && [arr count] > 0)
-                                                {
-                                                    SWPerson* p = [arr objectAtIndex:0];
-                                                    newPerson.firstName = p.firstName;
-                                                    newPerson.lastName  = p.lastName;
-                                                    newPerson.thumbnail = p.thumbnail;
-                                                    NSLog(@"%@ %@", p.firstName, p.lastName);
-                                                }                                              
-                                            }
-                                            
-                                            for (NSString* link_pn in [dict objectForKey:@"phone_numbers"])
-                                            {    
-                                                BOOL bFound = NO;
-                                                for (NSString* opn in arrAddedOrigPhoneNumbers)
-                                                {
-                                                    if ([opn isEqualToString:link_pn])
+                                                for (NSString* link_pn in [dict objectForKey:@"phone_numbers"])
+                                                {    
+                                                    BOOL bFound = NO;
+                                                    for (NSString* opn in arrAddedOrigPhoneNumbers)
                                                     {
-                                                        bFound = YES;
-                                                        break;
+                                                        if ([opn isEqualToString:link_pn])
+                                                        {
+                                                            bFound = YES;
+                                                            break;
+                                                        }
                                                     }
-                                                }
-                                                
-                                                if (!bFound)
-                                                {
-                                                    SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:link_pn];
-                                                    if (pn)
+                                                    
+                                                    if (!bFound)
                                                     {
-                                                        pn.invalid = YES;                                                        
-                                                    }                                                    
-                                                }
-                                            }
-                                            
-                                            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-                                            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
-                                        }                                                                            
-                                    }
-                                    failure:^(AFHTTPRequestOperation *operation2, NSError *error2) {
-                                        NSLog(@"error");
-                                    }
-         ];
+                                                        SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:link_pn inContext:context];
+                                                        if (pn)
+                                                        {
+                                                            pn.invalid = YES;                                                        
+                                                        }                                                    
+                                                    }
+                                                }                                                
+                                                
+                                                [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+                                                [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
+                                                
+                                                /*
+                                                [[NSNotificationCenter defaultCenter] addObserver:[SWPeopleListViewController class] 
+                                                                                         selector:@selector(contextDidSave:) 
+                                                                                             name:NSManagedObjectContextDidSaveNotification 
+                                                                                           object:context];
+                                                
+                                                [context save:nil];
+                                                
+                                                [[NSNotificationCenter defaultCenter] removeObserver:[SWPeopleListViewController class] 
+                                                                                                name:NSManagedObjectContextDidSaveNotification 
+                                                                                              object:context];
+                                                 */
+                                                 
+                                            }                                                                            
+                                        }
+                                        failure:^(AFHTTPRequestOperation *operation2, NSError *error2) {
+                                            NSLog(@"error");
+                                        }
+             ];
+        //}];
     //});
 }
 
 + (void)checkNewNumbers:(NSArray*)peopleAB itemsParPage:(int)itemsPerPage
 {
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{    
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{    
         // Step 3:  We still need to check if there are new users to the                                            
         //          AddressBook and sync them with server
         //          A user might also have changed a friend's phone number
         //          In that case, we need to relink the new phone number
         //          In the end we'll only display contacts coming from AddressBook
         //          With phone numbers matching the ones that the app have
-    
-        NSMutableArray* newPhoneNumbers = [NSMutableArray array];
-        NSMutableArray* newContacts = [NSMutableArray array];
-        for (SWPerson* p in peopleAB)
-        {
-            BOOL addNewPN = NO;
-            for (SWPhoneNumber* pn in [p.phoneNumbers allObjects])
-            {
-                SWPhoneNumber* localPN = [SWPhoneNumber findValidObjectWithPhoneNumber:pn.phoneNumber];
-                if (!localPN)
-                {
-                    addNewPN                = YES;
-                    localPN                 = [SWPhoneNumber createEntity];
-                    localPN.phoneNumber     = pn.phoneNumber;
-                    localPN.normalized      = NO;
-                    localPN.invalid         = NO;
-                    
-                    [newPhoneNumbers addObject:pn.phoneNumber];
-                }
-            }
-            if (addNewPN)
-                [newContacts addObject:p];
-        }    
+        
+        //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
+        //[context performBlock:^{                
 
-        // Create new link with this contact
-        if ([newPhoneNumbers count] > 0)
-        {
-            if ([newPhoneNumbers count] > itemsPerPage)
+            NSManagedObjectContext* context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+
+            NSMutableArray* newPhoneNumbers = [NSMutableArray array];
+            NSMutableArray* newContacts = [NSMutableArray array];
+            for (SWPerson* p in peopleAB)
             {
-                int totalItems = [newPhoneNumbers count];
-                int steps = (int)floor(totalItems/itemsPerPage);
-                for (int i = 0; i <= steps; ++i)
+                BOOL addNewPN = NO;
+                for (SWPhoneNumber* pn in [p.phoneNumbers allObjects])
                 {
-                    NSRange range = NSMakeRange(i * itemsPerPage, itemsPerPage);
-                    if (i == steps)
-                        range = NSMakeRange(i * itemsPerPage, totalItems - (i * itemsPerPage));
-                    NSArray* sub = [newPhoneNumbers subarrayWithRange:range];
-                    NSDictionary* dict = [NSDictionary dictionaryWithObject:sub forKey:@"phone_numbers"];
-                    [SWPeopleListViewController uploadPeople:dict newContacts:newContacts];
+                    SWPhoneNumber* localPN = [SWPhoneNumber findValidObjectWithPhoneNumber:pn.phoneNumber inContext:context];
+                    if (!localPN)
+                    {
+                        addNewPN                = YES;
+                        localPN                 = [SWPhoneNumber createEntityInContext:context];
+                        localPN.phoneNumber     = pn.phoneNumber;
+                        localPN.normalized      = NO;
+                        localPN.invalid         = NO;
+                        
+                        [newPhoneNumbers addObject:pn.phoneNumber];
+                    }
+                }
+                if (addNewPN)
+                    [newContacts addObject:p];
+            }    
+
+            // Create new link with this contact
+            if ([newPhoneNumbers count] > 0)
+            {
+                if ([newPhoneNumbers count] > itemsPerPage)
+                {
+                    int totalItems = [newPhoneNumbers count];
+                    int steps = (int)floor(totalItems/itemsPerPage);
+                    for (int i = 0; i <= steps; ++i)
+                    {
+                        NSRange range = NSMakeRange(i * itemsPerPage, itemsPerPage);
+                        if (i == steps)
+                            range = NSMakeRange(i * itemsPerPage, totalItems - (i * itemsPerPage));
+                        NSArray* sub = [newPhoneNumbers subarrayWithRange:range];
+                        NSDictionary* dict = [NSDictionary dictionaryWithObject:sub forKey:@"phone_numbers"];
+                        [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
+                    }
+                }
+                else
+                {
+                    NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
+                    [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
                 }
             }
             else
             {
-                NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
-                [SWPeopleListViewController uploadPeople:dict newContacts:newContacts];
-            }
-        }
-        else
-        {
-            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
-        }   
-
+                [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
+                /*
+                [[NSNotificationCenter defaultCenter] addObserver:[SWPeopleListViewController class] 
+                                                         selector:@selector(contextDidSave:) 
+                                                             name:NSManagedObjectContextDidSaveNotification 
+                                                           object:context];
+                
+                [context save:nil];
+                
+                [[NSNotificationCenter defaultCenter] removeObserver:[SWPeopleListViewController class] 
+                                                                name:NSManagedObjectContextDidSaveNotification 
+                                                              object:context];
+                 */
+            }   
+            
+        //}];
     //});
 }
 
++ (void)contextDidSave:(NSNotification*)notif
+{
+    if (![NSThread isMainThread]) {
+        [self performSelectorOnMainThread:@selector(contextDidSave:)
+                               withObject:notif
+                            waitUntilDone:NO];
+        return;
+    }
+    
+    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
+    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];  
+}
 
 @end

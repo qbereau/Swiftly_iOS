@@ -10,12 +10,14 @@
 
 @implementation SWAlbumsViewController
 
+@synthesize arrAlbumsBeforeSync = _arrAlbumsBeforeSync;
 @synthesize operationQueue = _operationQueue;
 @synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
 @synthesize specialAlbums = _specialAlbums;
 @synthesize managedObjectContext = _managedObjectContext;
 @synthesize reqOps = _reqOps;
+@synthesize shouldResync = _shouldResync;
 
 - (void)didReceiveMemoryWarning
 {
@@ -31,7 +33,7 @@
     
     if (self.operationQueue == nil)
         self.operationQueue = [[NSOperationQueue alloc] init];    
-    
+
     UIBarButtonItem* btnUnlock = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"lock"] style:UIBarButtonItemStylePlain target:self action:@selector(unlockAlbums:)];
     self.navigationItem.leftBarButtonItem = btnUnlock;
     
@@ -39,10 +41,20 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
-    self.specialAlbums  = [SWAlbum findAllSpecialAlbums];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(uploadMediaDone:)
+                                                 name:@"SWUploadMediaDone"
+                                               object:nil
+     ];    
     
-    [self synchronize:NO];    
+    [self reload];
+    
+    [self synchronize:NO];        
+}
+
+- (void)uploadMediaDone:(NSNotification*)notification
+{
+    self.shouldResync = YES;
 }
 
 - (void)updateAlbumAccounts:(int)albumID
@@ -142,7 +154,8 @@
     self.reqOps = 0;    
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-        self.receivedAlbums = [NSMutableArray array];
+        self.receivedAlbums         = [NSMutableArray array];
+        self.arrAlbumsBeforeSync    = [SWAlbum findAllObjects];
         
         [[SWAPIClient sharedClient] getPath:@"/albums" 
                                  parameters:nil 
@@ -157,14 +170,14 @@
                                              if (iTotalPages > 1)
                                              {   
                                                  // Update for first page
+                                                 _shouldCleanup = NO;
                                                  NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:responseObject, @"objects", 
-                                                                         [NSNumber numberWithBool:NO], @"shouldRemoveOldAlbums",
                                                                          nil];
                                                  NSInvocationOperation* operation;
                                                  operation = [[NSInvocationOperation alloc] initWithTarget:self
                                                                                                   selector:@selector(processAlbumsWithDict:)
                                                                                                     object:params];
-                                                 [self.operationQueue addOperation:operation];                                                 
+                                                 [self.operationQueue addOperation:operation];
                                                  // -------
                                                  
                                                  __block int opReq = iTotalPages - 1;
@@ -176,11 +189,9 @@
                                                                                      
                                                                                      // Update for first page
                                                                                      --opReq;
-                                                                                     BOOL shouldCleanup = (opReq == 0) ? YES : NO;                                                                                     
+                                                                                     _shouldCleanup = (opReq == 0) ? YES : NO;                                                                                     
                                                                                      
-                                                                                     NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", 
-                                                                                                             [NSNumber numberWithBool:shouldCleanup], @"shouldRemoveOldAlbums",
-                                                                                                             nil];
+                                                                                     NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", nil];
                                                                                      NSInvocationOperation* operation;
                                                                                      operation = [[NSInvocationOperation alloc] initWithTarget:self
                                                                                                                                       selector:@selector(processAlbumsWithDict:)
@@ -196,8 +207,8 @@
                                              }
                                              else
                                              {
+                                                 _shouldCleanup = YES;
                                                  NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
-                                                                         [NSNumber numberWithBool:YES], @"shouldRemoveOldAlbums",
                                                                          nil];
                                                  NSInvocationOperation* operation;
                                                  operation = [[NSInvocationOperation alloc] initWithTarget:self
@@ -213,7 +224,7 @@
                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                             
                                             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                            [av show];                                            
+                                            [av show];
                                         });
                                     }
          ];   
@@ -223,7 +234,6 @@
 - (void)processAlbumsWithDict:(NSDictionary *)dict
 {
     id responseObject   = [dict objectForKey:@"objects"];
-    BOOL shouldCleanup  = [[dict objectForKey:@"shouldRemoveOldAlbums"] boolValue];
     
     NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     [context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
@@ -248,19 +258,6 @@
             [self updateAlbumAccounts:albumObj.serverID];
         }        
         
-        if (shouldCleanup)
-        {
-            for (SWAlbum* a in [SWAlbum findAllObjectsInContext:context])
-            {
-                NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
-                NSArray* rez = [self.receivedAlbums filteredArrayUsingPredicate:predicate];
-                if (rez.count == 0)
-                {
-                    [a deleteEntityInContext:context];
-                }
-            }
-        }
-        
         [[NSNotificationCenter defaultCenter] addObserver:self 
                                                  selector:@selector(contextDidSave:) 
                                                      name:NSManagedObjectContextDidSaveNotification 
@@ -270,7 +267,7 @@
         
         [[NSNotificationCenter defaultCenter] removeObserver:self 
                                                         name:NSManagedObjectContextDidSaveNotification 
-                                                      object:context];        
+                                                      object:context];
         
     }];     
 }
@@ -285,6 +282,23 @@
     }
     
     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
+    
+    for (SWAlbum* alb1 in self.arrAlbumsBeforeSync)
+    {
+        BOOL bFound = NO;
+        for (SWAlbum* alb2 in [SWAlbum findAllObjects])
+        {
+            if (alb1.serverID == alb2.serverID)
+            {
+                bFound = YES;
+                break;
+            }
+        }
+        if (!bFound)
+        {
+            [alb1 deleteEntity];
+        }
+    }    
     
     [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
     
@@ -311,8 +325,6 @@
         [self updateAlbumAccounts:albumObj.serverID];
     }
 }
-
-
 
 - (void)removeOldAlbums
 {
@@ -351,9 +363,13 @@
 {
     [super viewDidAppear:animated];
     
-    self.sharedAlbums   = [SWAlbum findUnlockedSharedAlbums];
-    self.specialAlbums  = [SWAlbum findAllSpecialAlbums];    
-    [self.tableView reloadData];
+    [self reload];    
+    
+    if (self.shouldResync)
+    {
+        [self synchronize:NO];
+        self.shouldResync = NO;
+    }
 }
 
 - (void)viewWillDisappear:(BOOL)animated

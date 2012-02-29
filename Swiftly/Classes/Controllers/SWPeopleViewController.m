@@ -75,6 +75,7 @@
         
         _plvc.view.hidden = YES;
         _glvc.view.hidden = NO;
+        [_glvc reload];        
     }
     else
     {

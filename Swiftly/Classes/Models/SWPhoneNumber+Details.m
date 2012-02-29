@@ -22,6 +22,11 @@
 + (NSArray *)findAllObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPhoneNumber findAllObjectsInContext:context];
+}
+
++ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -31,6 +36,11 @@
 + (void)deleteAllObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [SWPhoneNumber deleteAllObjectsInContext:context];
+}
+
++ (void)deleteAllObjectsInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -49,6 +59,11 @@
 + (SWPhoneNumber*)findObjectWithPhoneNumber:(NSString*)phoneNb
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPhoneNumber findObjectWithPhoneNumber:phoneNb inContext:context];
+}
+
++ (SWPhoneNumber*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"phoneNumber == %@", phoneNb];
     
@@ -64,8 +79,13 @@
 + (SWPhoneNumber*)findValidObjectWithPhoneNumber:(NSString*)phoneNb
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPhoneNumber findValidObjectWithPhoneNumber:phoneNb inContext:context];
+}
+
++ (SWPhoneNumber*)findValidObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"phoneNumber == %@ AND invalid == NO", phoneNb];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"phoneNumber = %@", phoneNb];
     
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -79,6 +99,11 @@
 + (NSArray*)findObjectsWithPersonID:(int)serverID
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPhoneNumber findObjectsWithPersonID:serverID inContext:context];
+}
+
++ (NSArray*)findObjectsWithPersonID:(int)serverID inContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"person.serverID == %d", serverID];
     
@@ -91,6 +116,11 @@
 + (SWPhoneNumber*)createEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPhoneNumber createEntityInContext:context];
+}
+
++ (SWPhoneNumber*)createEntityInContext:(NSManagedObjectContext *)context
+{
     SWPhoneNumber* obj = [NSEntityDescription
                     insertNewObjectForEntityForName:NSStringFromClass([self class])
                     inManagedObjectContext:context];
@@ -101,6 +131,11 @@
 + (SWPhoneNumber*)newEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
+    return [SWPhoneNumber newEntityInContext:context];
+}
+
++ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
     SWPhoneNumber* obj = [[SWPhoneNumber alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
     
@@ -110,6 +145,11 @@
 - (void)deleteEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [self deleteEntityInContext:context];
+}
+
+- (void)deleteEntityInContext:(NSManagedObjectContext *)context
+{
     [context deleteObject:self];
 }
 

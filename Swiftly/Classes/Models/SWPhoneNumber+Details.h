@@ -12,14 +12,30 @@
 
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
+
 + (NSArray *)findAllObjects;
++ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context;
+
 + (SWPhoneNumber*)findObjectWithPhoneNumber:(NSString*)phoneNb;
++ (SWPhoneNumber*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context;
+
 + (SWPhoneNumber*)findValidObjectWithPhoneNumber:(NSString*)phoneNb;
++ (SWPhoneNumber*)findValidObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context;
+
 + (NSArray*)findObjectsWithPersonID:(int)serverID;
++ (NSArray*)findObjectsWithPersonID:(int)serverID inContext:(NSManagedObjectContext*)context;
+
 + (void)deleteAllObjects;
-+ (SWPhoneNumber*)createEntity; // in context
-+ (SWPhoneNumber*)newEntity; // no context
++ (void)deleteAllObjectsInContext:(NSManagedObjectContext*)context;
+
++ (SWPhoneNumber*)createEntity;
++ (SWPhoneNumber*)createEntityInContext:(NSManagedObjectContext*)context;
+
++ (SWPhoneNumber*)newEntity;
++ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext*)context;
+
 - (void)deleteEntity;
+- (void)deleteEntityInContext:(NSManagedObjectContext*)context;
 
 
 @end

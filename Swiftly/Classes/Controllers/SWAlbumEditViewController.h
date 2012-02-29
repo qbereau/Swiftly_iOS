@@ -51,8 +51,11 @@ typedef void (^UploadMediasBlock)(int, BOOL);
     
     NSNumber*           _newAlbumLock;
     BOOL                _shouldLockAlbumBeingEditedOrCreated;
+    
+    UITextField*        _inputAlbumName;
 }
 
+@property (strong, nonatomic) UITextField*          inputAlbumName;
 @property (nonatomic, strong) SWAlbum*              album;
 @property (nonatomic, strong) NSArray*              filesToUpload;
 @property (nonatomic, assign) NSInteger             mode;

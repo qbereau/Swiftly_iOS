@@ -19,6 +19,7 @@
 #import "SWPerson+Details.h"
 #import "SWTabBarController.h"
 #import "SWPeopleListViewController.h"
+#import "SWGroupListViewController.h"
 #import "SWPhoneNumber.h"
 #import "SWPhoneNumber+Details.h"
 

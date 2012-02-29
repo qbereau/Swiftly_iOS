@@ -73,6 +73,8 @@
 
     if (key && token && key.length > 0 && token.length > 0 && [account_validated boolValue])
     {
+        [SWPeopleListViewController synchronize];
+        [SWGroupListViewController synchronize];
         [self gotoApp];
     }
     else if (!self.alreadySetup)
@@ -97,7 +99,7 @@
                                              selector:@selector(gotoApp)
                                                  name:@"SWABProcessFailed"
                                                object:nil
-     ];
+     ];        
     
     self.view.hidden = YES;
 }

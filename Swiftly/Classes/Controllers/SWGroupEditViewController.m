@@ -10,6 +10,7 @@
 
 @implementation SWGroupEditViewController
 
+@synthesize inputGroupName = _inputGroupName;
 @synthesize group = _group;
 
 - (id)init
@@ -93,7 +94,7 @@
             [arr_ids addObject:[NSNumber numberWithInt:p.serverID]];
         }        
         
-        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:self.group.name, @"name", arr_ids, @"account_ids", nil];        
+        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:self.inputGroupName.text, @"name", arr_ids, @"account_ids", nil];        
         if (self.group.serverID != 0)
         {
             [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
@@ -145,6 +146,7 @@
 
 - (void)viewDidUnload
 {
+    [self setInputGroupName:nil];
     [super viewDidUnload];
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
@@ -241,6 +243,7 @@
             }
         }
         tf.text = self.group.name;
+        self.inputGroupName = tf;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     }
     else if (indexPath.section == 1)

@@ -78,9 +78,11 @@
                                                         NSLog(@"Delete file error: %@", errDel);
                                                     }
                                                 }
-                                                
-                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                                                                
+                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                
                                                 [blockSelf reload];
+                                                
+                                                [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];  
                                             }
                                             failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
                                                 

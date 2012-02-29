@@ -159,6 +159,8 @@
 {
     NSLog(@"Received Data: %@", userInfo);
     application.applicationIconBadgeNumber = 0;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:nil];
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken 
@@ -167,7 +169,7 @@
     token = [token stringByReplacingOccurrencesOfString:@" " withString:@""];    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setValue:token forKey:@"device_token"];
-    [defaults synchronize];    
+    [defaults synchronize];
 } 
 
 - (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error 

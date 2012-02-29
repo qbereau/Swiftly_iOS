@@ -2,14 +2,14 @@
 //  SWPerson.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/27/12.
+//  Created by Quentin Bereau on 2/28/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 
-@class SWAlbum, SWComment, SWGroup, SWPhoneNumber;
+@class SWAlbum, SWComment, SWGroup, SWMedia, SWPhoneNumber;
 
 @interface SWPerson : NSManagedObject
 
@@ -26,6 +26,7 @@
 @property (nonatomic, retain) NSSet *comments;
 @property (nonatomic, retain) NSSet *groups;
 @property (nonatomic, retain) NSSet *phoneNumbers;
+@property (nonatomic, retain) NSSet *sharedMedias;
 @end
 
 @interface SWPerson (CoreDataGeneratedAccessors)
@@ -46,4 +47,8 @@
 - (void)removePhoneNumbersObject:(SWPhoneNumber *)value;
 - (void)addPhoneNumbers:(NSSet *)values;
 - (void)removePhoneNumbers:(NSSet *)values;
+- (void)addSharedMediasObject:(SWMedia *)value;
+- (void)removeSharedMediasObject:(SWMedia *)value;
+- (void)addSharedMedias:(NSSet *)values;
+- (void)removeSharedMedias:(NSSet *)values;
 @end

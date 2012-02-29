@@ -54,6 +54,7 @@
         <attribute name="uploadProgress" optional="YES" attributeType="Float" defaultValueString="0" syncable="YES"/>
         <relationship name="album" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SWAlbum" inverseName="medias" inverseEntity="SWAlbum" syncable="YES"/>
         <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWComment" inverseName="media" inverseEntity="SWComment" syncable="YES"/>
+        <relationship name="sharedPeople" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="sharedMedias" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
     <entity name="SWPerson" representedClassName="SWPerson" syncable="YES">
         <attribute name="firstName" optional="YES" attributeType="String" syncable="YES"/>
@@ -69,6 +70,7 @@
         <relationship name="comments" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWComment" inverseName="author" inverseEntity="SWComment" syncable="YES"/>
         <relationship name="groups" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWGroup" inverseName="contacts" inverseEntity="SWGroup" syncable="YES"/>
         <relationship name="phoneNumbers" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPhoneNumber" inverseName="person" inverseEntity="SWPhoneNumber" syncable="YES"/>
+        <relationship name="sharedMedias" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWMedia" inverseName="sharedPeople" inverseEntity="SWMedia" syncable="YES"/>
     </entity>
     <entity name="SWPhoneNumber" representedClassName="SWPhoneNumber" syncable="YES">
         <attribute name="invalid" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -80,8 +82,8 @@
         <element name="SWAlbum" positionX="126" positionY="360" width="128" height="240"/>
         <element name="SWComment" positionX="160" positionY="192" width="128" height="120"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="435"/>
-        <element name="SWPerson" positionX="414" positionY="264" width="128" height="240"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="450"/>
+        <element name="SWPerson" positionX="414" positionY="264" width="128" height="255"/>
         <element name="SWPhoneNumber" positionX="160" positionY="192" width="128" height="105"/>
     </elements>
 </model>

@@ -7,6 +7,7 @@
 //
 
 #import "SWGroup+Details.h"
+#import "SWPeopleListViewController.h"
 
 @implementation SWGroup (Details)
 
@@ -127,13 +128,16 @@
     
     if (self.contacts)
         self.contacts = nil;    
+    
     for (NSNumber* account_id in [obj valueForKey:@"account_ids"])
     {
         SWPerson* p = [SWPerson findObjectWithServerID:[account_id intValue]];
-        if (p)
+        if (!p)
         {
-            [self addContactsObject:p];
+            p = [SWPerson createEntity];
+            p.serverID = [account_id intValue];
         }
+        [self addContactsObject:p];
     }
 }
 

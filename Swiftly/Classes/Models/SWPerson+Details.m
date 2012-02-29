@@ -10,6 +10,23 @@
 
 @implementation SWPerson (Details)
 
+- (NSArray*)sortedSharedMedias
+{
+    return [[self.sharedMedias allObjects] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        SWMedia* m1 = (SWMedia*)obj1;
+        SWMedia* m2 = (SWMedia*)obj2;
+        return m1.serverID < m2.serverID;
+    }];
+}
+
+- (NSArray*)arrStrPhoneNumbers
+{
+    NSMutableArray* arr = [NSMutableArray array];
+    for (SWPhoneNumber* pn in self.phoneNumbers)
+        [arr addObject:pn.phoneNumber];
+    return arr;
+}
+
 - (NSString*)name
 {
     if (self.isSelf)
@@ -59,23 +76,6 @@
     return result;
 }
 
-- (NSString*)displayOriginalPhoneNumbers
-{
-    /*
-    NSMutableString* str = [NSMutableString string];
-    for (NSString* phone_nb in self.originalPhoneNumbers)
-    {
-        [str appendFormat:@"%@, ", phone_nb];
-    }
-    
-    if ([self.originalPhoneNumbers count] > 0)
-        return [str substringToIndex:[str length] - 2];    
-    
-    return str;
-     */
-    return @"TODO";
-}
-
 + (UIImage*)defaultImage
 {
     return [UIImage imageNamed:@"user@2x.png"];
@@ -92,10 +92,15 @@
 
 + (NSArray *)findAllObjects
 {
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPerson findAllObjectsInContext:context];
+}
+
++ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext *)context
+{
     NSMutableArray* output = [NSMutableArray array];
     
     // Find all objects
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -103,8 +108,8 @@
     
     
     // Find all contacts in AB 
-    NSArray* people = [SWPerson getPeopleAB];
-
+    NSArray* people = [SWPerson getPeopleABInContext:context];
+    
     for (SWPerson* p in people)
     {
         // Loop through all persons in AB and check if we can find 
@@ -136,7 +141,13 @@
 
 + (NSArray *)findValidObjects
 {
-    NSArray* output = [SWPerson findAllObjects];
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPerson findValidObjectsInContext:context];
+}
+
++ (NSArray *)findValidObjectsInContext:(NSManagedObjectContext *)context
+{
+    NSArray* output = [SWPerson findAllObjectsInContext:context];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser == %@", [NSNumber numberWithBool:YES]];
     return [output filteredArrayUsingPredicate:predicate];
 }
@@ -144,6 +155,11 @@
 + (void)deleteAllObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [SWPerson deleteAllObjectsInContext:context];
+}
+
++ (void)deleteAllObjectsInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [self entityDescriptionInContext:context];
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -163,9 +179,14 @@
 + (SWPerson*)findObjectWithServerID:(int)serverID
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
+    return [SWPerson findObjectWithServerID:serverID inContext:context];
+}
 
++ (SWPerson*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext *)context
+{
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID = %@", [NSNumber numberWithInt:serverID]];
+    
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setPredicate:predicate];
@@ -177,7 +198,18 @@
 
 + (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb
 {
-    NSArray* people = [SWPerson findAllObjects];
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPerson findObjectWithPhoneNumber:phoneNb inContext:context];
+}
+
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context
+{
+    NSArray* people = [SWPerson findAllObjectsInContext:context];
+    return [SWPerson findObjectWithPhoneNumber:phoneNb inContext:context people:people];
+}
+
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context people:(NSArray*)people
+{
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", phoneNb];
     NSArray* items = [people filteredArrayUsingPredicate:predicate];
     if (items.count == 0)
@@ -188,9 +220,14 @@
 + (SWPerson*)createEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPerson createEntityInContext:context];
+}
+
++ (SWPerson*)createEntityInContext:(NSManagedObjectContext *)context
+{
     SWPerson* obj = [NSEntityDescription
-                    insertNewObjectForEntityForName:NSStringFromClass([self class])
-                    inManagedObjectContext:context];
+                     insertNewObjectForEntityForName:NSStringFromClass([self class])
+                     inManagedObjectContext:context];
     
     return (SWPerson*)obj;
 }
@@ -198,13 +235,35 @@
 + (SWPerson*)newEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
+    return [SWPerson newEntityInContext:context];
+}
+
++ (SWPerson*)newEntityInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
     SWPerson* obj = [[SWPerson alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
     
     return obj;
 }
 
+- (void)deleteEntity
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    [self deleteEntityInContext:context];
+}
+
+- (void)deleteEntityInContext:(NSManagedObjectContext *)context
+{
+    [context deleteObject:self];
+}
+
 - (void)updateWithObject:(id)obj
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
+    [self updateWithObject:obj inContext:context];
+}
+
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context
 {    
     self.serverID       = [[obj valueForKey:@"id"] intValue];
     self.isUser         = [[obj valueForKey:@"activated"] boolValue];
@@ -215,14 +274,14 @@
     NSString* origPhone = [obj valueForKey:@"original_phone_number"];
     if (origPhone && [origPhone class] != [NSNull class])
     {
-        SWPhoneNumber* pn   = [SWPhoneNumber findObjectWithPhoneNumber:origPhone];
+        SWPhoneNumber* pn   = [SWPhoneNumber findObjectWithPhoneNumber:origPhone inContext:context];
         if (!pn || pn.person.serverID != self.serverID)
         {
-            SWPhoneNumber* pn   = [SWPhoneNumber createEntity];
+            SWPhoneNumber* pn   = [SWPhoneNumber createEntityInContext:context];
             pn.phoneNumber      = origPhone;
             pn.normalized       = NO;
             pn.invalid          = NO;
-            pn.person           = self;
+            pn.person           = (SWPerson*)[context objectWithID:self.objectID];
             [self addPhoneNumbersObject:pn];
         }
     }
@@ -230,14 +289,14 @@
     NSString* phone = [obj valueForKey:@"phone_number"];
     if (phone && [phone class] != [NSNull class])
     {
-        SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:phone];
+        SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:phone inContext:context];
         if (!pn || pn.person.serverID != self.serverID)
         {
-            pn              = [SWPhoneNumber createEntity];
+            pn              = [SWPhoneNumber createEntityInContext:context];
             pn.phoneNumber  = phone;
             pn.invalid      = NO;
             pn.normalized   = YES;
-            pn.person       = self;
+            pn.person       = (SWPerson*)[context objectWithID:self.objectID];
             
             [self addPhoneNumbersObject:pn];
         }
@@ -247,6 +306,11 @@
 - (SWPhoneNumber*)normalizedPhoneNumber
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [self normalizedPhoneNumberInContext:context];
+}
+
+- (SWPhoneNumber*)normalizedPhoneNumberInContext:(NSManagedObjectContext *)context
+{
     NSEntityDescription *entity = [SWPerson entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.normalized == %@", [NSNumber numberWithBool:YES], self.serverID];
     
@@ -261,6 +325,12 @@
 
 + (NSArray*)getPeopleAB
 {
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
+    return [SWPerson getPeopleABInContext:context];
+}
+
++ (NSArray*)getPeopleABInContext:(NSManagedObjectContext *)context
+{
     NSMutableArray* peopleAB = [NSMutableArray array];
     ABAddressBookRef addressBook = ABAddressBookCreate();
     CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
@@ -269,7 +339,7 @@
     {
         ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
         
-        SWPerson* p = [SWPerson newEntity];
+        SWPerson* p = [SWPerson newEntityInContext:context];
         p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
         p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
         

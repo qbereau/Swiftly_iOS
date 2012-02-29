@@ -31,6 +31,7 @@
 
 @implementation SWAlbumEditViewController
 
+@synthesize inputAlbumName = _inputAlbumName;
 @synthesize album = _album;
 @synthesize filesToUpload = _filesToUpload;
 @synthesize mode = _mode;
@@ -169,6 +170,8 @@
     {        
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
 
+            self.album.name = self.inputAlbumName.text;
+            
             [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
                                          parameters:[self.album toDictionnary]
                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -192,6 +195,8 @@
     {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
 
+            self.album.name = self.inputAlbumName.text;
+            
             NSMutableArray* contacts_arr = [NSMutableArray array];
             for (SWPerson* p in self.album.participants)
             {
@@ -696,7 +701,8 @@
                 [cell.contentView addSubview:inputTitle];
             }
             
-            inputTitle.text = self.album.name;            
+            inputTitle.text = self.album.name;
+            self.inputAlbumName = inputTitle;
         }
     }
     else

@@ -11,6 +11,7 @@
 
 @implementation SWGroupListViewController
 
+@synthesize syncedGroupIDs = _syncedGroupsIDs;
 @synthesize groups = _groups;
 
 - (id)initWithStyle:(UITableViewStyle)style
@@ -39,8 +40,12 @@
     
     [self.tableView setAutoresizesSubviews:YES];
     [self.tableView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight)];    
+}
 
-    [self synchronize];
+- (void)reload
+{
+    self.groups = [SWGroup findAllObjects];
+    [self.tableView reloadData];    
 }
 
 - (void)viewDidUnload
@@ -54,8 +59,7 @@
 {
     [super viewWillAppear:animated];
 
-    self.groups = [SWGroup findAllObjects];
-    [self.tableView reloadData];
+    [self reload];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -84,12 +88,12 @@
     }
 }
 
-- (void)synchronize
++ (void)synchronize
 {
-    MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-	hud.labelText = NSLocalizedString(@"loading", @"loading");
-    
 	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        
+        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup findAllObjects]];
+        
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -98,6 +102,8 @@
                                             int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
                                             if (iTotalPages > 1)
                                             {   
+                                                [self updateGroups:responseObject];
+                                                
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
                                                     __block int opReq = iTotalPages - 2;
@@ -105,10 +111,10 @@
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
-                                                                                    [self updateGroups:responseObject];
+                                                                                    [self updateGroups:respObj2];
                                                                                     --opReq;
                                                                                     if (opReq == 0)
-                                                                                        [self finishedUpdateGroups];
+                                                                                        [self finishedUpdateGroups:arrGroupsBeforeSync];
                                                                                 }
                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                     NSLog(@"error");
@@ -119,7 +125,7 @@
                                             else
                                             {
                                                 [self updateGroups:responseObject];
-                                                [self finishedUpdateGroups];
+                                                [self finishedUpdateGroups:arrGroupsBeforeSync];
                                             }                                           
                                             
                                         }
@@ -127,20 +133,16 @@
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                         UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                         [av show];
-                                        
-                                        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                     }
          ];
     });
 }
 
-- (void)updateGroups:(id)responseObject
++ (void)updateGroups:(id)responseObject
 {
-    NSMutableArray* arrID = [NSMutableArray array];
-    
     for (id obj in responseObject)
     {        
-        [arrID addObject:[obj valueForKey:@"id"]];
+        //[self.syncedGroupIDs addObject:[obj valueForKey:@"id"]];
         
         SWGroup* groupObj = [SWGroup findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
         
@@ -149,24 +151,27 @@
         
         [groupObj updateWithObject:obj];
     }   
+}
+
++ (void)finishedUpdateGroups:(NSMutableArray*)groupsBeforeSync
+{
+    NSMutableArray* arrGroupIDs = [NSMutableArray array];
+    for (SWGroup* g in groupsBeforeSync)
+    {
+        [arrGroupIDs addObject:[NSNumber numberWithInt:g.serverID]];
+    }
     
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrID];
+    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
     NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
     
     for (SWGroup* g in arr)
     {
         [g deleteEntity];
     }    
-}
-
-- (void)finishedUpdateGroups
-{
+    
     [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
     
-    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-    
-    self.groups = [SWGroup findAllObjects];
-    [self.tableView reloadData];  
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
 }
 
 #pragma mark - UITableView Delegates

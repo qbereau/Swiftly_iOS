@@ -205,17 +205,25 @@
         
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
+            NSString* uri = @"/accounts/block";
+            if (self.contact.isBlocked)
+                uri = @"/accounts/unblock";
+            
             NSArray* arr_ids = [NSArray arrayWithObject:[NSNumber numberWithInt:self.contact.serverID]];
             NSDictionary* params = [NSDictionary dictionaryWithObject:arr_ids forKey:@"ids"];
-            [[SWAPIClient sharedClient] putPath:@"/accounts/block"
+            [[SWAPIClient sharedClient] putPath:uri
                                      parameters:params
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            NSLog(@"WRONG --> Should call appropriate unblock API");
                                             self.contact.isBlocked = !self.contact.isBlocked;
                                             [self updateBlockContactIndicator];
                                         }
                                         failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                 
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                
+                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];                                            
+                                                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                                [av show];
+                                            });
                                         }
              ];
         });
@@ -240,6 +248,9 @@
     
     SWAlbumThumbnailsViewController* newController = [[SWAlbumThumbnailsViewController alloc] init];
     newController.navigationItem.hidesBackButton = NO;
+    newController.displayMode = ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT;
+    newController.contact = self.contact;
+    newController.allowAlbumEdition = NO;
     [[self navigationController] pushViewController:newController animated:YES];
 }
 
