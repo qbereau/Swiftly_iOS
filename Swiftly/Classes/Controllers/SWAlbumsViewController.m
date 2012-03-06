@@ -41,15 +41,48 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
+    [self reload];    
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uploadMediaDone:)
                                                  name:@"SWUploadMediaDone"
                                                object:nil
+     ];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(receivedNewMedias:)
+                                                 name:@"SWReceivedNewMedias"
+                                               object:nil
      ];    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(refreshedAB:)
+                                                 name:@"SWABProcessDone"
+                                               object:nil
+     ];
     
-    [self reload];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(refreshedAB:)
+                                                 name:@"SWABProcessFailed"
+                                               object:nil
+     ];
     
-    [self synchronize:NO];        
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(refreshedGroups:)
+                                                 name:@"SWGroupSyncDone"
+                                               object:nil
+     ];
+
+}
+
+- (void)refreshedAB:(NSNotification*)notification
+{
+    [SWGroupListViewController synchronize];
+}
+
+- (void)refreshedGroups:(NSNotification*)notification
+{
+    [self synchronize:NO];
 }
 
 - (void)uploadMediaDone:(NSNotification*)notification
@@ -57,9 +90,14 @@
     self.shouldResync = YES;
 }
 
-- (void)updateAlbumAccounts:(int)albumID
+- (void)receivedNewMedias:(NSNotification*)notification
 {
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    [self synchronize:NO];
+}
+
+- (void)updateAlbumAccounts:(int)albumID context:(NSManagedObjectContext*)context
+{
+    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", albumID]
                                  parameters:nil
@@ -69,6 +107,8 @@
                                         
                                         if (iTotalPages > 1)
                                         {   
+                                            [self processAlbumID:albumID accounts:responseObject context:context];
+                                            
                                             for (int i = 2; i <= iTotalPages; ++i)
                                             {
                                                 ++self.reqOps;
@@ -76,7 +116,7 @@
                                                                          parameters:nil
                                                                             success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                 
-                                                                                [self processAlbumID:albumID accounts:respObj2];
+                                                                                [self processAlbumID:albumID accounts:respObj2 context:context];
                                                                                 --self.reqOps;
                                                                                 if (self.reqOps == 0)
                                                                                     [self saveAndUpdate];
@@ -89,7 +129,7 @@
                                         }
                                         else
                                         {
-                                            [self processAlbumID:albumID accounts:responseObject];
+                                            [self processAlbumID:albumID accounts:responseObject context:context];
                                             --self.reqOps;
                                             if (self.reqOps == 0)
                                                 [self saveAndUpdate];
@@ -99,23 +139,23 @@
                                         NSLog(@"Error: %@", [error description]);
                                     }
          ];
-    });
+    //});
 }
 
-- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject
+- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject context:(NSManagedObjectContext*)context
 {
-    SWAlbum* album = [SWAlbum findObjectWithServerID:albumID];
+    SWAlbum* album = [SWAlbum findObjectWithServerID:albumID inContext:context];
     if (album)   
     {
         [album setParticipants:nil];
         
         for (id o in responseObject)
         {
-            SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue]];
+            SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue] inContext:context];
             if (!p)
             {
-                p = [SWPerson createEntity];
-                [p updateWithObject:o];
+                p = [SWPerson createEntityInContext:context];
+                [p updateWithObject:o inContext:context];
             }
             
             [album addParticipantsObject:p];
@@ -125,13 +165,15 @@
 
 - (void)saveAndUpdate
 {
+    self.shouldResync = NO;    
+    
     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
     
     dispatch_async(dispatch_get_main_queue(), ^{    
         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
     });
     
-    [self reload];    
+    [self reload];
 }
 
 - (void)reload
@@ -152,7 +194,7 @@
     }
     
     self.reqOps = 0;    
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         self.receivedAlbums         = [NSMutableArray array];
         self.arrAlbumsBeforeSync    = [SWAlbum findAllObjects];
@@ -219,16 +261,16 @@
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                        //dispatch_async(dispatch_get_main_queue(), ^{
                                             
                                             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                             
                                             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                             [av show];
-                                        });
+                                        //});
                                     }
          ];   
-    });
+    //});
 }
 
 - (void)processAlbumsWithDict:(NSDictionary *)dict
@@ -255,7 +297,7 @@
             [self.receivedAlbums addObject:albumObj];
             
             ++self.reqOps;
-            [self updateAlbumAccounts:albumObj.serverID];
+            [self updateAlbumAccounts:albumObj.serverID context:context];
         }        
         
         [[NSNotificationCenter defaultCenter] addObserver:self 
@@ -302,28 +344,10 @@
     
     [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
     
-    [self reload];
-}
-
-- (void)processAlbums:(id)responseObject
-{
-    for (id obj in responseObject)
+    /*for (SWAlbum* alb in self.receivedAlbums)
     {
-        SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
-        
-        if (!albumObj)
-        {
-            albumObj = [SWAlbum createEntity];
-            albumObj.isLocked = NO;                                                     
-        }
-        
-        [albumObj updateWithObject:obj];
-        
-        [self.receivedAlbums addObject:albumObj];
-        
-        ++self.reqOps;
-        [self updateAlbumAccounts:albumObj.serverID];
-    }
+        [self updateAlbumAccounts:alb.serverID];
+    }*/
 }
 
 - (void)removeOldAlbums
@@ -364,6 +388,8 @@
     [super viewDidAppear:animated];
     
     [self reload];    
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWResetAlbumsBadgeValue" object:nil];
     
     if (self.shouldResync)
     {

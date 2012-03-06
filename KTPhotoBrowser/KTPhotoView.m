@@ -18,6 +18,7 @@
 
 @implementation KTPhotoView
 
+@synthesize localVideoURL = videoURL_;
 @synthesize scroller = scroller_;
 @synthesize index = index_;
 @synthesize moviePlayer = moviePlayer_;
@@ -55,28 +56,26 @@
 }
 
 - (void)setVideoURL:(NSURL*)url
-{
-    if (!moviePlayer_)
-    {
-        moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:url];
-        [self addSubview:moviePlayer_.view];
-    }
-    else
-    {
-        [moviePlayer_ setContentURL:url];
-    }
-    
-    [moviePlayer_ prepareToPlay];
-    [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
-    [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
-    [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
-    
-    [self turnOffZoom];
+{        
+    self.localVideoURL = url;
 }
 
 - (void)launch
 {
-    [moviePlayer_ play];
+    //NSLog(@"here");
+    
+    if (self.localVideoURL)
+    {
+        moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:self.localVideoURL];
+        [self addSubview:moviePlayer_.view];    
+        [moviePlayer_ prepareToPlay];
+        [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
+        [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
+        [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
+        [moviePlayer_ play];
+        
+        [self turnOffZoom];    
+    }
 }
 
 - (void)layoutSubviews 

@@ -82,7 +82,7 @@
                                                         NSLog(@"Delete file error: %@", errDel);
                                                     }
                                                 }
-                                                                                                
+
                                                 [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                
                                                 [blockSelf reload];
                                                 
@@ -183,6 +183,15 @@
         {
             [self launchRefreshTimer];
             
+            NSInteger imageQuality = [SWUploadQualityViewController imageQuality];
+            float imageCompression = 1.0f;
+            if (imageQuality == UPLOAD_QUALITY_KEY_MEDIUM)
+                imageCompression = 0.7f;
+            else if (imageQuality == UPLOAD_QUALITY_KEY_LOW)
+                imageCompression = 0.4f;
+            
+            NSInteger videoQuality = [SWUploadQualityViewController videoQuality];            
+            
             //__block SWActivitiesViewController* selfBlock = self;
             dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{            
                 ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
@@ -199,7 +208,7 @@
                                    else if ([m.contentType isEqualToString:@"image/jpg"] || [m.contentType isEqualToString:@"image/jpeg"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];                                   
-                                       NSData* imgData = UIImageJPEGRepresentation(img, 1);
+                                       NSData* imgData = UIImageJPEGRepresentation(img, imageCompression);
                                        ++self.nbUploadElements;
                                        self.uploadDataBlock(m, imgData, nil);
                                    }
@@ -207,7 +216,15 @@
                                    {
                                        // Video
                                        AVURLAsset* avAsset = [AVURLAsset URLAssetWithURL:[NSURL URLWithString:m.assetURL] options:nil];
-                                       AVAssetExportSession *exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+                                       
+                                       AVAssetExportSession *exportSession;
+                                       if (videoQuality == UPLOAD_QUALITY_KEY_HIGH)
+                                           exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetHighestQuality];
+                                       else if (videoQuality == UPLOAD_QUALITY_KEY_MEDIUM)
+                                           exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+                                       else if (videoQuality == UPLOAD_QUALITY_KEY_LOW)
+                                           exportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetLowQuality];
+                                       
                                        NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
                                        NSString *documentsDirectoryPath = [dirs objectAtIndex:0];
                                        NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:m.filename];
@@ -349,15 +366,17 @@
             cell = [[SWActivityTableViewCell alloc] initWithProgressView:NO style:UITableViewCellStyleDefault reuseIdentifier:@"ActivityCellRecent"];
         cell.opaque = NO;
     }
-            
+
     SWMedia* media;
     if (indexPath.section == 0)
         media = [self.inProgress objectAtIndex:indexPath.row];
     else
         media = [self.recent objectAtIndex:indexPath.row];
     
-    cell.title.text = (media.isImage) ? @"Image" : @"Video";
     cell.progress = media.uploadProgress;
+    
+    if ([media.album.name length] > 0)
+        cell.title.text = [NSString stringWithFormat:NSLocalizedString(@"in_album", @"in album: "), media.album.name];        
     
     if (media.isUploaded)
     {

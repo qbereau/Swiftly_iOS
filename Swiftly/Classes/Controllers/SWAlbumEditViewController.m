@@ -73,23 +73,19 @@
     
     
     __block SWAlbumEditViewController* blockSelf = self;
-    self.uploadMediasBlock = ^(int album_id, BOOL canExportMedias) {
+    self.uploadMediasBlock = ^(SWAlbum* album, BOOL canExportMedias) {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
             __block int processedEntity = 0;
             for (NSDictionary* media in blockSelf.filesToUpload)
-            {                    
-                NSString* fileType = @"image/jpeg";
-                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
-                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
-                    fileType = @"image/png";
-                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
-                    fileType = @"video/quicktime";
+            {
+                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];                
+                NSString* fileType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
                 
                 UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
                 
                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  fileType, @"content_type", 
-                                                                                    [NSNumber numberWithInt:album_id], @"album_id", 
+                                                                                    [NSNumber numberWithInt:album.serverID], @"album_id", 
                                                                                     [NSNumber numberWithBool:canExportMedias], @"open",
                                         nil];
                 
@@ -103,6 +99,7 @@
                                                  mediaObj.isUploaded        = NO;
                                                  mediaObj.thumbnail         = mediaThumbnail;
                                                  mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                 mediaObj.album             = album;
                                                  
                                                  ++processedEntity;
                                                  if (processedEntity == [blockSelf.filesToUpload count])
@@ -216,7 +213,7 @@
 
                                              [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
 
-                                             self.uploadMediasBlock(self.album.serverID, self.album.canExportMedias);
+                                             self.uploadMediasBlock(self.album, self.album.canExportMedias);
                                          }
                                          failure:self.genericFailureBlock 
              ];
@@ -234,7 +231,7 @@
         }
         else
         {
-            self.uploadMediasBlock(_selectedLinkedAlbum.serverID, _canExportMediasForLinkedAlbum);
+            self.uploadMediasBlock(_selectedLinkedAlbum, _canExportMediasForLinkedAlbum);
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
@@ -246,12 +243,8 @@
             __block NSMutableArray* newMedias = [NSMutableArray array];
             for (NSDictionary* media in blockSelf.filesToUpload)
             {                    
-                NSString* fileType = @"image/jpeg";
-                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];
-                if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
-                    fileType = @"image/png";
-                else if ([[[mediaUrl absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
-                    fileType = @"video/quicktime";
+                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];                
+                NSString* fileType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
                 
                 UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
                 
@@ -267,6 +260,7 @@
                                                  mediaObj.isUploaded        = NO;
                                                  mediaObj.thumbnail         = mediaThumbnail;
                                                  mediaObj.assetURL          = [mediaUrl absoluteString];
+                                                 mediaObj.album             = [SWAlbum findQuickShareAlbum];
                                                  
                                                  [newMedias addObject:[NSNumber numberWithInt:mediaObj.serverID]];
                                                  
@@ -1012,9 +1006,9 @@
         if (indexPath.row < [self.linkableAlbums count])
         {
             SWAlbum* p = [self.linkableAlbums objectAtIndex:indexPath.row];
-            // if (p.canEditMedias)
             cell.title.text = p.name;
             cell.accessoryType = (p == _selectedLinkedAlbum) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+            cell.imageView.image = p.thumbnail;
         }
     }
     else

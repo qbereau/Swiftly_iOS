@@ -12,6 +12,7 @@
 #import "SWAlbumThumbnailsViewController.h"
 #import "SWTableViewCell.h"
 #import "JSLockScreenViewController.h"
+#import "SWGroupListViewController.h"
 #import "SWAPIClient.h"
 
 @interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
@@ -43,10 +44,12 @@
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      shouldResync;
 
+- (void)refreshedAB:(NSNotification*)notification;
+- (void)uploadMediaDone:(NSNotification*)notification;
+
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
-- (void)processAlbums:(id)responseObject;
-- (void)updateAlbumAccounts:(int)albumID;
-- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject;
+- (void)updateAlbumAccounts:(int)albumID context:(NSManagedObjectContext*)context;
+- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject context:(NSManagedObjectContext*)context;
 - (void)removeOldAlbums;
 - (void)saveAndUpdate;
 - (void)reload;

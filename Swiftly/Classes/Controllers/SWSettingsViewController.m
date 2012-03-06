@@ -97,7 +97,7 @@
 {
     switch (section) {
         case 0:
-            return 2;
+            return 3;
         case 1:
             return 1;
         case 2:
@@ -145,6 +145,11 @@
                 cell.title.text = NSLocalizedString(@"album_lock", @"album lock");
                 cell.subtitle.text = NSLocalizedString(@"album_lock_subtitle", @"for hiding albums"); 
             }
+            else if (indexPath.row == 1)
+            {
+                cell.isSlider = YES;
+                cell.title.text = NSLocalizedString(@"upload_quality", @"upload quality");
+            }
             else
             {
                 // App version
@@ -181,6 +186,12 @@
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
         SWAlbumLockViewController* albumLockViewController = [storyboard instantiateViewControllerWithIdentifier:@"AlbumLockViewController"];
         [self.navigationController pushViewController:albumLockViewController animated:YES];   
+    }
+    else if (indexPath.section == 0 && indexPath.row == 1)
+    {
+        UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
+        SWUploadQualityViewController* uploadQualityVC = [storyboard instantiateViewControllerWithIdentifier:@"UploadQualityViewController"];
+        [self.navigationController pushViewController:uploadQualityVC animated:YES];   
     }
     else if (indexPath.section == 2 && indexPath.row == 0)
     {        

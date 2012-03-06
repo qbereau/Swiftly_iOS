@@ -90,9 +90,9 @@
 
 + (void)synchronize
 {
-	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup findAllObjects]];
+        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup findAllObjects]];    
         
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
@@ -135,7 +135,7 @@
                                         [av show];
                                     }
          ];
-    });
+    //});
 }
 
 + (void)updateGroups:(id)responseObject
@@ -161,13 +161,16 @@
         [arrGroupIDs addObject:[NSNumber numberWithInt:g.serverID]];
     }
     
-    NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
-    NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
-    
-    for (SWGroup* g in arr)
+    if (arrGroupIDs && [arrGroupIDs count] > 0)
     {
-        [g deleteEntity];
-    }    
+        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
+        NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
+        
+        for (SWGroup* g in arr)
+        {
+            [g deleteEntity];
+        }    
+    }
     
     [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
     

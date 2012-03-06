@@ -30,6 +30,8 @@
 - (void)deleteImageAtIndex:(NSInteger)index;
 - (void)saveImageAtIndex:(NSInteger)index;
 
+- (BOOL)isVideoAtIndex:(NSInteger)index;
+
 - (CGSize)thumbSize;
 - (NSInteger)thumbsPerRow;
 - (BOOL)thumbsHaveBorder;

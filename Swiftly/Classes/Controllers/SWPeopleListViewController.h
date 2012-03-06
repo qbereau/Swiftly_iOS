@@ -31,7 +31,6 @@
     
     BOOL                _showOnlyUsers;
     
-    
     NSArray*            _groups;
     UIScrollView*       _scrollView;
 }
@@ -40,7 +39,6 @@
 @property (nonatomic, strong) NSArray*          contacts;
 @property (nonatomic, strong) NSMutableArray*   selectedContacts;
 @property (nonatomic, assign) NSInteger         mode;
-
 @property (nonatomic, strong) UITableView*      tableView;
 @property (nonatomic, assign) BOOL              showOnlyUsers;
 

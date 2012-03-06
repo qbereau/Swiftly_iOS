@@ -33,6 +33,28 @@
                 break;
         }
     }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(receivedNewMedias:)
+                                                 name:@"SWReceivedNewMedias"
+                                               object:nil
+     ];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(resetAlbumsBadgeValue:)
+                                                 name:@"SWResetAlbumsBadgeValue"
+                                               object:nil
+     ];
+}
+
+- (void)receivedNewMedias:(NSNotification*)notification
+{
+    [[self.tabBar.items objectAtIndex:0] setBadgeValue:@"1"];
+}
+
+- (void)resetAlbumsBadgeValue:(NSNotification*)notification
+{
+    [[self.tabBar.items objectAtIndex:0] setBadgeValue:nil];
 }
 
 @end

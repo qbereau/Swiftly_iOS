@@ -27,6 +27,15 @@
     return [NSString stringWithFormat:NSLocalizedString(@"uploaded_time", @"uploaded now"), [format stringFromDate:[NSDate dateWithTimeIntervalSinceReferenceDate:self.uploadedDate]]];
 }
 
++ (NSString*)retrieveContentTypeFromMediaURL:(NSURL*)mediaURL
+{
+    if ([[[mediaURL absoluteString] lowercaseString] rangeOfString:@"ext=png"].location != NSNotFound)
+        return @"image/png";
+    else if ([[[mediaURL absoluteString] lowercaseString] rangeOfString:@"ext=mov"].location != NSNotFound)
+        return @"video/quicktime";
+    return @"image/jpeg";
+}
+
 // Core Data Helpers
 
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
@@ -73,18 +82,17 @@
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:YES]];
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:NO];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
     [request setFetchLimit:20];
     [request setPredicate:predicate];
+    [request setSortDescriptors:sortDescriptors];
     
-    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSTimeInterval t1 = [(SWMedia*)obj1 uploadedDate];
-        NSTimeInterval t2 = [(SWMedia*)obj2 uploadedDate];
-        return t1 <= t2;
-    }];
-    
-    return arr;
+    return [context executeFetchRequest:request error:nil];
 }
 
 + (void)deleteAllObjects
@@ -138,7 +146,7 @@
 + (NSArray *)findMediasFromAlbumID:(NSInteger)serverID inContext:(NSManagedObjectContext*)context
 {
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID == %d", serverID];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID = %d", serverID];
     
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];

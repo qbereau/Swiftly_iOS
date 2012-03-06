@@ -20,11 +20,13 @@
     
     
     MPMoviePlayerController*        moviePlayer_;
+    NSURL*                          videoURL_;
 }
 
 @property (nonatomic, assign) KTPhotoScrollViewController *scroller;
 @property (nonatomic, assign) NSInteger index;
 @property (nonatomic, assign) MPMoviePlayerController* moviePlayer;
+@property (nonatomic, strong) NSURL* localVideoURL;
 
 - (void)setImage:(UIImage *)newImage;
 - (void)setVideoURL:(NSURL*)url;

@@ -54,8 +54,6 @@
 		1939B24B14F7EE520078DE68 /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 1939B24A14F7EE520078DE68 /* SWAlbum.m */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
-		194D209C14E3FE3000B72A40 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209A14E3FE3000B72A40 /* valid.png */; };
-		194D209D14E3FE3000B72A40 /* valid@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209B14E3FE3000B72A40 /* valid@2x.png */; };
 		194D20A014E3FE4C00B72A40 /* block.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209E14E3FE4C00B72A40 /* block.png */; };
 		194D20A114E3FE4C00B72A40 /* block@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209F14E3FE4C00B72A40 /* block@2x.png */; };
 		194D20A414E40C0800B72A40 /* SWGroupEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D20A314E40C0800B72A40 /* SWGroupEditViewController.m */; };
@@ -88,6 +86,10 @@
 		1950B84E14D6E6FC00302BF2 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1950B84D14D6E6FC00302BF2 /* QuartzCore.framework */; };
 		1950B85014D6E93C00302BF2 /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1950B84F14D6E93C00302BF2 /* CoreTelephony.framework */; };
 		1950B85214D6F02500302BF2 /* Countries.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1950B85114D6F02500302BF2 /* Countries.plist */; };
+		1956E394150644A300A14D03 /* README in Resources */ = {isa = PBXBuildFile; fileRef = 1956E393150644A300A14D03 /* README */; };
+		1956E39715064B9D00A14D03 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 1956E39615064B9C00A14D03 /* icon.png */; };
+		1956E39915064BA100A14D03 /* icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1956E39815064BA000A14D03 /* icon@2x.png */; };
+		1956E39C1506671200A14D03 /* SWUploadQualityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1956E39B1506671100A14D03 /* SWUploadQualityViewController.m */; };
 		1964009C14E2C3C50009EE99 /* add.png in Resources */ = {isa = PBXBuildFile; fileRef = 1964009B14E2C3C50009EE99 /* add.png */; };
 		1964009E14E2CA900009EE99 /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1964009D14E2CA900009EE99 /* AddressBook.framework */; };
 		196EC54A14E42EBF00DB3CE9 /* SWPeopleListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 196EC54914E42EBF00DB3CE9 /* SWPeopleListViewController.m */; };
@@ -278,8 +280,6 @@
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		194D209A14E3FE3000B72A40 /* valid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = valid.png; sourceTree = "<group>"; };
-		194D209B14E3FE3000B72A40 /* valid@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "valid@2x.png"; sourceTree = "<group>"; };
 		194D209E14E3FE4C00B72A40 /* block.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = block.png; sourceTree = "<group>"; };
 		194D209F14E3FE4C00B72A40 /* block@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "block@2x.png"; sourceTree = "<group>"; };
 		194D20A214E40C0800B72A40 /* SWGroupEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWGroupEditViewController.h; sourceTree = "<group>"; };
@@ -321,6 +321,11 @@
 		1950B84D14D6E6FC00302BF2 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		1950B84F14D6E93C00302BF2 /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		1950B85114D6F02500302BF2 /* Countries.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Countries.plist; sourceTree = "<group>"; };
+		1956E393150644A300A14D03 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		1956E39615064B9C00A14D03 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		1956E39815064BA000A14D03 /* icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon@2x.png"; sourceTree = "<group>"; };
+		1956E39A1506671000A14D03 /* SWUploadQualityViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWUploadQualityViewController.h; sourceTree = "<group>"; };
+		1956E39B1506671100A14D03 /* SWUploadQualityViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWUploadQualityViewController.m; sourceTree = "<group>"; };
 		1964009B14E2C3C50009EE99 /* add.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = add.png; sourceTree = "<group>"; };
 		1964009D14E2CA900009EE99 /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
 		196EC54814E42EBF00DB3CE9 /* SWPeopleListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWPeopleListViewController.h; sourceTree = "<group>"; };
@@ -571,6 +576,8 @@
 		1950B7C514D6AFB400302BF2 = {
 			isa = PBXGroup;
 			children = (
+				1956E39815064BA000A14D03 /* icon@2x.png */,
+				1956E39615064B9C00A14D03 /* icon.png */,
 				192A6F4414E81CE400B8EACA /* KVPasscode */,
 				196EC58C14E7AB6100DB3CE9 /* ELCImagePickerController */,
 				196EC56114E6D6DF00DB3CE9 /* JSLockScreen */,
@@ -578,6 +585,7 @@
 				199832D014DA89840083E5C3 /* KTPhotoBrowser */,
 				191DB59214D9313C007F27E6 /* AFNetworking */,
 				1950B7DA14D6AFB400302BF2 /* Swiftly */,
+				1956E393150644A300A14D03 /* README */,
 				1950B7D314D6AFB400302BF2 /* Frameworks */,
 				1950B7D114D6AFB400302BF2 /* Products */,
 			);
@@ -659,8 +667,6 @@
 				192A6F3C14E7D58100B8EACA /* camera.png */,
 				194D209E14E3FE4C00B72A40 /* block.png */,
 				194D209F14E3FE4C00B72A40 /* block@2x.png */,
-				194D209A14E3FE3000B72A40 /* valid.png */,
-				194D209B14E3FE3000B72A40 /* valid@2x.png */,
 				1964009B14E2C3C50009EE99 /* add.png */,
 				1978067F14E2C18F007582CC /* add@2x.png */,
 				1978066514E04033007582CC /* lock.png */,
@@ -794,6 +800,8 @@
 				192A6F3F14E7F52800B8EACA /* SWAlbumChoiceSelectionViewController.m */,
 				192A6F4114E7F98A00B8EACA /* SWImagePickerViewController.h */,
 				192A6F4214E7F98B00B8EACA /* SWImagePickerViewController.m */,
+				1956E39A1506671000A14D03 /* SWUploadQualityViewController.h */,
+				1956E39B1506671100A14D03 /* SWUploadQualityViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -1060,8 +1068,6 @@
 				1978066814E04033007582CC /* lock@2x.png in Resources */,
 				1978068114E2C18F007582CC /* add@2x.png in Resources */,
 				1964009C14E2C3C50009EE99 /* add.png in Resources */,
-				194D209C14E3FE3000B72A40 /* valid.png in Resources */,
-				194D209D14E3FE3000B72A40 /* valid@2x.png in Resources */,
 				194D20A014E3FE4C00B72A40 /* block.png in Resources */,
 				194D20A114E3FE4C00B72A40 /* block@2x.png in Resources */,
 				196EC58014E6D6E000DB3CE9 /* lock_background.png in Resources */,
@@ -1088,6 +1094,9 @@
 				198697D414F41FEE00806D95 /* user@2x.png in Resources */,
 				19D1B8F814FB9E5800C69DA1 /* valid.png in Resources */,
 				19D1B8F914FB9E5800C69DA1 /* valid@2x.png in Resources */,
+				1956E394150644A300A14D03 /* README in Resources */,
+				1956E39715064B9D00A14D03 /* icon.png in Resources */,
+				1956E39915064BA100A14D03 /* icon@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1177,6 +1186,7 @@
 				19D1B90814FBA34000C69DA1 /* SWPhoneNumber.m in Sources */,
 				19D1B94414FD42DC00C69DA1 /* SWMedia.m in Sources */,
 				19D1B94714FD42DE00C69DA1 /* SWPerson.m in Sources */,
+				1956E39C1506671200A14D03 /* SWUploadQualityViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

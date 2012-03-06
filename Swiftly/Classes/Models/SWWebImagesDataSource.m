@@ -103,6 +103,12 @@
     [photoView setMedia:m placeholderImage:[UIImage imageNamed:@"photoDefault.png"]];
 }
 
+- (BOOL)isVideoAtIndex:(NSInteger)index
+{
+    SWMedia* m = [_filteredMedias objectAtIndex:index];
+    return m.isVideo;
+}
+
 - (void)mediaAtIndex:(NSInteger)index photoView:(KTPhotoView*)photoView 
 {
     SWMedia* m = [_filteredMedias objectAtIndex:index];

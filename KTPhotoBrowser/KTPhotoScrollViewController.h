@@ -41,6 +41,8 @@
    UIBarButtonItem *previousButton_;
     
     UIActionSheet*  actionSheet_;
+    
+    NSTimer*        timerPhotoUpdate_;
 }
 
 @property (nonatomic, assign) UIStatusBarStyle statusBarStyle;

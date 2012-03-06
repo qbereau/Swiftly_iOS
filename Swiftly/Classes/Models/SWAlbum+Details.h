@@ -33,6 +33,9 @@
 + (NSArray *)findAllSharedAlbums;
 + (NSArray *)findAllSpecialAlbums;
 
++ (SWAlbum*)findQuickShareAlbum;
++ (SWAlbum*)findQuickShareAlbumInContext:(NSManagedObjectContext*)context;
+
 + (void)deleteAllObjects;
 
 + (SWAlbum*)findObjectWithServerID:(int)serverID;

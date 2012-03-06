@@ -343,7 +343,8 @@ const CGFloat ktkDefaultToolbarHeight = 44;
       [photoView setBackgroundColor:[UIColor clearColor]];
       
       // Set the photo image.
-      if (dataSource_) {
+      if (dataSource_) 
+      {
          if ([dataSource_ respondsToSelector:@selector(mediaAtIndex:photoView:)]) 
          {
              [dataSource_ mediaAtIndex:index photoView:photoView];
@@ -383,8 +384,8 @@ const CGFloat ktkDefaultToolbarHeight = 44;
         return;
     
     currentIndex_ = newIndex;
-   
-    [self loadPhoto:currentIndex_];
+
+    [self loadPhoto:currentIndex_];    
     [self loadPhoto:currentIndex_ + 1];
     [self loadPhoto:currentIndex_ - 1];
     [self unloadPhoto:currentIndex_ + 2];
@@ -392,7 +393,12 @@ const CGFloat ktkDefaultToolbarHeight = 44;
    
     [self setTitleWithCurrentPhotoIndex];
     [self toggleNavButtons];
-    [self update];
+    
+    timerPhotoUpdate_ = [NSTimer scheduledTimerWithTimeInterval:0.1
+                                                         target:self
+                                                       selector:@selector(update)
+                                                       userInfo:nil
+                                                        repeats:NO];
 }
 
 - (void)update

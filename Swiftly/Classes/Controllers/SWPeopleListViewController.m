@@ -12,11 +12,13 @@
 
 @implementation SWPeopleListViewController
 
-@synthesize selectedContacts    = _selectedContacts;
-@synthesize contacts            = _contacts;
-@synthesize mode                = _mode;
-@synthesize tableView           = _tableView;
-@synthesize showOnlyUsers       = _showOnlyUsers;
+static NSInteger nbUploadPeoplePages = 0;
+
+@synthesize selectedContacts        = _selectedContacts;
+@synthesize contacts                = _contacts;
+@synthesize mode                    = _mode;
+@synthesize tableView               = _tableView;
+@synthesize showOnlyUsers           = _showOnlyUsers;
 @synthesize delegate;
 
 - (void)didReceiveMemoryWarning
@@ -382,6 +384,8 @@
 
 + (void)synchronize
 {
+    [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
+    
     // Step 2: We download the user accounts list for update
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -546,8 +550,12 @@
                                                     }
                                                 }                                                
                                                 
-                                                [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-                                                [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
+                                                --nbUploadPeoplePages;
+                                                if (nbUploadPeoplePages <= 0)
+                                                {
+                                                    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+                                                    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
+                                                }
                                                 
                                                 /*
                                                 [[NSNotificationCenter defaultCenter] addObserver:[SWPeopleListViewController class] 
@@ -618,6 +626,7 @@
                 {
                     int totalItems = [newPhoneNumbers count];
                     int steps = (int)floor(totalItems/itemsPerPage);
+                    nbUploadPeoplePages = steps + 1;
                     for (int i = 0; i <= steps; ++i)
                     {
                         NSRange range = NSMakeRange(i * itemsPerPage, itemsPerPage);
@@ -630,6 +639,7 @@
                 }
                 else
                 {
+                    nbUploadPeoplePages = 1;
                     NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
                     [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
                 }

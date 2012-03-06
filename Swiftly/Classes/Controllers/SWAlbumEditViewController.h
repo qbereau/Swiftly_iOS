@@ -24,7 +24,7 @@
 #define SW_ALBUM_MODE_LINK          2
 #define SW_ALBUM_MODE_QUICK_SHARE   3
 
-typedef void (^UploadMediasBlock)(int, BOOL);
+typedef void (^UploadMediasBlock)(SWAlbum*, BOOL);
 
 @interface SWAlbumEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate, KVPasscodeViewControllerDelegate>
 {

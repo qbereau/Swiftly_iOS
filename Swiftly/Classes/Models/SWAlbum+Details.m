@@ -96,7 +96,7 @@
 + (SWAlbum*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext *)context
 {
     NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID = %d", serverID];
     
     NSFetchRequest *request = [[NSFetchRequest alloc] init];
     [request setEntity:entity];
@@ -171,6 +171,26 @@
         return [n1 compare:n2];        
     }];    
     return arr;
+}
+
++ (SWAlbum*)findQuickShareAlbum
+{
+    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
+    return [SWAlbum findQuickShareAlbumInContext:context];
+}
+
++ (SWAlbum*)findQuickShareAlbumInContext:(NSManagedObjectContext *)context
+{
+    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = %@", [NSNumber numberWithBool:YES]];
+    
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    [request setEntity:entity];
+    [request setPredicate:predicate];
+    NSArray* items = [context executeFetchRequest:request error:nil];
+    if ([items count] == 0)
+        return nil;
+    return (SWAlbum*)[items objectAtIndex:0];
 }
 
 + (SWAlbum*)createEntity

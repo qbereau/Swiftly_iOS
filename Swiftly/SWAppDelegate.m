@@ -18,6 +18,7 @@
 
 - (void)customizeUI
 {
+    
     [[UITabBar appearance] setBackgroundImage:[[UIImage imageNamed:@"bottom_bar"] resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0)]];
     //[[UITabBar appearance] setSelectedImageTintColor:[UIColor whiteColor]];
     
@@ -144,6 +145,10 @@
     /*
      Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
      */
+    
+    
+    // should deal with notification type (comments, albums, medias, ...)
+    application.applicationIconBadgeNumber = 0;     
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -158,9 +163,11 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo
 {
     NSLog(@"Received Data: %@", userInfo);
-    application.applicationIconBadgeNumber = 0;
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:nil];
+    if (application.applicationState != UIApplicationStateActive)
+        application.applicationIconBadgeNumber = 1;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNewMedias" object:nil];
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken 

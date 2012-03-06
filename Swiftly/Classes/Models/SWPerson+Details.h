@@ -25,6 +25,9 @@
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 
++ (NSArray*)sharedAllValidObjects;
++ (NSArray*)sharedAllValidObjects:(NSManagedObjectContext *)context;
+
 + (NSArray *)findAllObjects;
 + (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context;
 

@@ -616,6 +616,38 @@
             </objects>
             <point key="canvasLocation" x="1797" y="-333"/>
         </scene>
+        <scene sceneID="gZ3-zI-ile">
+            <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="est-wE-tqs" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <tableViewController storyboardIdentifier="UploadQualityViewController" id="c9C-Pb-5d8" customClass="SWUploadQualityViewController" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="singleLineEtched" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="gmj-sV-1QQ" customClass="SWTableView">
+                        <rect key="frame" x="0.0" y="20" width="320" height="460"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="SettingsCell" id="Wy0-1O-h2Z" customClass="SWTableViewCell">
+                                <rect key="frame" x="0.0" y="46" width="320" height="46"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                    <rect key="frame" x="10" y="1" width="300" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                </view>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </tableViewCell>
+                        </prototypes>
+                        <sections/>
+                        <connections>
+                            <outlet property="dataSource" destination="c9C-Pb-5d8" id="9HU-6r-qJr"/>
+                            <outlet property="delegate" destination="c9C-Pb-5d8" id="8bd-S2-Y6H"/>
+                        </connections>
+                    </tableView>
+                    <tabBarItem key="tabBarItem" tag="4" title="Settings" image="settings.png" id="gcO-ij-aeB"/>
+                    <navigationItem key="navigationItem" id="WeU-QE-O7D"/>
+                </tableViewController>
+            </objects>
+            <point key="canvasLocation" x="2323" y="2742"/>
+        </scene>
     </scenes>
     <resources>
         <image name="activities.png" width="25" height="25"/>
@@ -668,9 +700,6 @@
         </class>
         <class className="SWGroupEditViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWGroupEditViewController.h"/>
-            <relationships>
-                <relationship kind="outlet" name="inputGroupName" candidateClass="UITextField"/>
-            </relationships>
         </class>
         <class className="SWImagePickerViewController" superclassName="ELCImagePickerController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWImagePickerViewController.h"/>
@@ -716,6 +745,9 @@
         </class>
         <class className="SWTableViewCell" superclassName="UITableViewCell">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWTableViewCell.h"/>
+        </class>
+        <class className="SWUploadQualityViewController" superclassName="UITableViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/SWUploadQualityViewController.h"/>
         </class>
     </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">

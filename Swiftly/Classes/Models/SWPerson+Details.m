@@ -90,6 +90,22 @@
     [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
 }
 
+static NSArray* __sharedAllValidObjects;
+
++ (NSArray*)sharedAllValidObjects
+{
+    if (__sharedAllValidObjects)
+        return __sharedAllValidObjects;
+    return [SWPerson findAllObjects];
+}
+
++ (NSArray*)sharedAllValidObjects:(NSManagedObjectContext *)context
+{
+    if (__sharedAllValidObjects)
+        return __sharedAllValidObjects;
+    return [SWPerson findAllObjectsInContext:context];
+}
+
 + (NSArray *)findAllObjects
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
@@ -118,6 +134,8 @@
         // If we can't then we add AB reference to the output array
         
         BOOL bFoundInDB = NO;
+        
+        // Warning: Bottleneck!!
         for (SWPhoneNumber* pn in p.phoneNumbers)
         {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", pn.phoneNumber];
@@ -136,6 +154,9 @@
         }
     }
     
+    
+    __sharedAllValidObjects = [NSArray arrayWithArray:output];
+    
     return output;
 }
 
@@ -147,7 +168,7 @@
 
 + (NSArray *)findValidObjectsInContext:(NSManagedObjectContext *)context
 {
-    NSArray* output = [SWPerson findAllObjectsInContext:context];
+    NSArray* output = [SWPerson sharedAllValidObjects:context];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser == %@", [NSNumber numberWithBool:YES]];
     return [output filteredArrayUsingPredicate:predicate];
 }
@@ -204,7 +225,7 @@
 
 + (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context
 {
-    NSArray* people = [SWPerson findAllObjectsInContext:context];
+    NSArray* people = [SWPerson sharedAllValidObjects:context];
     return [SWPerson findObjectWithPhoneNumber:phoneNb inContext:context people:people];
 }
 
@@ -369,7 +390,7 @@
         CFRelease(ref);
     }
     
-    return peopleAB;    
+    return peopleAB;
 }
 
 @end

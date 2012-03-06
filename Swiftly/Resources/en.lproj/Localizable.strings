@@ -156,3 +156,12 @@
 "is_uploading"                          = "Uploading....";
 "unknown"                               = "Unknown";
 "me"                                    = "Me";
+"in_album"                              = "In Album: %@";
+
+"upload_quality"                        = "Upload Quality";
+"image_quality"                         = "Image Quality";
+"video_quality"                         = "Video Quality";
+"original_quality"                      = "Original";
+"high_quality"                          = "High";
+"medium_quality"                        = "Medium";
+"low_quality"                           = "Low";

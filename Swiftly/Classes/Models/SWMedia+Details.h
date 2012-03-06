@@ -12,6 +12,7 @@
 
 - (UIImage*)thumbnailOrDefaultImage;
 - (NSString*)uploadedTime;
++ (NSString*)retrieveContentTypeFromMediaURL:(NSURL*)mediaURL;
 
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;

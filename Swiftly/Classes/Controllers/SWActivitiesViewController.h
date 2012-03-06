@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "SWTableView.h"
 #import "SWActivityTableViewCell.h"
+#import "SWAlbum.h"
 #import "SWMedia.h"
 #import "SWMedia+Details.h"
 #import <AssetsLibrary/ALAssetsLibrary.h>
@@ -17,6 +18,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "AFNetworking.h"
 #import "SWAPIClient.h"
+#import "SWUploadQualityViewController.h"
 
 typedef void (^UploadDataBlock)(SWMedia*, NSData*, NSString*);
 
