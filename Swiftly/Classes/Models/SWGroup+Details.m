@@ -37,8 +37,42 @@
     return arr;    
 }
 
-// Core Data Helpers
+- (void)updateWithObject:(id)obj
+{    
+    NSString* g_name = [obj valueForKey:@"name"];
+    if (!g_name || [g_name class] == [NSNull class])
+        g_name = nil;
+    
+    if (g_name)
+        self.name = g_name;
+    
+    self.serverID = [[obj valueForKey:@"id"] intValue];
+    
+    if (self.contacts)
+        self.contacts = nil;    
+    
+    for (NSNumber* account_id in [obj valueForKey:@"account_ids"])
+    {
+        SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:account_id];
+        if (!p)
+        {
+            p = [SWPerson MR_createEntity];
+            p.serverID = [account_id intValue];
+        }
+        [self addContactsObject:p];
+    }
+}
 
++ (SWGroup*)newEntityInContext:(NSManagedObjectContext*)context
+{
+    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
+    SWGroup* obj = [[SWGroup alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
+    
+    return obj;
+}
+
+// Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
 {
     return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
@@ -99,46 +133,10 @@
     return (SWGroup*)obj;
 }
 
-
-+ (SWGroup*)newEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWGroup* obj = [[SWGroup alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
 - (void)deleteEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     [context deleteObject:self];
 }
-
-- (void)updateWithObject:(id)obj
-{    
-    NSString* g_name = [obj valueForKey:@"name"];
-    if (!g_name || [g_name class] == [NSNull class])
-        g_name = nil;
-    
-    if (g_name)
-        self.name = g_name;
-    
-    self.serverID = [[obj valueForKey:@"id"] intValue];
-    
-    if (self.contacts)
-        self.contacts = nil;    
-    
-    for (NSNumber* account_id in [obj valueForKey:@"account_ids"])
-    {
-        SWPerson* p = [SWPerson findObjectWithServerID:[account_id intValue]];
-        if (!p)
-        {
-            p = [SWPerson createEntity];
-            p.serverID = [account_id intValue];
-        }
-        [self addContactsObject:p];
-    }
-}
-
+*/
 @end

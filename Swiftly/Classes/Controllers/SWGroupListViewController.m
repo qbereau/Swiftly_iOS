@@ -44,7 +44,7 @@
 
 - (void)reload
 {
-    self.groups = [SWGroup findAllObjects];
+    self.groups = [SWGroup MR_findAll];
     [self.tableView reloadData];    
 }
 
@@ -92,7 +92,7 @@
 {
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup findAllObjects]];    
+        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup MR_findAll]];    
         
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
@@ -144,10 +144,10 @@
     {        
         //[self.syncedGroupIDs addObject:[obj valueForKey:@"id"]];
         
-        SWGroup* groupObj = [SWGroup findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+        SWGroup* groupObj = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
         
         if (!groupObj)
-            groupObj = [SWGroup createEntity];
+            groupObj = [SWGroup MR_createEntity];
         
         [groupObj updateWithObject:obj];
     }   
@@ -164,15 +164,15 @@
     if (arrGroupIDs && [arrGroupIDs count] > 0)
     {
         NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
-        NSArray* arr = [[SWGroup findAllObjects] filteredArrayUsingPredicate:predicate];
+        NSArray* arr = [SWGroup MR_findAllWithPredicate:predicate];
         
         for (SWGroup* g in arr)
         {
-            [g deleteEntity];
+            [g MR_deleteEntity];
         }    
     }
     
-    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+    [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
     
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
 }

@@ -48,7 +48,7 @@
     [super viewDidLoad];
     
     if (!self.group)
-        self.group = [SWGroup newEntity];
+        self.group = [SWGroup newEntityInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
     
     self.navigationItem.title = self.group.name;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
@@ -69,11 +69,11 @@
         void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
             
             if (self.group.serverID == 0)
-                self.group = [SWGroup createEntity];
+                self.group = [SWGroup MR_createEntity];
             
             [self.group updateWithObject:responseObject];
             
-            [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+            [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
             
             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
             
@@ -125,10 +125,10 @@
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            
-                                           SWGroup* g = [SWGroup findObjectWithServerID:self.group.serverID];
-                                           [g deleteEntity];
+                                           SWGroup* g = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.group.serverID]];
+                                           [g MR_deleteEntity];
 
-                                           [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
+                                           [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                            
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                            

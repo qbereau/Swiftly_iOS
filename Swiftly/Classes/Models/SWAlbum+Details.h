@@ -22,19 +22,22 @@
 - (NSString*)participants_str;
 - (NSArray*)sortedMedias;
 
+- (void)updateWithObject:(id)obj;
+- (NSDictionary*)toDictionnary;
+
++ (NSArray *)findAllLinkableAlbums;
++ (NSArray *)findAllSharedAlbums;
++ (NSArray*)findUnlockedSharedAlbums;
++ (NSArray *)findAllSpecialAlbums;
++ (SWAlbum*)findQuickShareAlbum;
++ (SWAlbum*)newEntityInContext:(NSManagedObjectContext*)context;
+
 // Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 
 + (NSArray *)findAllObjects;
 + (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context;
-
-+ (NSArray *)findAllLinkableAlbums;
-+ (NSArray*)findUnlockedSharedAlbums;
-+ (NSArray *)findAllSharedAlbums;
-+ (NSArray *)findAllSpecialAlbums;
-
-+ (SWAlbum*)findQuickShareAlbum;
-+ (SWAlbum*)findQuickShareAlbumInContext:(NSManagedObjectContext*)context;
 
 + (void)deleteAllObjects;
 
@@ -44,12 +47,8 @@
 + (SWAlbum*)createEntity;
 + (SWAlbum*)createEntityInContext:(NSManagedObjectContext*)context;
 
-+ (SWAlbum*)newEntity; // no context
-
-- (void)updateWithObject:(id)obj;
-- (NSDictionary*)toDictionnary;
-
 - (void)deleteEntity;
 - (void)deleteEntityInContext:(NSManagedObjectContext*)context;
+ */
 
 @end

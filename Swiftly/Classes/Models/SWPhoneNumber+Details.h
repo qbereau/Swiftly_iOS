@@ -10,7 +10,10 @@
 
 @interface SWPhoneNumber (Details)
 
++ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext*)context;
+
 // Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 
 + (NSArray *)findAllObjects;
@@ -31,11 +34,8 @@
 + (SWPhoneNumber*)createEntity;
 + (SWPhoneNumber*)createEntityInContext:(NSManagedObjectContext*)context;
 
-+ (SWPhoneNumber*)newEntity;
-+ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext*)context;
-
 - (void)deleteEntity;
 - (void)deleteEntityInContext:(NSManagedObjectContext*)context;
-
+*/
 
 @end

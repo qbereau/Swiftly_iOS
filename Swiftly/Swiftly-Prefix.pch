@@ -12,8 +12,18 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import <CoreData/CoreData.h>
+    #import "CoreData+MagicalRecord.h"
     #import "SWAppDelegate.h"
+
+    #import "SWAlbum+Details.h"
+    #import "SWGroup+Details.h"
+    #import "SWPerson+Details.h"
+    #import "SWComment+Details.h"
+    #import "SWMedia+Details.h"
+    #import "SWPhoneNumber+Details.h"
 #endif
+
+#define MR_SHORTHAND
 
 #define SWIFTLY_APP_ID @"com.swiftly.swiftly"
 #define SWIFTLY_LOCK_ID @"com.swiftly.swiftly_locks"

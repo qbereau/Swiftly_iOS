@@ -179,7 +179,9 @@
         MFMessageComposeViewController *picker = [[MFMessageComposeViewController alloc] init];
         picker.messageComposeDelegate = self;
         picker.body = NSLocalizedString(@"share_sms", @"Get swiftly now....");
-        SWPhoneNumber* pn = [self.contact normalizedPhoneNumber];
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.normalized == YES AND serverID = %d", self.contact.serverID];
+        SWPhoneNumber* pn = (SWPhoneNumber*)[SWPerson MR_findAllWithPredicate:predicate];
         picker.recipients = [NSArray arrayWithObjects:pn.phoneNumber, nil];
         [self presentModalViewController:picker animated:YES];
     }

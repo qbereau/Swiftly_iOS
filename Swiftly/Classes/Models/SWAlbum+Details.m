@@ -45,8 +45,119 @@
     }];
 }
 
-// Core Data Helpers
+- (void)updateWithObject:(id)obj
+{    
+    NSString* album_name = [obj valueForKey:@"name"];
+    if (!album_name || [album_name class] == [NSNull class])
+        album_name = nil;
+    
+    if (album_name)
+        self.name = album_name;
+    
+    self.serverID           = [[obj valueForKey:@"id"] intValue];
+    self.canEditPeople      = [[obj valueForKey:@"edit_accounts"] boolValue];
+    self.canEditMedias      = [[obj valueForKey:@"edit_medias"] boolValue];
+    self.ownerID            = [[obj valueForKey:@"owner_id"] intValue];
+    self.isOwner            = [[obj valueForKey:@"owner"] boolValue];    
+    self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
+    self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];
+    
+    NSString* thumbnail_url = [obj valueForKey:@"thumbnail_url"];
+    if (thumbnail_url && [thumbnail_url class] != [NSNull class])
+    {
+        // Warning sync ... should be handled ansync!
+        self.thumbnail = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:thumbnail_url]]];
+    }
+    else
+        self.thumbnail = [UIImage imageNamed:@"photoDefault.png"]; 
+}
 
+- (NSDictionary*)toDictionnary
+{
+    NSMutableDictionary* dict = [NSMutableDictionary dictionary];
+    
+    if (self.name)
+        [dict setObject:self.name forKey:@"name"];
+    
+    if (self.serverID == 0 || self.isOwner)
+    {
+        [dict setObject:[NSNumber numberWithBool:self.canEditPeople] forKey:@"edit_accounts"];
+        [dict setObject:[NSNumber numberWithBool:self.canEditMedias] forKey:@"edit_medias"];        
+    }
+    
+    [dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
+    
+    return dict;
+}
+
++ (NSArray*)findAllLinkableAlbums
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canEditMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWAlbum MR_executeFetchRequest:request];
+}
+
++ (NSArray*)findUnlockedSharedAlbums
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum =NO AND (isLocked = NO OR isLocked == nil)"];
+
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWAlbum MR_executeFetchRequest:request];
+}
+
++ (NSArray *)findAllSharedAlbums
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
+
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWAlbum MR_executeFetchRequest:request];
+}
+
++ (NSArray *)findAllSpecialAlbums
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES OR isMyMediasAlbum = YES"];
+
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWAlbum MR_executeFetchRequest:request];
+}
+
++ (SWAlbum*)findQuickShareAlbum
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES"];
+    return [[SWAlbum MR_findAllWithPredicate:predicate] objectAtIndex:0];
+}
+
++ (SWAlbum*)newEntityInContext:(NSManagedObjectContext*)context
+{
+    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
+    SWAlbum* obj = [[SWAlbum alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
+    
+    return obj;
+}
+
+// Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
 {
     return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
@@ -227,51 +338,7 @@
 {
     [context deleteObject:self];
 }
-
-- (void)updateWithObject:(id)obj
-{    
-    NSString* album_name = [obj valueForKey:@"name"];
-    if (!album_name || [album_name class] == [NSNull class])
-        album_name = nil;
-    
-    if (album_name)
-        self.name = album_name;
-    
-    self.serverID           = [[obj valueForKey:@"id"] intValue];
-    self.canEditPeople      = [[obj valueForKey:@"edit_accounts"] boolValue];
-    self.canEditMedias      = [[obj valueForKey:@"edit_medias"] boolValue];
-    self.ownerID            = [[obj valueForKey:@"owner_id"] intValue];
-    self.isOwner            = [[obj valueForKey:@"owner"] boolValue];    
-    self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
-    self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];
-    
-    NSString* thumbnail_url = [obj valueForKey:@"thumbnail_url"];
-    if (thumbnail_url && [thumbnail_url class] != [NSNull class])
-    {
-        // Warning sync ... should be handled ansync!
-        self.thumbnail = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:thumbnail_url]]];
-    }
-    else
-        self.thumbnail = [UIImage imageNamed:@"photoDefault.png"]; 
-}
-
-- (NSDictionary*)toDictionnary
-{
-    NSMutableDictionary* dict = [NSMutableDictionary dictionary];
-
-    if (self.name)
-        [dict setObject:self.name forKey:@"name"];
-    
-    if (self.serverID == 0 || self.isOwner)
-    {
-        [dict setObject:[NSNumber numberWithBool:self.canEditPeople] forKey:@"edit_accounts"];
-        [dict setObject:[NSNumber numberWithBool:self.canEditMedias] forKey:@"edit_medias"];        
-    }
-    
-    [dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
-    
-    return dict;
-}
+*/
 
 @end
 

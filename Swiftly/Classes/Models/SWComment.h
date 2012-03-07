@@ -2,7 +2,7 @@
 //  SWComment.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/22/12.
+//  Created by Quentin Bereau on 3/7/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -13,9 +13,9 @@
 
 @interface SWComment : NSManagedObject
 
-@property (nonatomic) int32_t serverID;
-@property (nonatomic, retain) NSString * createdDT;
 @property (nonatomic, retain) NSString * content;
+@property (nonatomic, retain) NSString * createdDT;
+@property (nonatomic) int32_t serverID;
 @property (nonatomic, retain) SWPerson *author;
 @property (nonatomic, retain) SWMedia *media;
 

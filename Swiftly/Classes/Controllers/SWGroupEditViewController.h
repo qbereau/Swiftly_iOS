@@ -12,7 +12,6 @@
 #import "SWTableViewCell.h"
 #import "SWPerson.h"
 #import "SWGroup.h"
-#import "SWGroup+Details.h"
 
 @interface SWGroupEditViewController : UITableViewController <UITextFieldDelegate, SWPeopleListViewControllerDelegate, UIAlertViewDelegate>
 {

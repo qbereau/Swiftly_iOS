@@ -83,7 +83,7 @@
                                                     }
                                                 }
 
-                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];                                                
+                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                 [blockSelf reload];
                                                 
                                                 [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];  
@@ -103,7 +103,7 @@
                                                     }
                                                 }                                                
                                                 
-                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                 [blockSelf reload];                                                
                                                 
                                                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -122,7 +122,7 @@
 
 - (void)removeMedias:(id)sender
 {
-    [SWMedia deleteAllObjects];
+    [SWMedia MR_truncateAll];
     [self reload];
 }
 
@@ -170,7 +170,7 @@
 - (void)reload
 {
     self.inProgress = [SWMedia findInProgressObjects];
-    self.recent = [SWMedia findRecentObjects];    
+    self.recent = [SWMedia findRecentObjects];
     [self.tableView reloadData];    
 }
 

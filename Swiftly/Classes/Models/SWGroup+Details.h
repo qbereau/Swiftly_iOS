@@ -14,15 +14,17 @@
 
 - (NSArray*)contacts_arr;
 - (NSString*)contacts_str;
+- (void)updateWithObject:(id)obj;
++ (SWGroup*)newEntityInContext:(NSManagedObjectContext*)context;
 
+/*
 // Core Data Helpers
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 + (NSArray *)findAllObjects;
 + (void)deleteAllObjects;
 + (SWGroup*)findObjectWithServerID:(int)serverID;
 + (SWGroup*)createEntity; // in context
-+ (SWGroup*)newEntity; // no context
 - (void)deleteEntity;
-- (void)updateWithObject:(id)obj;
+*/
 
 @end

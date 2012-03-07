@@ -82,7 +82,7 @@
 
 - (void)refreshedGroups:(NSNotification*)notification
 {
-    [self synchronize:NO];
+    [self synchronize];
 }
 
 - (void)uploadMediaDone:(NSNotification*)notification
@@ -92,14 +92,14 @@
 
 - (void)receivedNewMedias:(NSNotification*)notification
 {
-    [self synchronize:NO];
+    [self synchronize];
 }
 
-- (void)updateAlbumAccounts:(int)albumID context:(NSManagedObjectContext*)context
+- (void)updateAlbumAccounts:(SWAlbum*)album
 {
-    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        
-        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", albumID]
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+
+        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", album.serverID]
                                  parameters:nil
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                         
@@ -107,19 +107,18 @@
                                         
                                         if (iTotalPages > 1)
                                         {   
-                                            [self processAlbumID:albumID accounts:responseObject context:context];
+                                            [self processAlbum:album accounts:responseObject];
                                             
                                             for (int i = 2; i <= iTotalPages; ++i)
                                             {
-                                                ++self.reqOps;
-                                                [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts?page=%d", albumID, i]
+                                                dispatch_async(dispatch_get_main_queue(),^ {
+                                                    ++self.reqOps;
+                                                });
+                                                [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts?page=%d", album.serverID, i]
                                                                          parameters:nil
                                                                             success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                 
-                                                                                [self processAlbumID:albumID accounts:respObj2 context:context];
-                                                                                --self.reqOps;
-                                                                                if (self.reqOps == 0)
-                                                                                    [self saveAndUpdate];
+                                                                                [self processAlbum:album accounts:respObj2];
                                                                             }
                                                                             failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                 NSLog(@"error");
@@ -129,49 +128,50 @@
                                         }
                                         else
                                         {
-                                            [self processAlbumID:albumID accounts:responseObject context:context];
-                                            --self.reqOps;
-                                            if (self.reqOps == 0)
-                                                [self saveAndUpdate];
+                                            [self processAlbum:album accounts:responseObject];
                                         }
                                     } 
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                         NSLog(@"Error: %@", [error description]);
                                     }
          ];
-    //});
+    });
 }
 
-- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject context:(NSManagedObjectContext*)context
+- (void)processAlbum:(SWAlbum*)album accounts:(id)responseObject
 {
-    SWAlbum* album = [SWAlbum findObjectWithServerID:albumID inContext:context];
     if (album)   
     {
-        [album setParticipants:nil];
-        
-        for (id o in responseObject)
-        {
-            SWPerson* p = [SWPerson findObjectWithServerID:[[o valueForKey:@"id"] intValue] inContext:context];
-            if (!p)
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            
+            [album setParticipants:nil];
+
+            for (id o in responseObject)
             {
-                p = [SWPerson createEntityInContext:context];
-                [p updateWithObject:o inContext:context];
+                SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[o valueForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                if (!p)
+                {
+                    p = [SWPerson MR_createInContext:localContext];
+                    [p updateWithObject:o inContext:localContext];
+                }
+                [album addParticipantsObject:p];
             }
             
-            [album addParticipantsObject:p];
-        }
-    }    
+        } completion:^{
+            --self.reqOps;
+            if (self.reqOps == 0)
+            {
+                [self saveAndUpdate];
+            }            
+        }];
+    }
 }
 
 - (void)saveAndUpdate
 {
     self.shouldResync = NO;    
     
-    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{    
-        [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-    });
+    [self removeOldAlbums];
     
     [self reload];
 }
@@ -183,30 +183,20 @@
     [self.tableView reloadData];
 }
 
-- (void)synchronize:(BOOL)modal
+- (void)synchronize
 {
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
     
-    if (modal)
-    {
-        MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
-        hud.labelText = NSLocalizedString(@"loading", @"loading");
-    }
+    self.reqOps                 = 0;
+    self.arrAlbumsBeforeSync    = [SWAlbum MR_findAll];    
     
-    self.reqOps = 0;    
-    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        
-        self.receivedAlbums         = [NSMutableArray array];
-        self.arrAlbumsBeforeSync    = [SWAlbum findAllObjects];
-        
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+
         [[SWAPIClient sharedClient] getPath:@"/albums" 
                                  parameters:nil 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                          if ([responseObject isKindOfClass:[NSArray class]])
                                          {
-                                             if ([responseObject count] == 0)
-                                                 [self saveAndUpdate];
-                                             
                                              int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
                                              
                                              if (iTotalPages > 1)
@@ -215,11 +205,7 @@
                                                  _shouldCleanup = NO;
                                                  NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:responseObject, @"objects", 
                                                                          nil];
-                                                 NSInvocationOperation* operation;
-                                                 operation = [[NSInvocationOperation alloc] initWithTarget:self
-                                                                                                  selector:@selector(processAlbumsWithDict:)
-                                                                                                    object:params];
-                                                 [self.operationQueue addOperation:operation];
+                                                 [self processAlbumsWithDict:params];
                                                  // -------
                                                  
                                                  __block int opReq = iTotalPages - 1;
@@ -234,11 +220,7 @@
                                                                                      _shouldCleanup = (opReq == 0) ? YES : NO;                                                                                     
                                                                                      
                                                                                      NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", nil];
-                                                                                     NSInvocationOperation* operation;
-                                                                                     operation = [[NSInvocationOperation alloc] initWithTarget:self
-                                                                                                                                      selector:@selector(processAlbumsWithDict:)
-                                                                                                                                        object:params];
-                                                                                     [self.operationQueue addOperation:operation];
+                                                                                     [self processAlbumsWithDict:params];
                                                                                      // ------
                                                                                  }
                                                                                  failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -250,116 +232,67 @@
                                              else
                                              {
                                                  _shouldCleanup = YES;
+                                                 
                                                  NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", 
                                                                          nil];
-                                                 NSInvocationOperation* operation;
-                                                 operation = [[NSInvocationOperation alloc] initWithTarget:self
-                                                                                                  selector:@selector(processAlbumsWithDict:)
-                                                                                                    object:params];
-                                                 [self.operationQueue addOperation:operation];                                                 
+                                                 [self processAlbumsWithDict:params];
                                              }
                                          }
                                      }
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        //dispatch_async(dispatch_get_main_queue(), ^{
-                                            
-                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                        dispatch_async(dispatch_get_main_queue(), ^{
                                             
                                             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
                                             [av show];
-                                        //});
+                                        });
                                     }
          ];   
-    //});
+    });
 }
 
 - (void)processAlbumsWithDict:(NSDictionary *)dict
 {
-    id responseObject   = [dict objectForKey:@"objects"];
-    
-    NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    [context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
-    
-    [context performBlock:^{
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        id responseObject   = [dict objectForKey:@"objects"];
         
         for (id obj in responseObject)
         {
-            SWAlbum* albumObj = [SWAlbum findObjectWithServerID:[[obj valueForKey:@"id"] intValue] inContext:context];
-            
-            if (!albumObj)
-            {
-                albumObj = [SWAlbum createEntityInContext:context];
-                albumObj.isLocked = NO;                                                     
-            }
-            
-            [albumObj updateWithObject:obj];
-            
-            [self.receivedAlbums addObject:albumObj];
-            
-            ++self.reqOps;
-            [self updateAlbumAccounts:albumObj.serverID context:context];
-        }        
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self 
-                                                 selector:@selector(contextDidSave:) 
-                                                     name:NSManagedObjectContextDidSaveNotification 
-                                                   object:context];
-        
-        [context save:nil];
-        
-        [[NSNotificationCenter defaultCenter] removeObserver:self 
-                                                        name:NSManagedObjectContextDidSaveNotification 
-                                                      object:context];
-        
-    }];     
+            SWAlbum* albumObj = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
+
+            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                
+                SWAlbum* localAlbum = [albumObj MR_inContext:localContext];
+                
+                if (!localAlbum)
+                {
+                    localAlbum = [SWAlbum MR_createInContext:localContext];
+                    localAlbum.isLocked = NO;                                                     
+                }
+                
+                [localAlbum updateWithObject:obj];
+                
+            } completion:^{
+                ++self.reqOps;
+                SWAlbum* alb = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
+                [self updateAlbumAccounts:alb];
+            }];
+        }
+    });
 }
 
-- (void)contextDidSave:(NSNotification*)notif
-{
-    if (![NSThread isMainThread]) {
-        [self performSelectorOnMainThread:@selector(contextDidSave:)
-                               withObject:notif
-                            waitUntilDone:NO];
-        return;
-    }
-    
-    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
-    
-    for (SWAlbum* alb1 in self.arrAlbumsBeforeSync)
-    {
-        BOOL bFound = NO;
-        for (SWAlbum* alb2 in [SWAlbum findAllObjects])
-        {
-            if (alb1.serverID == alb2.serverID)
-            {
-                bFound = YES;
-                break;
-            }
-        }
-        if (!bFound)
-        {
-            [alb1 deleteEntity];
-        }
-    }    
-    
-    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-    
-    /*for (SWAlbum* alb in self.receivedAlbums)
-    {
-        [self updateAlbumAccounts:alb.serverID];
-    }*/
-}
+//NSLog(@"--> Is Main Thread: %d", [NSThread isMainThread]);
 
 - (void)removeOldAlbums
 {
-    for (SWAlbum* a in [SWAlbum findAllObjects])
+    NSMutableArray* a = [NSMutableArray array];
+    for (SWAlbum* a1 in self.arrAlbumsBeforeSync)
+        [a addObject:[NSNumber numberWithInt:a1.serverID]];
+
+    if ([a count] > 0)
     {
-        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"serverID == %d", a.serverID];
-        NSArray* rez = [self.receivedAlbums filteredArrayUsingPredicate:predicate];
-        if (rez.count == 0)
-        {
-            [a deleteEntity];
-        }
+        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", a];
+        [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
     }
 }
 
@@ -393,7 +326,7 @@
     
     if (self.shouldResync)
     {
-        [self synchronize:NO];
+        [self synchronize];
         self.shouldResync = NO;
     }
 }

@@ -10,8 +10,38 @@
 
 @implementation SWComment (Details)
 
-// Core Data Helpers
+- (void)updateWithObject:(id)obj
+{    
+    NSString* content = [obj valueForKey:@"content"];
+    if (!content || [content class] == [NSNull class])
+        content = nil;
+    
+    if (content)
+        self.content = content;
+    
+    self.serverID = [[obj valueForKey:@"id"] intValue];
+    
+    NSString* creation = [obj valueForKey:@"created_at"];
+    if (!creation || [creation class] == [NSNull class])
+        creation = nil;
+    
+    if (creation)
+    {
+        self.createdDT = [[creation stringByReplacingOccurrencesOfString:@"T" withString:@" "] stringByReplacingOccurrencesOfString:@"Z" withString:@" "];
+    }
+    
+    SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"author_id"]];
+    self.author = p;
+}
 
++ (NSArray*)findLatestCommentsForMediaID:(int)mediaID
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"media.serverID == %d", mediaID];
+    return [SWComment MR_findAllWithPredicate:predicate];
+}
+
+// Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
 {
     return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
@@ -107,29 +137,5 @@
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     [context deleteObject:self];
 }
-
-- (void)updateWithObject:(id)obj
-{    
-    NSString* content = [obj valueForKey:@"content"];
-    if (!content || [content class] == [NSNull class])
-        content = nil;
-    
-    if (content)
-        self.content = content;
-    
-    self.serverID = [[obj valueForKey:@"id"] intValue];
-    
-    NSString* creation = [obj valueForKey:@"created_at"];
-    if (!creation || [creation class] == [NSNull class])
-        creation = nil;
-    
-    if (creation)
-    {
-        self.createdDT = [[creation stringByReplacingOccurrencesOfString:@"T" withString:@" "] stringByReplacingOccurrencesOfString:@"Z" withString:@" "];
-    }
-
-    SWPerson* p = [SWPerson findObjectWithServerID:[[obj valueForKey:@"author_id"] intValue]];
-    self.author = p;
-}
-
+*/
 @end

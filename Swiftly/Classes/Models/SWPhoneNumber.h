@@ -2,7 +2,7 @@
 //  SWPhoneNumber.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/27/12.
+//  Created by Quentin Bereau on 3/7/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -13,9 +13,9 @@
 
 @interface SWPhoneNumber : NSManagedObject
 
-@property (nonatomic, retain) NSString * phoneNumber;
 @property (nonatomic) BOOL invalid;
 @property (nonatomic) BOOL normalized;
+@property (nonatomic, retain) NSString * phoneNumber;
 @property (nonatomic, retain) SWPerson *person;
 
 @end

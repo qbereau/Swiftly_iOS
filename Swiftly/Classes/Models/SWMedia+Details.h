@@ -14,16 +14,17 @@
 - (NSString*)uploadedTime;
 + (NSString*)retrieveContentTypeFromMediaURL:(NSURL*)mediaURL;
 
+- (void)updateWithObject:(id)obj;
++ (NSArray *)findInProgressObjects;
++ (NSArray *)findRecentObjects;
+
 // Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 
 + (NSArray *)findAllObjects;
 
 + (NSArray *)findAllFromCreatorID:(NSInteger)creatorID;
-
-+ (NSArray *)findInProgressObjects;
-
-+ (NSArray *)findRecentObjects;
 
 + (NSArray *)findMediasFromAlbumID:(NSInteger)serverID;
 + (NSArray *)findMediasFromAlbumID:(NSInteger)serverID inContext:(NSManagedObjectContext*)context;
@@ -40,7 +41,5 @@
 
 - (void)deleteEntity;
 - (void)deleteEntityInContext:(NSManagedObjectContext*)context;
-
-- (void)updateWithObject:(id)obj;
-
+*/
 @end

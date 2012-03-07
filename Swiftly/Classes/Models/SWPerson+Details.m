@@ -81,23 +81,90 @@
     return [UIImage imageNamed:@"user@2x.png"];
 }
 
-// Core Data Helpers
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context
+{    
+    self.serverID       = [[obj valueForKey:@"id"] intValue];
+    self.isUser         = [[obj valueForKey:@"activated"] boolValue];
+    self.isBlocked      = [[obj valueForKey:@"blocked"] boolValue];
+    self.isBlocking     = [[obj valueForKey:@"blocking"] boolValue];
+    self.isLinked       = [[obj valueForKey:@"linked"] boolValue];
+    
+    NSString* origPhone = [obj valueForKey:@"original_phone_number"];
+    if (origPhone && [origPhone class] != [NSNull class])
+    {
+        SWPhoneNumber* pn   = [SWPhoneNumber MR_findFirstByAttribute:@"phoneNumber" withValue:origPhone inContext:context];
+        if (!pn || pn.person.serverID != self.serverID)
+        {
+            SWPhoneNumber* pn   = [SWPhoneNumber MR_createInContext:context];
+            pn.phoneNumber      = origPhone;
+            pn.normalized       = NO;
+            pn.invalid          = NO;
+            pn.person           = (SWPerson*)[context objectWithID:self.objectID];
+            [self addPhoneNumbersObject:pn];
+        }
+    }
+    
+    NSString* phone = [obj valueForKey:@"phone_number"];
+    if (phone && [phone class] != [NSNull class])
+    {
+        SWPhoneNumber* pn = [SWPhoneNumber MR_findFirstByAttribute:@"phoneNumber" withValue:phone inContext:context];
+        if (!pn || pn.person.serverID != self.serverID)
+        {
+            pn              = [SWPhoneNumber MR_createInContext:context];
+            pn.phoneNumber  = phone;
+            pn.invalid      = NO;
+            pn.normalized   = YES;
+            pn.person       = (SWPerson*)[context objectWithID:self.objectID];
+            
+            [self addPhoneNumbersObject:pn];
+        }
+    }
+}
 
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
++ (NSArray*)getPeopleABInContext:(NSManagedObjectContext *)context
 {
-    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
-    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
-    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
+    NSMutableArray* peopleAB = [NSMutableArray array];
+    ABAddressBookRef addressBook = ABAddressBookCreate();
+    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
+    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
+    for ( int i = 0; i < nPeople; i++ )
+    {
+        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
+        
+        SWPerson* p = [SWPerson newEntityInContext:context];
+        p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
+        p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
+        
+        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
+        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
+        {
+            SWPhoneNumber* pn = [SWPhoneNumber newEntityInContext:context];
+            pn.phoneNumber  = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
+            pn.normalized   = NO;
+            pn.invalid      = NO;
+            pn.person       = p;
+            [p addPhoneNumbersObject:pn];
+        }
+        
+        if (ABPersonHasImageData(ref))
+        {
+            NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
+            p.thumbnail = [UIImage imageWithData:imageData]; 
+            
+        }
+        else
+            p.thumbnail = [SWPerson defaultImage];
+        
+        if (p.firstName || p.lastName)
+            [peopleAB addObject:p];
+        
+        CFRelease(ref);
+    }
+    
+    return peopleAB;
 }
 
 static NSArray* __sharedAllValidObjects;
-
-+ (NSArray*)sharedAllValidObjects
-{
-    if (__sharedAllValidObjects)
-        return __sharedAllValidObjects;
-    return [SWPerson findAllObjects];
-}
 
 + (NSArray*)sharedAllValidObjects:(NSManagedObjectContext *)context
 {
@@ -106,21 +173,12 @@ static NSArray* __sharedAllValidObjects;
     return [SWPerson findAllObjectsInContext:context];
 }
 
-+ (NSArray *)findAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson findAllObjectsInContext:context];
-}
-
 + (NSArray *)findAllObjectsInContext:(NSManagedObjectContext *)context
 {
     NSMutableArray* output = [NSMutableArray array];
     
     // Find all objects
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    NSArray* db_set = [context executeFetchRequest:request error:nil];
+    NSArray* db_set = [SWPerson MR_findAll];
     
     
     // Find all contacts in AB 
@@ -160,17 +218,38 @@ static NSArray* __sharedAllValidObjects;
     return output;
 }
 
-+ (NSArray *)findValidObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson findValidObjectsInContext:context];
-}
-
 + (NSArray *)findValidObjectsInContext:(NSManagedObjectContext *)context
 {
     NSArray* output = [SWPerson sharedAllValidObjects:context];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser == %@", [NSNumber numberWithBool:YES]];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser = YES"];
     return [output filteredArrayUsingPredicate:predicate];
+}
+
++ (SWPerson*)newEntityInContext:(NSManagedObjectContext *)context
+{
+    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
+    SWPerson* obj = [[SWPerson alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
+    
+    return obj;
+}
+
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context people:(NSArray*)people
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", phoneNb];
+    NSArray* items = [people filteredArrayUsingPredicate:predicate];
+    if (items.count == 0)
+        return nil;
+    return (SWPerson*)[items objectAtIndex:0];
+}
+
+/*
+// Core Data Helpers
+
++ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
+{
+    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
+    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
+    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
 }
 
 + (void)deleteAllObjects
@@ -284,46 +363,6 @@ static NSArray* __sharedAllValidObjects;
     [self updateWithObject:obj inContext:context];
 }
 
-- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context
-{    
-    self.serverID       = [[obj valueForKey:@"id"] intValue];
-    self.isUser         = [[obj valueForKey:@"activated"] boolValue];
-    self.isBlocked      = [[obj valueForKey:@"blocked"] boolValue];
-    self.isBlocking     = [[obj valueForKey:@"blocking"] boolValue];
-    self.isLinked       = [[obj valueForKey:@"linked"] boolValue];
-    
-    NSString* origPhone = [obj valueForKey:@"original_phone_number"];
-    if (origPhone && [origPhone class] != [NSNull class])
-    {
-        SWPhoneNumber* pn   = [SWPhoneNumber findObjectWithPhoneNumber:origPhone inContext:context];
-        if (!pn || pn.person.serverID != self.serverID)
-        {
-            SWPhoneNumber* pn   = [SWPhoneNumber createEntityInContext:context];
-            pn.phoneNumber      = origPhone;
-            pn.normalized       = NO;
-            pn.invalid          = NO;
-            pn.person           = (SWPerson*)[context objectWithID:self.objectID];
-            [self addPhoneNumbersObject:pn];
-        }
-    }
-
-    NSString* phone = [obj valueForKey:@"phone_number"];
-    if (phone && [phone class] != [NSNull class])
-    {
-        SWPhoneNumber* pn = [SWPhoneNumber findObjectWithPhoneNumber:phone inContext:context];
-        if (!pn || pn.person.serverID != self.serverID)
-        {
-            pn              = [SWPhoneNumber createEntityInContext:context];
-            pn.phoneNumber  = phone;
-            pn.invalid      = NO;
-            pn.normalized   = YES;
-            pn.person       = (SWPerson*)[context objectWithID:self.objectID];
-            
-            [self addPhoneNumbersObject:pn];
-        }
-    }
-}
-
 - (SWPhoneNumber*)normalizedPhoneNumber
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
@@ -349,48 +388,5 @@ static NSArray* __sharedAllValidObjects;
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
     return [SWPerson getPeopleABInContext:context];
 }
-
-+ (NSArray*)getPeopleABInContext:(NSManagedObjectContext *)context
-{
-    NSMutableArray* peopleAB = [NSMutableArray array];
-    ABAddressBookRef addressBook = ABAddressBookCreate();
-    CFArrayRef allPeople = ABAddressBookCopyArrayOfAllPeople(addressBook);
-    CFIndex nPeople = ABAddressBookGetPersonCount(addressBook);
-    for ( int i = 0; i < nPeople; i++ )
-    {
-        ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
-        
-        SWPerson* p = [SWPerson newEntityInContext:context];
-        p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
-        p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
-        
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
-        {
-            SWPhoneNumber* pn = [SWPhoneNumber newEntity];
-            pn.phoneNumber  = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
-            pn.normalized   = NO;
-            pn.invalid      = NO;
-            pn.person       = p;
-            [p addPhoneNumbersObject:pn];
-        }
-        
-        if (ABPersonHasImageData(ref))
-        {
-            NSData *imageData = (__bridge NSData*)ABPersonCopyImageDataWithFormat(ref, kABPersonImageFormatThumbnail);
-            p.thumbnail = [UIImage imageWithData:imageData]; 
-            
-        }
-        else
-            p.thumbnail = [SWPerson defaultImage];
-        
-        if (p.firstName || p.lastName)
-            [peopleAB addObject:p];
-        
-        CFRelease(ref);
-    }
-    
-    return peopleAB;
-}
-
+*/
 @end

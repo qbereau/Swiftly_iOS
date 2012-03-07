@@ -11,9 +11,7 @@
 #import "SWPeopleListViewController.h"
 #import "SWActivitiesViewController.h"
 #import "SWAlbum.h"
-#import "SWAlbum+Details.h"
 #import "SWPerson.h"
-#import "SWPerson+Details.h"
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
 

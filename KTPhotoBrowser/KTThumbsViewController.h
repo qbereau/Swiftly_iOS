@@ -10,7 +10,6 @@
 #import "KTPhotoBrowserDataSource.h"
 #import "KTThumbsView.h"
 #import "SWPerson.h"
-#import "SWPerson+Details.h"
 
 @class KTThumbsView;
 

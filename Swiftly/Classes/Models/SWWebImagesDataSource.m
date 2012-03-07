@@ -137,7 +137,7 @@
     [self.allMedias removeObjectAtIndex:index];
     _filteredMedias = self.allMedias;
     
-    [m deleteEntity];
+    [m MR_deleteEntity];
 }
 
 - (void)saveImageAtIndex:(NSInteger)index

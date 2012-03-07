@@ -10,10 +10,8 @@
 #import "SWTableViewCell.h"
 #import "SWCommentTableViewCell.h"
 #import "SWComment.h"
-#import "SWComment+Details.h"
 #import "SWPerson.h"
 #import "SWMedia.h"
-#import "SWPerson+Details.h"
 #import "SWAPIClient.h"
 
 @interface SWCommmentsViewController : UIViewController <UITableViewDataSource, UITableViewDelegate, UITextFieldDelegate>

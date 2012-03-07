@@ -17,7 +17,6 @@
 #import "SWSwitchButton.h"
 #import "SWAPIClient.h"
 #import "MBProgressHUD.h"
-#import "SWGroup+Details.h"
 
 #define PEOPLE_LIST_EDIT_MODE 0
 #define PEOPLE_LIST_MULTI_SELECTION_MODE 1
@@ -54,8 +53,8 @@
 + (void)synchronize;
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results;
 + (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts peopleAB:(NSArray*)peopleAB;
-+ (void)checkNewNumbers:(NSArray*)peopleAB itemsParPage:(int)itemsPerPage;
++ (void)checkNewNumbers:(NSArray*)peopleAB;
 
-+ (void)contextDidSave:(NSNotification*)notif;
+//+ (void)contextDidSave:(NSNotification*)notif;
 
 @end

@@ -22,17 +22,17 @@
 - (UIImage*)contactImage;
 + (UIImage*)defaultImage;
 
-// Core Data Helpers
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
-
-+ (NSArray*)sharedAllValidObjects;
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context;
++ (NSArray*)getPeopleABInContext:(NSManagedObjectContext*)context;
 + (NSArray*)sharedAllValidObjects:(NSManagedObjectContext *)context;
-
-+ (NSArray *)findAllObjects;
 + (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context;
-
-+ (NSArray *)findValidObjects;
 + (NSArray *)findValidObjectsInContext:(NSManagedObjectContext*)context;
++ (SWPerson*)newEntityInContext:(NSManagedObjectContext*)context;
++ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context people:(NSArray*)people;
+
+// Core Data Helpers
+/*
++ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 
 + (void)deleteAllObjects;
 + (void)deleteAllObjectsInContext:(NSManagedObjectContext*)context;
@@ -43,23 +43,13 @@
 + (SWPerson*)findObjectWithServerID:(int)serverID;
 + (SWPerson*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext*)context;
 
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb;
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context;
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context people:(NSArray*)people;
-
 + (SWPerson*)createEntity;
 + (SWPerson*)createEntityInContext:(NSManagedObjectContext*)context;
 
-+ (SWPerson*)newEntity;
-+ (SWPerson*)newEntityInContext:(NSManagedObjectContext*)context;
-
 - (void)updateWithObject:(id)obj;
-- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context;
 
 - (SWPhoneNumber*)normalizedPhoneNumber;
 - (SWPhoneNumber*)normalizedPhoneNumberInContext:(NSManagedObjectContext*)context;
-
-+ (NSArray*)getPeopleAB;
-+ (NSArray*)getPeopleABInContext:(NSManagedObjectContext*)context;
+ */
 
 @end

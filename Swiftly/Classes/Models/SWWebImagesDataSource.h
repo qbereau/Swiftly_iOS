@@ -15,7 +15,6 @@
 #import "KTPhotoBrowserDataSource.h"
 #import "SWPhotoScrollViewController.h"
 #import "SWMedia.h"
-#import "SWMedia+Details.h"
 #import "SWAPIClient.h"
 
 @interface SWWebImagesDataSource : NSObject <KTPhotoBrowserDataSource, SDWebImageManagerDelegate>

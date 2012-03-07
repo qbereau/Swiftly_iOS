@@ -48,11 +48,11 @@
 - (void)uploadMediaDone:(NSNotification*)notification;
 
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
-- (void)updateAlbumAccounts:(int)albumID context:(NSManagedObjectContext*)context;
-- (void)processAlbumID:(NSInteger)albumID accounts:(id)responseObject context:(NSManagedObjectContext*)context;
+- (void)updateAlbumAccounts:(SWAlbum*)album;
+- (void)processAlbum:(SWAlbum*)album accounts:(id)responseObject;
 - (void)removeOldAlbums;
 - (void)saveAndUpdate;
 - (void)reload;
-- (void)synchronize:(BOOL)modal;
+- (void)synchronize;
 
 @end

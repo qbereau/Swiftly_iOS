@@ -11,7 +11,6 @@
 #import "SWActivityTableViewCell.h"
 #import "SWAlbum.h"
 #import "SWMedia.h"
-#import "SWMedia+Details.h"
 #import <AssetsLibrary/ALAssetsLibrary.h>
 #import <AssetsLibrary/ALAsset.h>
 #import <AssetsLibrary/ALAssetRepresentation.h>

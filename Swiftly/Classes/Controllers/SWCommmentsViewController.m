@@ -94,16 +94,16 @@
                                                                    {
                                                                        for (id obj in responseObject)
                                                                        {
-                                                                           SWComment* comment = [SWComment findObjectWithServerID:[[obj valueForKey:@"id"] intValue]];
+                                                                           SWComment* comment = [SWComment MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
                                                                            
                                                                            if (!comment)
-                                                                               comment = [SWComment createEntity];
+                                                                               comment = [SWComment MR_createEntity];
                                                                            
                                                                            comment.media = self.media;                                                                           
                                                                            [comment updateWithObject:obj];
                                                                        }
                                                                        
-                                                                       [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                                       [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                                        self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
                                                                        
                                                                        dispatch_async(dispatch_get_main_queue(), ^{
@@ -139,11 +139,11 @@
                                  parameters:param 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
 
-                                        SWComment* comment = [SWComment createEntity];
+                                        SWComment* comment = [SWComment MR_createEntity];
                                         comment.media = self.media;
                                         [comment updateWithObject:responseObject];
 
-                                        [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                        [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                         
                                         self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
                                             

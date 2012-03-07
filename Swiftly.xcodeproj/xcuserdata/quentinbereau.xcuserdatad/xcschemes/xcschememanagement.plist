@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Mogenerator.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>Swiftly.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -13,6 +18,11 @@
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
 		<key>1950B7CF14D6AFB400302BF2</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>19F32F4C1507608400F3108E</key>
 		<dict>
 			<key>primary</key>
 			<true/>

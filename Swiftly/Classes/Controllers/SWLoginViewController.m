@@ -445,15 +445,15 @@
                                             NSString* token = (NSString*)[responseObject valueForKey:@"token"];
                                             int userID = [[responseObject valueForKey:@"id"] intValue];
                                             
-                                            SWPhoneNumber* pn = [SWPhoneNumber createEntity];
+                                            SWPhoneNumber* pn = [SWPhoneNumber MR_createEntity];
                                             pn.phoneNumber = _userPhoneNumber;
                                             
-                                            SWPerson* user = [SWPerson createEntity];
+                                            SWPerson* user = [SWPerson MR_createEntity];
                                             user.serverID       = userID;
                                             user.isSelf         = YES;
                                             [user addPhoneNumbersObject:pn];
                                             
-                                            [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                            [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                             
                                             [self codeValidatedWithKey:key token:token userID:userID];
                                         }

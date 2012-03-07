@@ -2,7 +2,7 @@
 //  SWMedia.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 2/28/12.
+//  Created by Quentin Bereau on 3/7/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 

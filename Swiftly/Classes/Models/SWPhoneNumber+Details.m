@@ -10,8 +10,16 @@
 
 @implementation SWPhoneNumber (Details)
 
-// Core Data Helpers
++ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext *)context
+{
+    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
+    SWPhoneNumber* obj = [[SWPhoneNumber alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
+    
+    return obj;
+}
 
+// Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
 {
     return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
@@ -134,14 +142,6 @@
     return [SWPhoneNumber newEntityInContext:context];
 }
 
-+ (SWPhoneNumber*)newEntityInContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWPhoneNumber* obj = [[SWPhoneNumber alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
 - (void)deleteEntity
 {
     NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
@@ -152,5 +152,5 @@
 {
     [context deleteObject:self];
 }
-
+*/
 @end

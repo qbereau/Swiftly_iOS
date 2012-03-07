@@ -48,5 +48,6 @@
 
 - (void)updateMediasWithDict:(NSDictionary*)dict;
 - (void)reload;
+- (void)cleanup;
 
 @end

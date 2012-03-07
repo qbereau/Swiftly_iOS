@@ -93,7 +93,7 @@
                                           parameters:params
                                              success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                  
-                                                 SWMedia* mediaObj = [SWMedia createEntity];
+                                                 SWMedia* mediaObj = [SWMedia MR_createEntity];
                                                  [mediaObj updateWithObject:responseObject];
                                                  mediaObj.uploadProgress    = 0.0f;
                                                  mediaObj.isUploaded        = NO;
@@ -104,7 +104,7 @@
                                                  ++processedEntity;
                                                  if (processedEntity == [blockSelf.filesToUpload count])
                                                  {
-                                                     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                     [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                      [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
                                                      
                                                      blockSelf.tabBarController.selectedIndex = 1;
@@ -146,7 +146,7 @@
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
-        self.album = [SWAlbum newEntity];
+        self.album = [SWAlbum newEntityInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
@@ -174,12 +174,12 @@
                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                 
                                                 if (self.album.serverID == 0)
-                                                    self.album = [SWAlbum createEntity];
+                                                    self.album = [SWAlbum MR_createEntity];
                                                 
                                                 self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
                                                 [self.album updateWithObject:responseObject];                                               
                                                 
-                                                [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                 [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                                 
                                                 [self.navigationController popToRootViewControllerAnimated:NO];
@@ -207,11 +207,11 @@
                                       parameters:params
                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
 
-                                             self.album = [SWAlbum createEntity];
+                                             self.album = [SWAlbum MR_createEntity];
                                              self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
                                              [self.album updateWithObject:responseObject];
 
-                                             [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                             [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
 
                                              self.uploadMediasBlock(self.album, self.album.canExportMedias);
                                          }
@@ -254,7 +254,7 @@
                                           parameters:params
                                              success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                  
-                                                 SWMedia* mediaObj = [SWMedia createEntity];
+                                                 SWMedia* mediaObj = [SWMedia MR_createEntity];
                                                  [mediaObj updateWithObject:responseObject];
                                                  mediaObj.uploadProgress    = 0.0f;
                                                  mediaObj.isUploaded        = NO;
@@ -281,7 +281,7 @@
                                                                               parameters:quickshareParams
                                                                                  success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                      
-                                                                                     [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                                                                     [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                                                      [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
                                                                                      
                                                                                      blockSelf.tabBarController.selectedIndex = 1;
@@ -341,9 +341,9 @@
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            
-                                           SWAlbum* album = [SWAlbum findObjectWithServerID:self.album.serverID];
-                                           [album deleteEntity];
-                                           [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] save:nil];
+                                           SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID]];
+                                           [album MR_deleteEntity];
+                                           [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
                                            [[self navigationController] popToRootViewControllerAnimated:YES];
                                        }

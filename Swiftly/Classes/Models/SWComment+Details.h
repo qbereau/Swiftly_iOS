@@ -12,15 +12,18 @@
 
 @interface SWComment (Details)
 
+- (void)updateWithObject:(id)obj;
++ (NSArray*)findLatestCommentsForMediaID:(int)mediaID;
+
 // Core Data Helpers
+/*
 + (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context;
 + (NSArray *)findAllObjects;
-+ (NSArray*)findLatestCommentsForMediaID:(int)mediaID;
 + (void)deleteAllObjects;
 + (SWComment*)findObjectWithServerID:(int)serverID;
 + (SWComment*)createEntity; // in context
 + (SWComment*)newEntity; // no context
 - (void)deleteEntity;
-- (void)updateWithObject:(id)obj;
+*/
 
 @end
