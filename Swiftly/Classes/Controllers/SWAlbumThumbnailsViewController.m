@@ -48,24 +48,29 @@
     if (self.operationQueue == nil)
         self.operationQueue = [[NSOperationQueue alloc] init];
     
+    [self reload];
+    
     if ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
          (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
        )
     {             
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
+        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+        {
+            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]]];
+        }
+        
         // Update Medias
+        self.arrMedias = [NSMutableArray array];        
+        
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            self.arrMedias = [NSMutableArray array];
             self.mediaDS = [[SWWebImagesDataSource alloc] init];        
-            
-            [self reload];
             
             NSString* uri = @"";
             if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
             {
-                self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]]];
                 uri = [NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID];
             }
             else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
@@ -137,117 +142,114 @@
 
 - (void)updateMediasWithDict:(NSDictionary*)dict
 {
-    id responseObject = [dict objectForKey:@"objects"];
-    
-    //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
-    //[context performBlock:^{
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-    /*
-        SWAlbum* selAlbum;
-        SWPerson* selContact;
-        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
-            selAlbum = (SWAlbum*)[context objectWithID:self.selectedAlbum.objectID];
-        else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
-            selContact = (SWPerson*)[context objectWithID:self.contact.objectID];
-    */
+        id responseObject = [dict objectForKey:@"objects"];
+                
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
+            for (id obj in responseObject)
+            {
+                SWMedia* mediaObj = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
+                
+                SWAlbum* selAlbum;
+                SWPerson* selContact;
+                if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+                    selAlbum = [self.selectedAlbum MR_inContext:localContext];
+                else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
+                    selContact = [self.contact MR_inContext:localContext];                
+                
+                SWMedia* localMedia = [mediaObj MR_inContext:localContext];
+                
+                if (!localMedia)
+                    localMedia = [SWMedia MR_createInContext:localContext];
+                [localMedia updateWithObject:obj];
+                
+                if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && selAlbum)
+                {
+                    localMedia.album = selAlbum;
+                    [selAlbum addMediasObject:localMedia];
+                }
+                else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
+                {
+                    [localMedia addSharedPeopleObject:selContact];
+                    [selContact addSharedMediasObject:localMedia];
+                }
+            } 
+                
+        } completion:^{
+            
+            for (id obj in responseObject)
+            {
+                SWMedia* m = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
+                [self.arrMedias addObject:m];
+            }
+            if (_shouldUpdate)
+            {
+                [self cleanup];
+            }
+        }];
         
-        for (id obj in responseObject)
-        {
-            SWMedia* mediaObj = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
-            if (!mediaObj)
-                mediaObj = [SWMedia MR_createEntity];
-            [mediaObj updateWithObject:obj];
-            if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum)
-            {
-                mediaObj.album = self.selectedAlbum;
-                [self.selectedAlbum addMediasObject:mediaObj];
-            }
-            else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
-            {
-                [mediaObj addSharedPeopleObject:self.contact];
-                [self.contact addSharedMediasObject:mediaObj];
-            }
-            [self.arrMedias addObject:mediaObj];
-        }
-    
-        [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-    
-        if (_shouldUpdate)
-        {
-            [self cleanup];
-            [self reload];
-        }
-    //}];
+    });
 }
 
 - (void)cleanup
 {
     if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
     {
-        _shouldUpdate = NO;
+        _shouldUpdate = NO;    
         
-        NSArray* arr = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]];
-        for (SWMedia* m1 in self.arrBeforeSyncMedias)
+        NSMutableArray* a = [NSMutableArray array];
+        for (SWMedia* m in self.arrMedias)
+            [a addObject:[NSNumber numberWithInt:m.serverID]];
+        
+        if ([a count] > 0)
         {
-            BOOL bFound = NO;
-            for (SWMedia* m2 in arr)
-            {
-                if (m1.serverID == m2.serverID)
-                {
-                    bFound = YES;
-                    break;
-                }
-            }
-            if (!bFound)
-            {
-                [m1 MR_deleteEntity];
-            }
+            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID IN %@) AND album.serverID = %d", a, self.selectedAlbum.serverID];
+                [SWMedia MR_deleteAllMatchingPredicate:predicate inContext:localContext];
+            } completion:^{
+                [self reload];
+            }];
+        }
+        else
+        {
+            [self reload];
         }
     }
-    
-    [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+    else
+    {
+        [self reload];
+    }
 }
 
 /*
-- (void)contextDidSave:(NSNotification*)notif
+- (void)cleanup
 {
-    if (![NSThread isMainThread]) {
-        [self performSelectorOnMainThread:@selector(contextDidSave:)
-                               withObject:notif
-                            waitUntilDone:NO];
-        return;
-    }
-    
-    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
-    
     if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
     {
         _shouldUpdate = NO;
         
-        NSArray* selAlbMedias = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]];
-        for (SWMedia* m1 in self.arrBeforeSyncMedias)
+        if ([self.arrBeforeSyncMedias count] > 0)
         {
-            BOOL bFound = NO;
-            
-            for (SWMedia* m2 in selAlbMedias)
+            NSArray* arr = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID] inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+            for (SWMedia* m1 in self.arrBeforeSyncMedias)
             {
-                if (m1.serverID == m2.serverID)
+                BOOL bFound = NO;
+                for (SWMedia* m2 in arr)
                 {
-                    bFound = YES;
-                    break;
+                    if (m1.serverID == m2.serverID)
+                    {
+                        bFound = YES;
+                        break;
+                    }
                 }
-            }
-            if (!bFound)
-            {
-                [m1 MR_deleteEntity];
-            }
+                if (!bFound)
+                {
+                    [m1 MR_deleteInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+                }
+            }   
         }
     }
-    
-    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];    
-
-    [self reload];
 }
 */
  

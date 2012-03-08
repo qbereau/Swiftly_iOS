@@ -10,7 +10,7 @@
 
 @implementation SWAlbumsViewController
 
-@synthesize arrAlbumsBeforeSync = _arrAlbumsBeforeSync;
+@synthesize arrAlbums = _arrAlbums;
 @synthesize operationQueue = _operationQueue;
 @synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
@@ -172,8 +172,6 @@
     self.shouldResync = NO;    
     
     [self removeOldAlbums];
-    
-    [self reload];
 }
 
 - (void)reload
@@ -188,7 +186,7 @@
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
     
     self.reqOps                 = 0;
-    self.arrAlbumsBeforeSync    = [SWAlbum MR_findAll];    
+    self.arrAlbums              = [NSMutableArray array];
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
@@ -256,11 +254,11 @@
         
         id responseObject   = [dict objectForKey:@"objects"];
         
-        for (id obj in responseObject)
-        {
-            SWAlbum* albumObj = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
-
-            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
+            
+            for (id obj in responseObject)
+            {
+                SWAlbum* albumObj = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
                 
                 SWAlbum* localAlbum = [albumObj MR_inContext:localContext];
                 
@@ -271,13 +269,17 @@
                 }
                 
                 [localAlbum updateWithObject:obj];
-                
-            } completion:^{
+            }
+            
+        } completion:^{
+            for (id obj in responseObject)
+            {
                 ++self.reqOps;
                 SWAlbum* alb = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
-                [self updateAlbumAccounts:alb];
-            }];
-        }
+                [self.arrAlbums addObject:alb];
+                [self updateAlbumAccounts:alb];                
+            }
+        }];
     });
 }
 
@@ -286,13 +288,21 @@
 - (void)removeOldAlbums
 {
     NSMutableArray* a = [NSMutableArray array];
-    for (SWAlbum* a1 in self.arrAlbumsBeforeSync)
+    for (SWAlbum* a1 in self.arrAlbums)
         [a addObject:[NSNumber numberWithInt:a1.serverID]];
 
     if ([a count] > 0)
     {
-        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", a];
-        [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
+            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", a];
+            [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];
+        } completion:^{
+            [self reload];
+        }];
+    }
+    else
+    {
+        [self reload];
     }
 }
 

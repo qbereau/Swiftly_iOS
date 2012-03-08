@@ -29,13 +29,13 @@
     NSMutableArray*                 _receivedAlbums;
     
     NSOperationQueue*               _operationQueue;
-    NSArray*                        _arrAlbumsBeforeSync;
+    NSMutableArray*                 _arrAlbums;
     BOOL                            _shouldCleanup;
     
-    BOOL                            _shouldResync;
+    BOOL                            _shouldResync;    
 }
 
-@property (nonatomic, strong) NSArray*                  arrAlbumsBeforeSync;
+@property (nonatomic, strong) NSMutableArray*           arrAlbums;
 @property (nonatomic, strong) NSMutableArray*           receivedAlbums;
 @property (nonatomic, strong) NSArray*                  sharedAlbums;
 @property (nonatomic, strong) NSArray*                  specialAlbums;
