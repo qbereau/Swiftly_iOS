@@ -227,6 +227,15 @@
  
 - (void)reload
 {
+    if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
+    else
+        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
+    
+    [self.mediaDS resetFilter];
+    [self setDataSource:self.mediaDS];
+    
+    /*
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
             self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
@@ -236,8 +245,9 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.mediaDS resetFilter];
             [self setDataSource:self.mediaDS];
-        });
+        });        
     });
+    */
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

@@ -415,7 +415,7 @@ static NSInteger itemsPerPage = 0;
                                                     [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
                                                     
                                                     dispatch_async(dispatch_get_main_queue(),^ {
-                                                        opReq = iTotalPages - 2;
+                                                        opReq = iTotalPages - 1;
                                                     });                                                    
 
                                                     for (int i = 2; i <= iTotalPages; ++i)
