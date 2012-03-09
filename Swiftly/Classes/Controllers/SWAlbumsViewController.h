@@ -25,6 +25,7 @@
     
     NSManagedObjectContext*         _managedObjectContext;
     
+    int                             _reqAlbumsOps;
     int                             _reqOps;
     NSMutableArray*                 _receivedAlbums;
     
@@ -32,7 +33,7 @@
     NSMutableArray*                 _arrAlbums;
     BOOL                            _shouldCleanup;
     
-    BOOL                            _shouldResync;    
+    BOOL                            _shouldResync;        
 }
 
 @property (nonatomic, strong) NSMutableArray*           arrAlbums;
@@ -41,6 +42,7 @@
 @property (nonatomic, strong) NSArray*                  specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
 @property (nonatomic, assign) int                       reqOps;
+@property (nonatomic, assign) int                       reqAlbumsOps;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      shouldResync;
 

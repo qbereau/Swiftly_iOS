@@ -82,7 +82,7 @@
     [self.toolbar setItems:[NSArray arrayWithObjects:textFieldItem, btnItem, nil]];
     [self.scrollView addSubview:self.toolbar];
 
-    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID];
+    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_defaultContext]];
     [self reload];
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
@@ -92,23 +92,17 @@
                                                                success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                                    if ([responseObject isKindOfClass:[NSArray class]])
                                                                    {
-                                                                       for (id obj in responseObject)
-                                                                       {
-                                                                           SWComment* comment = [SWComment MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
+                                                                       [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+
+                                                                           for (id obj in responseObject)
+                                                                           {
+                                                                               [self addCommentObject:obj inContext:localContext];
+                                                                           }                                                                           
                                                                            
-                                                                           if (!comment)
-                                                                               comment = [SWComment MR_createEntity];
-                                                                           
-                                                                           comment.media = self.media;                                                                           
-                                                                           [comment updateWithObject:obj];
-                                                                       }
-                                                                       
-                                                                       [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                                       self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
-                                                                       
-                                                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                                                       } completion:^{
+                                                                           self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
                                                                            [self reload];
-                                                                       });
+                                                                       }];
                                                                    }
                                                                } 
                                                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -128,29 +122,41 @@
                                                object:nil];
 }
 
+- (void)addCommentObject:(id)obj inContext:(NSManagedObjectContext*)context
+{
+    SWComment* comment = [SWComment MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:context];
+    
+    if (!comment)
+        comment = [SWComment MR_createInContext:context];
+    
+    SWMedia* m = [self.media MR_inContext:context];
+    comment.media = m;
+    [m addCommentsObject:comment];
+    
+    [comment updateWithObject:obj inContext:context];
+}
+
 - (void)send:(UIButton*)sender
 {
     [self.textfield resignFirstResponder];
     
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
+    [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];    
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
         NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
+        
         [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
                                  parameters:param 
                                     success:^(AFHTTPRequestOperation *operation, id responseObject) {
-
-                                        SWComment* comment = [SWComment MR_createEntity];
-                                        comment.media = self.media;
-                                        [comment updateWithObject:responseObject];
-
-                                        [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                        
-                                        self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID];
+                                        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
                                             
-                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [self addCommentObject:responseObject inContext:localContext];                                          
+                                            
+                                        } completion:^{                                         
+                                            self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]]; 
                                             self.textfield.text = @"";
                                             [self reload];
-                                        });
+                                        }];
                                     } 
                                     failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                         
@@ -198,8 +204,12 @@
 - (void)reload
 {
     [self.tableView reloadData];
-    CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
-    [self.tableView setContentOffset:bottomOffset animated:NO];    
+
+    if (self.tableView.contentSize.height > self.view.frame.size.height)
+    {
+        CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+        [self.tableView setContentOffset:bottomOffset animated:NO];    
+    }
 }
 
 #pragma mark - Table view data source

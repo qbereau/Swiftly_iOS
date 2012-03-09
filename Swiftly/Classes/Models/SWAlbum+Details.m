@@ -38,11 +38,25 @@
 
 - (NSArray*)sortedMedias
 {
+    /*
     return [[self.medias allObjects] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         SWMedia* m1 = (SWMedia*)obj1;
         SWMedia* m2 = (SWMedia*)obj2;
         return m1.serverID < m2.serverID;
     }];
+     */
+
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID = %d", self.serverID];    
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:NO];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+        
+    NSManagedObjectContext* moc = [NSManagedObjectContext MR_contextForCurrentThread];
+        
+    NSFetchRequest *request = [SWMedia MR_requestAllWithPredicate:predicate inContext:moc];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWMedia MR_executeFetchRequest:request inContext:moc];
 }
 
 - (void)updateWithObject:(id)obj
@@ -105,7 +119,7 @@
 
 + (NSArray*)findUnlockedSharedAlbums
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum =NO AND (isLocked = NO OR isLocked == nil)"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO AND isLocked = NO"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];

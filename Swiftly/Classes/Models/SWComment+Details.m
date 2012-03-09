@@ -10,7 +10,7 @@
 
 @implementation SWComment (Details)
 
-- (void)updateWithObject:(id)obj
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext *)context
 {    
     NSString* content = [obj valueForKey:@"content"];
     if (!content || [content class] == [NSNull class])
@@ -30,14 +30,14 @@
         self.createdDT = [[creation stringByReplacingOccurrencesOfString:@"T" withString:@" "] stringByReplacingOccurrencesOfString:@"Z" withString:@" "];
     }
     
-    SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"author_id"]];
+    SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"author_id"] inContext:context];
     self.author = p;
 }
 
-+ (NSArray*)findLatestCommentsForMediaID:(int)mediaID
++ (NSArray*)findLatestCommentsForMediaID:(int)mediaID inContext:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"media.serverID == %d", mediaID];
-    return [SWComment MR_findAllWithPredicate:predicate];
+    return [SWComment MR_findAllWithPredicate:predicate inContext:context];
 }
 
 // Core Data Helpers

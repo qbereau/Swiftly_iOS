@@ -35,6 +35,8 @@
     
     NSInteger                   _displayMode;
     SWPerson*                   _contact;
+    
+    NSInteger                   _opReq;
 }
 
 @property (nonatomic, strong) SWPerson*                 contact;
@@ -45,6 +47,7 @@
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;
 @property (nonatomic, assign) NSInteger                 displayMode;
+@property (nonatomic, assign) NSInteger                 opReq;
 
 - (void)updateMediasWithDict:(NSDictionary*)dict;
 - (void)reload;

@@ -33,5 +33,6 @@
 
 - (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up;
 - (void)reload;
+- (void)addCommentObject:(id)obj inContext:(NSManagedObjectContext*)context;
 
 @end

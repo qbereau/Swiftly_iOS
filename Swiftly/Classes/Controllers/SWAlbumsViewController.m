@@ -17,6 +17,7 @@
 @synthesize specialAlbums = _specialAlbums;
 @synthesize managedObjectContext = _managedObjectContext;
 @synthesize reqOps = _reqOps;
+@synthesize reqAlbumsOps = _reqAlbumsOps;
 @synthesize shouldResync = _shouldResync;
 
 - (void)didReceiveMemoryWarning
@@ -144,17 +145,18 @@
     {
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             
-            [album setParticipants:nil];
+            SWAlbum* a = [album MR_inContext:localContext]; 
+            [a setParticipants:nil];
 
             for (id o in responseObject)
             {
-                SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[o valueForKey:@"id"] inContext:[NSManagedObjectContext MR_defaultContext]];
+                SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[o valueForKey:@"id"] inContext:localContext];
                 if (!p)
                 {
                     p = [SWPerson MR_createInContext:localContext];
                     [p updateWithObject:o inContext:localContext];
                 }
-                [album addParticipantsObject:p];
+                [a addParticipantsObject:p];
             }
             
         } completion:^{
@@ -206,7 +208,7 @@
                                                  [self processAlbumsWithDict:params];
                                                  // -------
                                                  
-                                                 __block int opReq = iTotalPages - 1;
+                                                 self.reqAlbumsOps = iTotalPages - 1;
                                                  for (int i = 2; i <= iTotalPages; ++i)
                                                  {
                                                      [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums?page=%d", i]
@@ -214,8 +216,8 @@
                                                                                  success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                      
                                                                                      // Update for first page
-                                                                                     --opReq;
-                                                                                     _shouldCleanup = (opReq == 0) ? YES : NO;                                                                                     
+                                                                                     --self.reqAlbumsOps;
+                                                                                     _shouldCleanup = (self.reqAlbumsOps == 0) ? YES : NO;                                                                                     
                                                                                      
                                                                                      NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", nil];
                                                                                      [self processAlbumsWithDict:params];
@@ -287,6 +289,8 @@
 
 - (void)removeOldAlbums
 {
+    [self reload];
+    /*
     NSMutableArray* a = [NSMutableArray array];
     for (SWAlbum* a1 in self.arrAlbums)
         [a addObject:[NSNumber numberWithInt:a1.serverID]];
@@ -304,6 +308,7 @@
     {
         [self reload];
     }
+    */
 }
 
 - (void)unlockAlbums:(UIButton*)sender
@@ -330,9 +335,9 @@
 {
     [super viewDidAppear:animated];
     
-    [self reload];    
-    
     [[NSNotificationCenter defaultCenter] postNotificationName:@"SWResetAlbumsBadgeValue" object:nil];
+    
+    [self reload];
     
     if (self.shouldResync)
     {
@@ -428,7 +433,7 @@
     
     cell.title.text = album.name;
     cell.subtitle.text = [album participants_str];
-    cell.imageView.image = album.thumbnail;    
+    cell.imageView.image = album.thumbnail; 
     
     return cell;
 }

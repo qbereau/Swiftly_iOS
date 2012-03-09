@@ -18,6 +18,7 @@
 @synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
 @synthesize operationQueue      = _operationQueue;
+@synthesize opReq               = _opReq;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -48,25 +49,26 @@
     if (self.operationQueue == nil)
         self.operationQueue = [[NSOperationQueue alloc] init];
     
+    self.mediaDS = [[SWWebImagesDataSource alloc] init];    
+    
     [self reload];
     
     if ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
          (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
        )
+    //if (NO)
     {             
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
         if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
         {
-            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]]];
+            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID] inContext:[NSManagedObjectContext MR_context]]];
         }
         
         // Update Medias
         self.arrMedias = [NSMutableArray array];        
         
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
-            self.mediaDS = [[SWWebImagesDataSource alloc] init];        
             
             NSString* uri = @"";
             if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
@@ -90,13 +92,13 @@
                                                 
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
-                                                    __block int opReq = iTotalPages - 1;
+                                                    self.opReq = iTotalPages - 1;
                                                     [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"%@?page=%d", uri, self.selectedAlbum.serverID, i]
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
-                                                                                    --opReq;
-                                                                                    _shouldUpdate = (opReq == 0) ? YES : NO;
+                                                                                    --self.opReq;
+                                                                                    _shouldUpdate = (self.opReq == 0) ? YES : NO;
                                                                                     
                                                                                     NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  respObj2, @"objects", nil];                                                                                    
                                                                                     [self updateMediasWithDict:params];
@@ -149,7 +151,7 @@
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
             for (id obj in responseObject)
             {
-                SWMedia* mediaObj = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
+                SWMedia* mediaObj = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:localContext];
                 
                 SWAlbum* selAlbum;
                 SWPerson* selContact;
@@ -158,21 +160,19 @@
                 else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
                     selContact = [self.contact MR_inContext:localContext];                
                 
-                SWMedia* localMedia = [mediaObj MR_inContext:localContext];
-                
-                if (!localMedia)
-                    localMedia = [SWMedia MR_createInContext:localContext];
-                [localMedia updateWithObject:obj];
+                if (!mediaObj)
+                    mediaObj = [SWMedia MR_createInContext:localContext];
+                [mediaObj updateWithObject:obj];
                 
                 if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && selAlbum)
                 {
-                    localMedia.album = selAlbum;
-                    [selAlbum addMediasObject:localMedia];
+                    mediaObj.album = selAlbum;
+                    [selAlbum addMediasObject:mediaObj];
                 }
                 else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
                 {
-                    [localMedia addSharedPeopleObject:selContact];
-                    [selContact addSharedMediasObject:localMedia];
+                    [mediaObj addSharedPeopleObject:selContact];
+                    [selContact addSharedMediasObject:mediaObj];
                 }
             } 
                 
@@ -185,6 +185,7 @@
             }
             if (_shouldUpdate)
             {
+                NSLog(@"!!!");
                 [self cleanup];
             }
         }];
@@ -197,11 +198,11 @@
     if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
     {
         _shouldUpdate = NO;    
-        
+        /*
         NSMutableArray* a = [NSMutableArray array];
         for (SWMedia* m in self.arrMedias)
             [a addObject:[NSNumber numberWithInt:m.serverID]];
-        
+        NSLog(@"---> %d", [a count]);
         if ([a count] > 0)
         {
             [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
@@ -215,53 +216,28 @@
         {
             [self reload];
         }
+         */
+        [self reload];
     }
     else
     {
         [self reload];
     }
 }
-
-/*
-- (void)cleanup
-{
-    if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
-    {
-        _shouldUpdate = NO;
-        
-        if ([self.arrBeforeSyncMedias count] > 0)
-        {
-            NSArray* arr = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID] inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-            for (SWMedia* m1 in self.arrBeforeSyncMedias)
-            {
-                BOOL bFound = NO;
-                for (SWMedia* m2 in arr)
-                {
-                    if (m1.serverID == m2.serverID)
-                    {
-                        bFound = YES;
-                        break;
-                    }
-                }
-                if (!bFound)
-                {
-                    [m1 MR_deleteInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-                }
-            }   
-        }
-    }
-}
-*/
  
 - (void)reload
 {
-    if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
-        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
-    else
-        self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
-    
-    [self.mediaDS resetFilter];
-    [self setDataSource:self.mediaDS];
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+            self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
+        else
+            self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.mediaDS resetFilter];
+            [self setDataSource:self.mediaDS];
+        });
+    });
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

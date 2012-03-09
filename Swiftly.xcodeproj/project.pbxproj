@@ -1439,8 +1439,8 @@
 				GCC_PREFIX_HEADER = "Swiftly/Swiftly-Prefix.pch";
 				INFOPLIST_FILE = "Swiftly/Swiftly-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
+				PROVISIONING_PROFILE = "E155588D-2AB0-4053-A7E8-0A8AC490788D";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "E155588D-2AB0-4053-A7E8-0A8AC490788D";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -1458,8 +1458,8 @@
 				GCC_PREFIX_HEADER = "Swiftly/Swiftly-Prefix.pch";
 				INFOPLIST_FILE = "Swiftly/Swiftly-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "FE31C81F-3FAE-42C2-A79D-4F70789455C0";
+				PROVISIONING_PROFILE = "E155588D-2AB0-4053-A7E8-0A8AC490788D";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "E155588D-2AB0-4053-A7E8-0A8AC490788D";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -1506,6 +1506,7 @@
 				19F32F4F1507608400F3108E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

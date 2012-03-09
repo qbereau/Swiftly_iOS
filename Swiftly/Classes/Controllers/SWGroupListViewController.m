@@ -155,6 +155,7 @@
 
 + (void)finishedUpdateGroups:(NSMutableArray*)groupsBeforeSync
 {
+    /*
     NSMutableArray* arrGroupIDs = [NSMutableArray array];
     for (SWGroup* g in groupsBeforeSync)
     {
@@ -163,18 +164,17 @@
     
     if (arrGroupIDs && [arrGroupIDs count] > 0)
     {
-        NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
-        NSArray* arr = [SWGroup MR_findAllWithPredicate:predicate];
-        
-        for (SWGroup* g in arr)
-        {
-            [g MR_deleteEntity];
-        }    
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            
+            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
+            [SWGroup MR_deleteAllMatchingPredicate:predicate inContext:localContext];
+            
+        } completion:^{
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
+        }];   
     }
-    
-    [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
+     */
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];    
 }
 
 #pragma mark - UITableView Delegates

@@ -76,7 +76,7 @@
 - (void)updateExportPhotoButtonState
 {
     SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];    
-    NSInteger iComments = [[SWComment findLatestCommentsForMediaID:m.serverID] count];
+    NSInteger iComments = [[SWComment findLatestCommentsForMediaID:m.serverID inContext:[NSManagedObjectContext MR_context]] count];
     UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), iComments] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
     self.navigationItem.rightBarButtonItem = btnComments;
     

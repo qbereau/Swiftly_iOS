@@ -12,8 +12,8 @@
 
 @interface SWComment (Details)
 
-- (void)updateWithObject:(id)obj;
-+ (NSArray*)findLatestCommentsForMediaID:(int)mediaID;
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context;
++ (NSArray*)findLatestCommentsForMediaID:(int)mediaID inContext:(NSManagedObjectContext*)context;
 
 // Core Data Helpers
 /*
