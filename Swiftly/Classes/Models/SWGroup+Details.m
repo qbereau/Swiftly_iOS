@@ -37,7 +37,7 @@
     return arr;    
 }
 
-- (void)updateWithObject:(id)obj
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context
 {    
     NSString* g_name = [obj valueForKey:@"name"];
     if (!g_name || [g_name class] == [NSNull class])
@@ -53,7 +53,7 @@
     
     for (NSNumber* account_id in [obj valueForKey:@"account_ids"])
     {
-        SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:account_id];
+        SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:account_id inContext:context];
         if (!p)
         {
             p = [SWPerson MR_createEntity];

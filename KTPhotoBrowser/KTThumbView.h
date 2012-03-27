@@ -29,6 +29,7 @@
     KTThumbsViewController *controller_;
     UILongPressGestureRecognizer *longPressGR_;
     KTThumbVideoView*               _videoOverlayView;
+        UIActivityIndicatorView*        spinner_;
 }
 
 @property (nonatomic, assign) KTThumbsViewController *controller;

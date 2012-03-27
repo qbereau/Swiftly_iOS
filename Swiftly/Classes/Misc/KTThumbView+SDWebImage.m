@@ -35,7 +35,7 @@
     }
     else {
         if (placeholder) {
-            [self setThumbImage:placeholder];
+            //[self setThumbImage:placeholder];
         }
         
         if (url) {
@@ -62,7 +62,7 @@
     }
     else {
         if (placeholder) {
-            [self setThumbImage:placeholder];
+            //[self setThumbImage:placeholder];
         }
         
         if (media.thumbnailURL) {

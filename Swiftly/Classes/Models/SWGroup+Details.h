@@ -14,7 +14,7 @@
 
 - (NSArray*)contacts_arr;
 - (NSString*)contacts_str;
-- (void)updateWithObject:(id)obj;
+- (void)updateWithObject:(id)obj inContext:(NSManagedObjectContext*)context;
 + (SWGroup*)newEntityInContext:(NSManagedObjectContext*)context;
 
 /*

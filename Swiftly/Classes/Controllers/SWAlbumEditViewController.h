@@ -14,7 +14,6 @@
 #import "SWPerson.h"
 #import "SWTableView.h"
 #import "SWTableViewCell.h"
-
 #import "KVPasscodeViewController.h"
 
 #define SW_ALBUM_MODE_EDIT          0
@@ -28,6 +27,9 @@ typedef void (^UploadMediasBlock)(SWAlbum*, BOOL);
 {
     SWAlbum*            _album;
     NSInteger           _mode;
+    
+    // Edit
+    SWAlbum*            _originalAlbum;
     
     // Create, Link, Quick Share Modes
     NSArray*            _filesToUpload;
@@ -54,6 +56,7 @@ typedef void (^UploadMediasBlock)(SWAlbum*, BOOL);
 }
 
 @property (strong, nonatomic) UITextField*          inputAlbumName;
+@property (nonatomic, strong) SWAlbum*              originalAlbum;
 @property (nonatomic, strong) SWAlbum*              album;
 @property (nonatomic, strong) NSArray*              filesToUpload;
 @property (nonatomic, assign) NSInteger             mode;
@@ -61,6 +64,7 @@ typedef void (^UploadMediasBlock)(SWAlbum*, BOOL);
 @property (nonatomic, copy)   UploadMediasBlock     uploadMediasBlock;
 @property (nonatomic, copy)   GenericFailureBlock   genericFailureBlock;
 
+- (void)back:(id)sender;
 - (void)updateTitleAfterAnimation:(NSTimer*)timer;
 - (void)dismissController:(NSTimer*)timer;
 - (void)cleanupAlbum:(BOOL)shouldUnlink;

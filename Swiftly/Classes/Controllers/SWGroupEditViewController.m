@@ -68,16 +68,16 @@
         
         void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
             
-            if (self.group.serverID == 0)
-                self.group = [SWGroup MR_createEntity];
+            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                if (self.group.serverID == 0)
+                    self.group = [SWGroup MR_createInContext:localContext];
+                
+                [self.group updateWithObject:responseObject inContext:localContext];
+            } completion:^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                [[self navigationController] popViewControllerAnimated:YES];                
+            }];
             
-            [self.group updateWithObject:responseObject];
-            
-            [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-            
-            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-            
-            [[self navigationController] popViewControllerAnimated:YES];
         };
         
         void (^failure)(AFHTTPRequestOperation*, NSError*) = ^(AFHTTPRequestOperation *operation, NSError *error) {

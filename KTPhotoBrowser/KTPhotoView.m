@@ -48,10 +48,15 @@
    imageView_ = [[UIImageView alloc] initWithFrame:frame];
    [imageView_ setContentMode:UIViewContentModeScaleAspectFit];
    [self addSubview:imageView_];
+    
+    spinner_ = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    [spinner_ startAnimating];
+    [self addSubview:spinner_];
 }
 
 - (void)setImage:(UIImage *)newImage 
 {
+    [spinner_ stopAnimating];
     [imageView_ setImage:newImage];
 }
 
@@ -62,8 +67,6 @@
 
 - (void)launch
 {
-    //NSLog(@"here");
-    
     if (self.localVideoURL)
     {
         moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:self.localVideoURL];
@@ -73,6 +76,8 @@
         [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
         [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
         [moviePlayer_ play];
+        
+        [spinner_ stopAnimating];
         
         [self turnOffZoom];    
     }
@@ -86,6 +91,8 @@
     {
        [imageView_ setFrame:[self bounds]];
     }
+    
+    [spinner_ setFrame:[self bounds]];
 }
 
 - (void)toggleChromeDisplay

@@ -1084,7 +1084,7 @@
 		1950B7C714D6AFB400302BF2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0430;
 			};
 			buildConfigurationList = 1950B7CA14D6AFB400302BF2 /* Build configuration list for PBXProject "Swiftly" */;
 			compatibilityVersion = "Xcode 3.2";

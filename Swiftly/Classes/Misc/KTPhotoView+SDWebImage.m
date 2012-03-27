@@ -36,7 +36,7 @@
     }
     else {
         if (placeholder) {
-            [self setImage:placeholder];
+            //[self setImage:placeholder];
         }
         
         if (url) {
@@ -62,7 +62,7 @@
     }
     else {
         if (placeholder) {
-            [self setImage:placeholder];
+            //[self setImage:placeholder];
         }
         
         if (media.resourceURL) {

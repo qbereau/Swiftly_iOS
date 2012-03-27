@@ -82,10 +82,10 @@
     [self.toolbar setItems:[NSArray arrayWithObjects:textFieldItem, btnItem, nil]];
     [self.scrollView addSubview:self.toolbar];
 
-    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_defaultContext]];
+    
     [self reload];
     
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];        
         [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
                                                             parameters:nil 
@@ -100,7 +100,6 @@
                                                                            }                                                                           
                                                                            
                                                                        } completion:^{
-                                                                           self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
                                                                            [self reload];
                                                                        }];
                                                                    }
@@ -129,40 +128,43 @@
     if (!comment)
         comment = [SWComment MR_createInContext:context];
     
-    SWMedia* m = [self.media MR_inContext:context];
+    //SWMedia* m = [self.media MR_inContext:context];
+    SWMedia* m = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.media.serverID] inContext:context];
     comment.media = m;
     [m addCommentsObject:comment];
     
-    [comment updateWithObject:obj inContext:context];
+    [comment updateWithObject:obj inContext:context]; 
 }
 
 - (void)send:(UIButton*)sender
 {
     [self.textfield resignFirstResponder];
     
-    [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];    
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
-        
-        [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
-                                 parameters:param 
-                                    success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-                                            
-                                            [self addCommentObject:responseObject inContext:localContext];                                          
-                                            
-                                        } completion:^{                                         
-                                            self.comments  = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]]; 
-                                            self.textfield.text = @"";
-                                            [self reload];
-                                        }];
-                                    } 
-                                    failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                        
-                                    }
-         ];
-    });
+    if (self.textfield.text)
+    {
+        [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];    
+        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
+            
+            [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
+                                     parameters:param 
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                                                
+                                                [self addCommentObject:responseObject inContext:localContext];                                          
+                                                
+                                            } completion:^{
+                                                self.textfield.text = @"";
+                                                [self reload];
+                                            }];
+                                        } 
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            NSLog(@"ERROR: %@", [error description]);
+                                        }
+             ];
+        });
+    }
 }
 
 - (void)viewDidUnload
@@ -203,6 +205,8 @@
 
 - (void)reload
 {
+    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+    
     [self.tableView reloadData];
 
     if (self.tableView.contentSize.height > self.view.frame.size.height)

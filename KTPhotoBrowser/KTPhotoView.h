@@ -18,6 +18,7 @@
    KTPhotoScrollViewController *scroller_;
    NSInteger index_;
     
+    UIActivityIndicatorView*        spinner_;
     
     MPMoviePlayerController*        moviePlayer_;
     NSURL*                          videoURL_;

@@ -140,17 +140,20 @@
 
 + (void)updateGroups:(id)responseObject
 {
-    for (id obj in responseObject)
-    {        
-        //[self.syncedGroupIDs addObject:[obj valueForKey:@"id"]];
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         
-        SWGroup* groupObj = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
-        
-        if (!groupObj)
-            groupObj = [SWGroup MR_createEntity];
-        
-        [groupObj updateWithObject:obj];
-    }   
+        for (id obj in responseObject)
+        {        
+            //[self.syncedGroupIDs addObject:[obj valueForKey:@"id"]];
+            
+            SWGroup* groupObj = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:localContext];
+            
+            if (!groupObj)
+                groupObj = [SWGroup MR_createInContext:localContext];
+            
+            [groupObj updateWithObject:obj inContext:localContext];
+        }   
+    }];
 }
 
 + (void)finishedUpdateGroups:(NSMutableArray*)groupsBeforeSync

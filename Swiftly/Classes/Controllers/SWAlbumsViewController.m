@@ -42,8 +42,6 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
-    [self reload];    
-    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uploadMediaDone:)
                                                  name:@"SWUploadMediaDone"
@@ -98,7 +96,7 @@
 
 - (void)updateAlbumAccounts:(SWAlbum*)album
 {
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
         [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts", album.serverID]
                                  parameters:nil
@@ -112,9 +110,9 @@
                                             
                                             for (int i = 2; i <= iTotalPages; ++i)
                                             {
-                                                dispatch_async(dispatch_get_main_queue(),^ {
+                                                @synchronized(self) {
                                                     ++self.reqOps;
-                                                });
+                                                }
                                                 [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums/%d/accounts?page=%d", album.serverID, i]
                                                                          parameters:nil
                                                                             success:^(AFHTTPRequestOperation *op2, id respObj2) {
@@ -145,7 +143,7 @@
     {
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             
-            SWAlbum* a = [album MR_inContext:localContext]; 
+            SWAlbum* a = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:album.serverID] inContext:localContext];
             [a setParticipants:nil];
 
             for (id o in responseObject)
@@ -160,7 +158,10 @@
             }
             
         } completion:^{
-            --self.reqOps;
+            @synchronized(self) {
+                --self.reqOps;
+            }
+            
             if (self.reqOps == 0)
             {
                 [self saveAndUpdate];
@@ -178,17 +179,19 @@
 
 - (void)reload
 {
-    self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums];
-    self.specialAlbums = [SWAlbum findAllSpecialAlbums];
-    [self.tableView reloadData];
+    self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
+    self.specialAlbums = [SWAlbum findAllSpecialAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
+    [self.tableView reloadData];            
 }
 
 - (void)synchronize
 {
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
     
-    self.reqOps                 = 0;
-    self.arrAlbums              = [NSMutableArray array];
+    @synchronized(self) {
+        self.reqOps                 = 0;
+        self.arrAlbums              = [NSMutableArray array];
+    }
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 
@@ -208,7 +211,9 @@
                                                  [self processAlbumsWithDict:params];
                                                  // -------
                                                  
-                                                 self.reqAlbumsOps = iTotalPages - 1;
+                                                 @synchronized(self) {
+                                                     self.reqAlbumsOps = iTotalPages - 1;
+                                                 }
                                                  for (int i = 2; i <= iTotalPages; ++i)
                                                  {
                                                      [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/albums?page=%d", i]
@@ -216,8 +221,10 @@
                                                                                  success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                      
                                                                                      // Update for first page
-                                                                                     --self.reqAlbumsOps;
-                                                                                     _shouldCleanup = (self.reqAlbumsOps == 0) ? YES : NO;                                                                                     
+                                                                                     @synchronized(self) {
+                                                                                         --self.reqAlbumsOps;
+                                                                                         _shouldCleanup = (self.reqAlbumsOps == 0) ? YES : NO;
+                                                                                     }                                                                                         
                                                                                      
                                                                                      NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:respObj2, @"objects", nil];
                                                                                      [self processAlbumsWithDict:params];
@@ -260,7 +267,7 @@
             
             for (id obj in responseObject)
             {
-                SWAlbum* albumObj = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_context]];
+                SWAlbum* albumObj = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:localContext];
                 
                 SWAlbum* localAlbum = [albumObj MR_inContext:localContext];
                 
@@ -271,16 +278,15 @@
                 }
                 
                 [localAlbum updateWithObject:obj];
+                
+                @synchronized(self) {
+                    ++self.reqOps;
+                }
+                
+                [self.arrAlbums addObject:localAlbum];
+                [self updateAlbumAccounts:localAlbum];                
             }
             
-        } completion:^{
-            for (id obj in responseObject)
-            {
-                ++self.reqOps;
-                SWAlbum* alb = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
-                [self.arrAlbums addObject:alb];
-                [self updateAlbumAccounts:alb];                
-            }
         }];
     });
 }
@@ -441,7 +447,7 @@
 #pragma mark - JSLockScreenViewController
 - (void)lockScreenDidUnlock:(JSLockScreenViewController *)lockScreen
 {
-    self.sharedAlbums   = [SWAlbum findAllSharedAlbums];
+    self.sharedAlbums   = [SWAlbum findAllSharedAlbums:[NSManagedObjectContext MR_context]];
     [self.tableView reloadData];
 }
 

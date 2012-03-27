@@ -55,7 +55,7 @@
         
     NSFetchRequest *request = [SWMedia MR_requestAllWithPredicate:predicate inContext:moc];
     [request setSortDescriptors:sortDescriptors];
-    
+
     return [SWMedia MR_executeFetchRequest:request inContext:moc];
 }
 
@@ -86,6 +86,34 @@
         self.thumbnail = [UIImage imageNamed:@"photoDefault.png"]; 
 }
 
+- (SWAlbum*)deepCopyInContext:(NSManagedObjectContext*)context
+{
+    SWAlbum* a = [SWAlbum newEntityInContext:context];
+    a.name = self.name;
+    a.serverID = self.serverID;
+    a.canEditPeople = self.canEditPeople;
+    a.canEditMedias = self.canEditMedias;
+    a.canExportMedias = self.canExportMedias;
+    a.isLocked = self.isLocked;
+    a.isOwner = self.isOwner;
+    a.isQuickShareAlbum = self.isQuickShareAlbum;
+    a.isMyMediasAlbum = self.isMyMediasAlbum;
+    a.ownerID = self.ownerID;
+    a.thumbnail = self.thumbnail;
+    
+    for (SWMedia* m in self.medias)
+    {
+        [a addMediasObject:[m MR_inContext:context]];
+    }
+    
+    for (SWPerson* p in self.participants)
+    {
+        [a addParticipantsObject:[p MR_inContext:context]];
+    }    
+    
+    return a;
+}
+
 - (NSDictionary*)toDictionnary
 {
     NSMutableDictionary* dict = [NSMutableDictionary dictionary];
@@ -104,62 +132,62 @@
     return dict;
 }
 
-+ (NSArray*)findAllLinkableAlbums
++ (NSArray*)findAllLinkableAlbums:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canEditMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
     [request setSortDescriptors:sortDescriptors];
     
-    return [SWAlbum MR_executeFetchRequest:request];
+    return [SWAlbum MR_executeFetchRequest:request inContext:context];
 }
 
-+ (NSArray*)findUnlockedSharedAlbums
++ (NSArray*)findUnlockedSharedAlbums:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO AND isLocked = NO"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
     [request setSortDescriptors:sortDescriptors];
     
-    return [SWAlbum MR_executeFetchRequest:request];
+    return [SWAlbum MR_executeFetchRequest:request inContext:context];
 }
 
-+ (NSArray *)findAllSharedAlbums
++ (NSArray *)findAllSharedAlbums:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
     [request setSortDescriptors:sortDescriptors];
     
-    return [SWAlbum MR_executeFetchRequest:request];
+    return [SWAlbum MR_executeFetchRequest:request inContext:context];
 }
 
-+ (NSArray *)findAllSpecialAlbums
++ (NSArray *)findAllSpecialAlbums:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES OR isMyMediasAlbum = YES"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate];
+    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
     [request setSortDescriptors:sortDescriptors];
     
-    return [SWAlbum MR_executeFetchRequest:request];
+    return [SWAlbum MR_executeFetchRequest:request inContext:context];
 }
 
-+ (SWAlbum*)findQuickShareAlbum
++ (SWAlbum*)findQuickShareAlbum:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES"];
-    return [[SWAlbum MR_findAllWithPredicate:predicate] objectAtIndex:0];
+    return [[SWAlbum MR_findAllWithPredicate:predicate inContext:context] objectAtIndex:0];
 }
 
 + (SWAlbum*)newEntityInContext:(NSManagedObjectContext*)context

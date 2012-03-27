@@ -89,6 +89,10 @@
        _videoOverlayView.duration = 0;
        _videoOverlayView.hidden = YES;
        [self insertSubview:_videoOverlayView aboveSubview:self.imageView];       
+       
+       spinner_ = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite];
+       [spinner_ startAnimating];
+       [self addSubview:spinner_];
    }
    return self;
 }
@@ -108,9 +112,17 @@
    }
 }
 
+- (void)layoutSubviews 
+{
+    [super layoutSubviews];
+    
+    [spinner_ setFrame:[self bounds]];
+}
+
 - (void)setThumbImage:(UIImage *)newImage 
 {
-  [self setImage:newImage forState:UIControlStateNormal];
+    [spinner_ stopAnimating];
+    [self setImage:newImage forState:UIControlStateNormal];
 }
 
 - (void)setHasBorder:(BOOL)hasBorder

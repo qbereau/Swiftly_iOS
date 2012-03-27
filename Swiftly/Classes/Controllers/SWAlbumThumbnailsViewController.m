@@ -51,8 +51,6 @@
     
     self.mediaDS = [[SWWebImagesDataSource alloc] init];    
     
-    [self reload];
-    
     if ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
          (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
        )
@@ -178,14 +176,19 @@
                 
         } completion:^{
             
-            for (id obj in responseObject)
+            /*for (id obj in responseObject)
             {
                 SWMedia* m = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
                 [self.arrMedias addObject:m];
-            }
+            }*/
+            
             if (_shouldUpdate)
             {
                 NSLog(@"!!!");
+                
+                NSArray* medias = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]];
+                [self.arrMedias addObject:medias];
+                
                 [self cleanup];
             }
         }];
@@ -245,9 +248,10 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.mediaDS resetFilter];
             [self setDataSource:self.mediaDS];
-        });        
+        });
+        
     });
-    */
+     */
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition
@@ -274,6 +278,8 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    
+    [self reload];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation

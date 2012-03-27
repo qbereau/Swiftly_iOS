@@ -14,11 +14,9 @@
 #import "SWPerson.h"
 
 @interface SWContactViewController : UIViewController <MFMessageComposeViewControllerDelegate>
-{
-    SWPerson*               _contact;
-}
 
-@property (nonatomic, strong) SWPerson*         contact;
+@property (nonatomic, strong) SWPerson *        contact;
+
 
 
 @property (weak, nonatomic) IBOutlet UILabel        *lblName;

@@ -31,6 +31,7 @@
 
 @implementation SWAlbumEditViewController
 
+@synthesize originalAlbum = _originalAlbum;
 @synthesize inputAlbumName = _inputAlbumName;
 @synthesize album = _album;
 @synthesize filesToUpload = _filesToUpload;
@@ -62,6 +63,7 @@
 {
     [super viewDidLoad];
 
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(back:)];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(done:)];
     
     self.tableView.contentInset = UIEdgeInsetsMake(10, 0, 0, 0);
@@ -143,6 +145,7 @@
     {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(done:)];        
         _shouldLockAlbumBeingEditedOrCreated = self.album.isLocked;
+        self.originalAlbum = [self.album deepCopyInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
@@ -150,12 +153,38 @@
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
-        self.linkableAlbums = [SWAlbum findAllLinkableAlbums];
+        self.linkableAlbums = [SWAlbum findAllLinkableAlbums:[NSManagedObjectContext MR_context]];
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
 
     }
+}
+
+- (void)back:(id)sender
+{
+    if (self.mode == SW_ALBUM_MODE_EDIT)
+    {
+        self.album.name             = self.originalAlbum.name;
+        self.album.canEditPeople    = self.originalAlbum.canEditPeople;
+        self.album.canEditMedias    = self.originalAlbum.canEditMedias;
+        self.album.canExportMedias  = self.originalAlbum.canExportMedias;
+        self.album.isLocked         = self.originalAlbum.isLocked;
+        
+        [self.album setParticipants:nil];
+        for (SWPerson* p in self.originalAlbum.participants)
+        {
+            [self.album addParticipantsObject:[p MR_inContext:[NSManagedObjectContext MR_contextForCurrentThread]]];
+        }      
+        
+        [self.album setMedias:nil];
+        for (SWMedia* m in self.originalAlbum.medias)
+        {
+            [self.album addMediasObject:[m MR_inContext:[NSManagedObjectContext MR_contextForCurrentThread]]];
+        }      
+    }
+    
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)done:(id)sender
@@ -260,7 +289,7 @@
                                                  mediaObj.isUploaded        = NO;
                                                  mediaObj.thumbnail         = mediaThumbnail;
                                                  mediaObj.assetURL          = [mediaUrl absoluteString];
-                                                 mediaObj.album             = [SWAlbum findQuickShareAlbum];
+                                                 mediaObj.album             = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_context]];
                                                  
                                                  [newMedias addObject:[NSNumber numberWithInt:mediaObj.serverID]];
                                                  
