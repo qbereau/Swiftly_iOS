@@ -51,7 +51,7 @@
 
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
 - (void)updateAlbumAccounts:(SWAlbum*)album;
-- (void)processAlbum:(SWAlbum*)album accounts:(id)responseObject;
+- (void)processAlbumID:(int)albumID accounts:(id)responseObject;
 - (void)removeOldAlbums;
 - (void)saveAndUpdate;
 - (void)reload;
