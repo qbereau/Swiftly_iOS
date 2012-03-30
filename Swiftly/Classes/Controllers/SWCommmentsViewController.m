@@ -8,6 +8,7 @@
 
 #import "SWCommmentsViewController.h"
 
+#define MAX_COMMENT_PAGES 3
 
 @implementation SWCommmentsViewController
 
@@ -17,6 +18,7 @@
 @synthesize toolbar = _toolbar;
 @synthesize scrollView = _scrollView;
 @synthesize comments = _comments;
+@synthesize opReq = _opReq;
 
 - (void)didReceiveMemoryWarning
 {
@@ -92,16 +94,48 @@
                                                                success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                                    if ([responseObject isKindOfClass:[NSArray class]])
                                                                    {
-                                                                       [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-
-                                                                           for (id obj in responseObject)
-                                                                           {
-                                                                               [self addCommentObject:obj inContext:localContext];
-                                                                           }                                                                           
+                                                                       
+                                                                       int iTotalPages = [[[[operation response] allHeaderFields] valueForKey:@"x-pagination-total-pages"] intValue];
+                                                                       
+                                                                       if (iTotalPages > 1)
+                                                                       {                                      
+                                                                           @synchronized(self) {
+                                                                               _shouldUpdate = NO;
+                                                                               self.opReq = iTotalPages - 1;
+                                                                           }
                                                                            
-                                                                       } completion:^{
-                                                                           [self reload];
-                                                                       }];
+                                                                           [self updateComments:responseObject];
+                                                                           
+                                                                           // Limit amount of data to be download
+                                                                           iTotalPages = MIN(iTotalPages, MAX_COMMENT_PAGES);
+                                                                           
+                                                                           for (int i = 2; i <= iTotalPages; ++i)
+                                                                           {
+                                                                               [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments?page=%d", self.media.serverID, i]
+                                                                                                        parameters:nil
+                                                                                                           success:^(AFHTTPRequestOperation *op2, id respObj2) {
+                                                                                                               
+                                                                                                               @synchronized(self){
+                                                                                                                   --self.opReq;
+                                                                                                                   _shouldUpdate = (self.opReq == 0) ? YES : NO;
+                                                                                                               }
+                                                                                                               
+                                                                                                               [self updateComments:respObj2];
+                                                                                                           }
+                                                                                                           failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                                               NSLog(@"error");
+                                                                                                           }
+                                                                                ];
+                                                                           }
+                                                                       }
+                                                                       else
+                                                                       {
+                                                                           @synchronized(self) {
+                                                                               _shouldUpdate = YES;
+                                                                           }
+                                                                           [self updateComments:responseObject];
+                                                                       }                                                                           
+                                                                                                                                        
                                                                    }
                                                                } 
                                                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
@@ -121,6 +155,21 @@
                                                object:nil];
 }
 
+- (void)updateComments:(id)responseObject
+{
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+        for (id obj in responseObject)
+        {
+            [self addCommentObject:obj inContext:localContext];
+        }                                                                           
+        
+    } completion:^{
+        if (_shouldUpdate)
+            [self reload];
+    }];    
+}
+
 - (void)addCommentObject:(id)obj inContext:(NSManagedObjectContext*)context
 {
     SWComment* comment = [SWComment MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:context];
@@ -128,11 +177,9 @@
     if (!comment)
         comment = [SWComment MR_createInContext:context];
     
-    //SWMedia* m = [self.media MR_inContext:context];
     SWMedia* m = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.media.serverID] inContext:context];
     comment.media = m;
     [m addCommentsObject:comment];
-    
     [comment updateWithObject:obj inContext:context]; 
 }
 
@@ -150,6 +197,7 @@
             [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
                                      parameters:param 
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            
                                             [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
                                                 
                                                 [self addCommentObject:responseObject inContext:localContext];                                          
@@ -205,15 +253,19 @@
 
 - (void)reload
 {
-    self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-    
-    [self.tableView reloadData];
-
-    if (self.tableView.contentSize.height > self.view.frame.size.height)
-    {
-        CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
-        [self.tableView setContentOffset:bottomOffset animated:NO];    
-    }
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+    } completion:^{
+        self.comments = [SWComment findLatestCommentsForMediaID:self.media.serverID inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+        
+        [self.tableView reloadData];    
+        
+        if (self.tableView.contentSize.height > self.view.frame.size.height)
+        {
+            CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+            [self.tableView setContentOffset:bottomOffset animated:NO];    
+        }        
+    }];
 }
 
 #pragma mark - Table view data source

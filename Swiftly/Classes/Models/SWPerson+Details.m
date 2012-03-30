@@ -33,6 +33,11 @@
         return NSLocalizedString(@"me", @"me");
     else if (self.firstName || self.lastName)
         return [NSString stringWithFormat:@"%@ %@", self.firstName ? self.firstName : @"", self.lastName ? self.lastName : @""];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"normalized = YES"];
+    NSSet* set = [self.phoneNumbers filteredSetUsingPredicate:predicate];
+    if ([set count] > 0)
+        return [set anyObject];
     return NSLocalizedString(@"unknown", @"unknown");
 }
 
@@ -242,151 +247,4 @@ static NSArray* __sharedAllValidObjects;
     return (SWPerson*)[items objectAtIndex:0];
 }
 
-/*
-// Core Data Helpers
-
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
-{
-    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
-    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
-    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
-}
-
-+ (void)deleteAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    [SWPerson deleteAllObjectsInContext:context];
-}
-
-+ (void)deleteAllObjectsInContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    NSError *error;
-    NSArray *items = [context executeFetchRequest:request error:&error];
-    
-    
-    for (NSManagedObject *managedObject in items) 
-    {
-        [context deleteObject:managedObject];
-    }
-    
-    [context save:&error];
-}
-
-+ (SWPerson*)findObjectWithServerID:(int)serverID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson findObjectWithServerID:serverID inContext:context];
-}
-
-+ (SWPerson*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID = %@", [NSNumber numberWithInt:serverID]];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
-        return nil;
-    return (SWPerson*)[items objectAtIndex:0];
-}
-
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson findObjectWithPhoneNumber:phoneNb inContext:context];
-}
-
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context
-{
-    NSArray* people = [SWPerson sharedAllValidObjects:context];
-    return [SWPerson findObjectWithPhoneNumber:phoneNb inContext:context people:people];
-}
-
-+ (SWPerson*)findObjectWithPhoneNumber:(NSString*)phoneNb inContext:(NSManagedObjectContext*)context people:(NSArray*)people
-{
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.phoneNumber == %@", phoneNb];
-    NSArray* items = [people filteredArrayUsingPredicate:predicate];
-    if (items.count == 0)
-        return nil;
-    return (SWPerson*)[items objectAtIndex:0];
-}
-
-+ (SWPerson*)createEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson createEntityInContext:context];
-}
-
-+ (SWPerson*)createEntityInContext:(NSManagedObjectContext *)context
-{
-    SWPerson* obj = [NSEntityDescription
-                     insertNewObjectForEntityForName:NSStringFromClass([self class])
-                     inManagedObjectContext:context];
-    
-    return (SWPerson*)obj;
-}
-
-+ (SWPerson*)newEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    return [SWPerson newEntityInContext:context];
-}
-
-+ (SWPerson*)newEntityInContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWPerson* obj = [[SWPerson alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
-- (void)deleteEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    [self deleteEntityInContext:context];
-}
-
-- (void)deleteEntityInContext:(NSManagedObjectContext *)context
-{
-    [context deleteObject:self];
-}
-
-- (void)updateWithObject:(id)obj
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    [self updateWithObject:obj inContext:context];
-}
-
-- (SWPhoneNumber*)normalizedPhoneNumber
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [self normalizedPhoneNumberInContext:context];
-}
-
-- (SWPhoneNumber*)normalizedPhoneNumberInContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription *entity = [SWPerson entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY phoneNumbers.normalized == %@", [NSNumber numberWithBool:YES], self.serverID];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if (items.count == 0)
-        return nil;
-    return (SWPhoneNumber*)[items objectAtIndex:0];
-}
-
-+ (NSArray*)getPeopleAB
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWPerson getPeopleABInContext:context];
-}
-*/
 @end

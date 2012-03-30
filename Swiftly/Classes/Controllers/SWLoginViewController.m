@@ -74,7 +74,6 @@
 
     if (key && token && key.length > 0 && token.length > 0 && [account_validated boolValue])
     {   
-        [SWPeopleListViewController synchronize];
         [self gotoApp];
     }
     else if (!self.alreadySetup)
@@ -286,7 +285,6 @@
         [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/accounts/%d", userID] 
                                   parameters:registerDevice 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                         [SWPeopleListViewController synchronize];
                                          [self gotoApp];
                                      }
                                      failure:^(AFHTTPRequestOperation *operation, NSError *error) {

@@ -14,8 +14,9 @@
 #import "JSLockScreenViewController.h"
 #import "SWGroupListViewController.h"
 #import "SWAPIClient.h"
+#import "SDWebImageDownloader.h"
 
-@interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate>
+@interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate, SDWebImageDownloaderDelegate>
 {
     NSArray*                        _sharedAlbums;
     NSArray*                        _specialAlbums;    
@@ -30,13 +31,13 @@
     NSMutableArray*                 _receivedAlbums;
     
     NSOperationQueue*               _operationQueue;
-    NSMutableArray*                 _arrAlbums;
+    NSMutableArray*                 _arrAlbumsID;
     BOOL                            _shouldCleanup;
     
     BOOL                            _shouldResync;        
 }
 
-@property (nonatomic, strong) NSMutableArray*           arrAlbums;
+@property (nonatomic, strong) NSMutableArray*           arrAlbumsID;
 @property (nonatomic, strong) NSMutableArray*           receivedAlbums;
 @property (nonatomic, strong) NSArray*                  sharedAlbums;
 @property (nonatomic, strong) NSArray*                  specialAlbums;

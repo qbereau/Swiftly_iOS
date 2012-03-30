@@ -153,7 +153,7 @@
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
     {
-        self.linkableAlbums = [SWAlbum findAllLinkableAlbums:[NSManagedObjectContext MR_context]];
+        self.linkableAlbums = [SWAlbum findAllLinkableAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {

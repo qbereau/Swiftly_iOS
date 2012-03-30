@@ -10,7 +10,7 @@
 
 @implementation SWAlbumsViewController
 
-@synthesize arrAlbums = _arrAlbums;
+@synthesize arrAlbumsID = _arrAlbumsID;
 @synthesize operationQueue = _operationQueue;
 @synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
@@ -43,6 +43,7 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     [self reload];
+    [self synchronize];    
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uploadMediaDone:)
@@ -73,7 +74,6 @@
                                                  name:@"SWGroupSyncDone"
                                                object:nil
      ];
-
 }
 
 - (void)refreshedAB:(NSNotification*)notification
@@ -83,7 +83,8 @@
 
 - (void)refreshedGroups:(NSNotification*)notification
 {
-    [self synchronize];
+    [MBProgressHUD hideHUDForView:self.parentViewController.view animated:YES];
+    [self reload];
 }
 
 - (void)uploadMediaDone:(NSNotification*)notification
@@ -139,43 +140,9 @@
     });
 }
 
-/*
-- (void)processAlbum:(SWAlbum*)album accounts:(id)responseObject
-{
-    if (album)   
-    {
-        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-            
-            SWAlbum* a = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:album.serverID] inContext:localContext];
-            [a setParticipants:nil];
-
-            for (id o in responseObject)
-            {
-                SWPerson* p = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[o valueForKey:@"id"] inContext:localContext];
-                if (!p)
-                {
-                    p = [SWPerson MR_createInContext:localContext];
-                    [p updateWithObject:o inContext:localContext];
-                }
-                [a addParticipantsObject:p];
-            }
-            
-        } completion:^{
-            @synchronized(self) {
-                --self.reqOps;
-            }
-            
-            if (self.reqOps == 0)
-            {
-                [self saveAndUpdate];
-            }            
-        }];
-    }
-}
- */
-
 - (void)processAlbumID:(int)albumID accounts:(id)responseObject
 {
+    NSLog(@"===> processAlbumID");    
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         
         SWAlbum* a = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:albumID] inContext:localContext];
@@ -223,7 +190,14 @@
     
     @synchronized(self) {
         self.reqOps                 = 0;
-        self.arrAlbums              = [NSMutableArray array];
+        self.arrAlbumsID            = [NSMutableArray array];
+    }
+    
+    NSArray* albums = [SWAlbum MR_findAll];
+    if ([albums count] == 0)
+    {
+        MBProgressHUD* hud = [MBProgressHUD showHUDAddedTo:self.parentViewController.view animated:YES];
+        hud.labelText = NSLocalizedString(@"loading", @"loading");
     }
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -292,11 +266,12 @@
 
 - (void)processAlbumsWithDict:(NSDictionary *)dict
 {
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    NSLog(@"===> processAlbumsWithDict");
+    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         id responseObject   = [dict objectForKey:@"objects"];
             
-        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             for (id obj in responseObject)
             {
                 SWAlbum* localAlbum = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:localContext];
@@ -306,36 +281,50 @@
                     localAlbum = [SWAlbum MR_createInContext:localContext];
                     localAlbum.isLocked = NO;
                 }
-                
                 [localAlbum updateWithObject:obj];
                 
                 @synchronized(self) {
                     ++self.reqOps;
-                    [self.arrAlbums addObject:localAlbum];
                 }
             }
         } completion:^{
             for (id obj in responseObject)
             {
-                SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+                SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
+                
+                if (!album.thumbnail || album.updated)
+                {
+                    SDWebImageDownloader* downloader = [SDWebImageDownloader downloaderWithURL:[NSURL URLWithString:album.thumbnailURL] delegate:self];
+                    downloader.userInfo = [NSDictionary dictionaryWithObject:album forKey:@"album"];
+                }
+                
+                @synchronized(self){
+                    [self.arrAlbumsID addObject:[NSNumber numberWithInt:album.serverID]];
+                }
                 [self updateAlbumAccounts:album];
             }
         }];
-    });
+    //});
 }
 
+- (void)imageDownloader:(SDWebImageDownloader *)downloader didFinishWithImage:(UIImage *)image
+{
+    NSDictionary* dict = [downloader userInfo];
+    SWAlbum* album = [dict objectForKey:@"album"];
+    
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        SWAlbum* localAlbum = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:album.serverID] inContext:localContext];
+        localAlbum.thumbnail = image;
+    }];
+}
+
+/*
 - (void)removeOldAlbums
 {
-    [self reload];
-    /*
-    NSMutableArray* a = [NSMutableArray array];
-    for (SWAlbum* a1 in self.arrAlbums)
-        [a addObject:[NSNumber numberWithInt:a1.serverID]];
-
-    if ([a count] > 0)
+    if ([self.arrAlbumsID count] > 0)
     {
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
-            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", a];
+            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", self.arrAlbumsID];
             [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];
         } completion:^{
             [self reload];
@@ -345,7 +334,25 @@
     {
         [self reload];
     }
-    */
+}
+ */
+
+- (void)removeOldAlbums
+{
+    if ([self.arrAlbumsID count] > 0)
+    {
+        [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {        
+            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", self.arrAlbumsID];
+            [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];
+            //[self reload];
+            [SWPeopleListViewController synchronize];
+        }];
+    }
+    else
+    {
+        [self reload];
+        //[SWPeopleListViewController synchronize];
+    }
 }
 
 - (void)unlockAlbums:(UIButton*)sender
@@ -379,6 +386,8 @@
         [self synchronize];
         self.shouldResync = NO;
     }
+    
+    [self.tableView reloadData];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -410,6 +419,10 @@
         SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
         albumThumbnailsVC.allowAlbumEdition = YES;
         albumThumbnailsVC.selectedAlbum = selectedAlbum;
+        
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            selectedAlbum.updated = NO;
+        }];
     }
     else if ([[segue identifier] isEqualToString:@"SelectedOtherAlbum"])
     {
@@ -417,7 +430,11 @@
         SWAlbum* selectedAlbum = [self.specialAlbums objectAtIndex:idxPath.row];
         SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
         albumThumbnailsVC.allowAlbumEdition = NO;
-        albumThumbnailsVC.selectedAlbum = selectedAlbum;        
+        albumThumbnailsVC.selectedAlbum = selectedAlbum;
+
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            selectedAlbum.updated = NO;
+        }];        
     }
 }
 
@@ -468,7 +485,7 @@
     
     cell.title.text = album.name;
     cell.subtitle.text = [album participants_str];
-    cell.imageView.image = album.thumbnail; 
+    cell.imageView.image = [album customThumbnail];
     
     return cell;
 }

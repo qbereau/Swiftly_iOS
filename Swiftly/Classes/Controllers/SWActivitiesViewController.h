@@ -44,8 +44,8 @@ typedef void (^UploadDataBlock)(SWMedia*, NSData*, NSString*);
 - (void)launchRefreshTimer;
 - (void)stopTimer;
 - (void)updateRefresh:(NSTimer*)timer;
-- (void)removeMedias:(id)sender;
 - (void)reload;
 - (void)uploadFiles;
+- (IBAction)removeMediaUpload:(id)sender;
 
 @end

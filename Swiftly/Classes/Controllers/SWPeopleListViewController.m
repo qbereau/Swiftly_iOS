@@ -388,6 +388,7 @@ static NSInteger itemsPerPage = 0;
 
 + (void)synchronize
 {
+    NSLog(@"---->[synch]");     
     [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
     
     // Step 2: We download the user accounts list for update
@@ -395,9 +396,6 @@ static NSInteger itemsPerPage = 0;
         
         // Step 1: We get an array of all the people present in AddressBook
     
-        //NSManagedObjectContext* context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-        //[context setParentContext:[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext]];
-        //[context performBlock:^{
         NSManagedObjectContext* context = [NSManagedObjectContext MR_context];
 
             NSArray* peopleAB = [SWPerson getPeopleABInContext:context];        
@@ -414,9 +412,9 @@ static NSInteger itemsPerPage = 0;
                                                 {   
                                                     [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
                                                     
-                                                    dispatch_async(dispatch_get_main_queue(),^ {
+                                                    @synchronized(self){
                                                         opReq = iTotalPages - 1;
-                                                    });                                                    
+                                                    };
 
                                                     for (int i = 2; i <= iTotalPages; ++i)
                                                     {
@@ -434,8 +432,10 @@ static NSInteger itemsPerPage = 0;
                                                 }
                                                 else
                                                 {
+                                                    @synchronized(self){
+                                                        opReq = 1;
+                                                    }
                                                     [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
-                                                    [SWPeopleListViewController checkNewNumbers:peopleAB];
                                                 }
                                             }
                                         }
@@ -452,9 +452,8 @@ static NSInteger itemsPerPage = 0;
 
 + (void)processAddressBook:(NSArray*)peopleAB results:(NSArray*)results
 {
+    NSLog(@"---->[processAddressBook]");    
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{    
-    
-        //NSManagedObjectContext* context = [NSManagedObjectContext MR_contextForCurrentThread];        
     
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         
@@ -481,9 +480,12 @@ static NSInteger itemsPerPage = 0;
             }        
         }
     } completion:^{
-        --opReq;
+        @synchronized(self) {
+            --opReq;
+        }
+        
         if (opReq == 0)
-            [SWPeopleListViewController checkNewNumbers:peopleAB];        
+            [SWPeopleListViewController checkNewNumbers:peopleAB];  
     }];
     
     //});
@@ -491,6 +493,7 @@ static NSInteger itemsPerPage = 0;
 
 + (void)uploadPeople:(NSDictionary*)dict newContacts:(NSArray*)newContacts peopleAB:(NSArray *)peopleAB
 {
+    NSLog(@"---->[uploadPeople]");
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
             [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
@@ -541,10 +544,11 @@ static NSInteger itemsPerPage = 0;
                                                     }                                                           
                                                     
                                                 } completion:^{
-                                                    --nbUploadPeoplePages;
+                                                    @synchronized(self){
+                                                        --nbUploadPeoplePages;
+                                                    }
                                                     if (nbUploadPeoplePages <= 0)
                                                     {
-                                                        [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                                         [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
                                                     }                                                    
                                                 }];                                                 
@@ -594,6 +598,79 @@ static NSInteger itemsPerPage = 0;
         }            
         
     } completion:^{
+
+        // Create new link with this contact
+        if ([newPhoneNumbers count] > 0)
+        {
+            if ([newPhoneNumbers count] > itemsPerPage)
+            {
+                int totalItems = [newPhoneNumbers count];
+                int steps = (int)floor(totalItems/itemsPerPage);
+                nbUploadPeoplePages = steps + 1;
+                for (int i = 0; i <= steps; ++i)
+                {
+                    NSRange range = NSMakeRange(i * itemsPerPage, itemsPerPage);
+                    if (i == steps)
+                        range = NSMakeRange(i * itemsPerPage, totalItems - (i * itemsPerPage));
+                    NSArray* sub = [newPhoneNumbers subarrayWithRange:range];
+                    NSDictionary* dict = [NSDictionary dictionaryWithObject:sub forKey:@"phone_numbers"];
+                    [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
+                }
+            }
+            else
+            {
+                nbUploadPeoplePages = 1;
+                NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
+                [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
+            }
+        }
+        else
+        {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
+        } 
+
+    }];
+            
+    //});
+}
+
+/*
++ (void)checkNewNumbers:(NSArray*)peopleAB
+{
+    NSLog(@"---->[checkNewNumbers]");
+	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{    
+    // Step 3:  We still need to check if there are new users to the                                            
+    //          AddressBook and sync them with server
+    //          A user might also have changed a friend's phone number
+    //          In that case, we need to relink the new phone number
+    //          In the end we'll only display contacts coming from AddressBook
+    //          With phone numbers matching the ones that the app have               
+    
+    NSMutableArray* newPhoneNumbers = [NSMutableArray array];
+    NSMutableArray* newContacts = [NSMutableArray array];    
+    
+    [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+        
+        for (SWPerson* p in peopleAB)
+        {
+            BOOL addNewPN = NO;
+            for (SWPhoneNumber* pn in [p.phoneNumbers allObjects])
+            {
+                SWPhoneNumber* localPN = [SWPhoneNumber MR_findFirstByAttribute:@"phoneNumber" withValue:pn.phoneNumber inContext:localContext];
+                if (!localPN)
+                {
+                    addNewPN                = YES;
+                    localPN                 = [SWPhoneNumber MR_createInContext:localContext];
+                    localPN.phoneNumber     = pn.phoneNumber;
+                    localPN.normalized      = NO;
+                    localPN.invalid         = NO;
+                    
+                    [newPhoneNumbers addObject:pn.phoneNumber];
+                }
+            }
+            if (addNewPN)
+                [newContacts addObject:p];
+        }            
         
         // Create new link with this contact
         if ([newPhoneNumbers count] > 0)
@@ -623,26 +700,11 @@ static NSInteger itemsPerPage = 0;
         else
         {
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
-        }           
+        }         
+        
     }];
-            
     //});
 }
-
-/*
-+ (void)contextDidSave:(NSNotification*)notif
-{
-    if (![NSThread isMainThread]) {
-        [self performSelectorOnMainThread:@selector(contextDidSave:)
-                               withObject:notif
-                            waitUntilDone:NO];
-        return;
-    }
-    
-    [[(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext] mergeChangesFromContextDidSaveNotification:notif];
-    [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] saveContext];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];  
-}
 */
+
 @end

@@ -30,8 +30,7 @@
     [super viewDidLoad];
     
     _arrExportSessions = [NSMutableArray array];
-    
-    self.navigationBar.topItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(removeMedias:)];    
+      
     self.navigationBar.topItem.title = NSLocalizedString(@"menu_activities", @"Activities");
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
@@ -50,14 +49,22 @@
             NSMutableURLRequest *request = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:headers constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {
                 [formData appendPartWithFileData:data name:@"file" fileName:m.filename mimeType:m.contentType];
             }];
-            
+
             AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+            __weak AFHTTPRequestOperation* op = operation;
             [operation setUploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+                
+                if (m.isCancelled)
+                {
+                    [op cancel];
+                    return;
+                }
+                
                 if (m.isVideo)
                     m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite / 2 + 0.5f;
                 else
                     m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
-                
+
                 [blockSelf launchRefreshTimer];
             }];
             [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -70,46 +77,52 @@
                 [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/medias/%d/confirm_upload", m.serverID]
                                          parameters:params
                                             success:^(AFHTTPRequestOperation *opReq, id respObjReq) {
-                                                m.uploadProgress = 1.0f;
-                                                m.isUploaded = YES;
-                                                m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
                                                 
-                                                NSError *errDel;
-                                                if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
-                                                {
-                                                    if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                                                    
+                                                    SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
+                                                    media.uploadProgress = 1.0f;
+                                                    media.isUploaded = YES;
+                                                    media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
+                                                    
+                                                    NSError *errDel;
+                                                    if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
                                                     {
-                                                        NSLog(@"Delete file error: %@", errDel);
+                                                        if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                        {
+                                                            NSLog(@"Delete file error: %@", errDel);
+                                                        }
                                                     }
-                                                }
-
-                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                [blockSelf reload];
-                                                
-                                                [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];  
+                                                    
+                                                    [blockSelf reload];
+                                                    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];                                                      
+                                                }];
                                             }
                                             failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
                                                 
-                                                m.uploadProgress = 1.0f;
-                                                m.isUploaded = YES;
-                                                m.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];                                           
-                                                
-                                                NSError *errDel;
-                                                if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
-                                                {
-                                                    if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                                                    
+                                                    SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
+                                                    media.uploadProgress = 1.0f;
+                                                    media.isUploaded = YES;
+                                                    media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];                                           
+                                                    
+                                                    NSError *errDel;
+                                                    if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
                                                     {
-                                                        NSLog(@"Delete file error: %@", errDel);
-                                                    }
-                                                }                                                
-                                                
-                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                [blockSelf reload];                                                
-                                                
-                                                dispatch_async(dispatch_get_main_queue(), ^{
-                                                    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                                    [av show];
-                                                });
+                                                        if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                        {
+                                                            NSLog(@"Delete file error: %@", errDel);
+                                                        }
+                                                    }                                                
+                                                    
+                                                    [blockSelf reload];                                                
+                                                    
+                                                    dispatch_async(dispatch_get_main_queue(), ^{
+                                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                                        [av show];
+                                                    });
+                                                }];
                                             }
                  ];
                 
@@ -118,12 +131,6 @@
             }];
             [operation start];
     };
-}
-
-- (void)removeMedias:(id)sender
-{
-    [SWMedia MR_truncateAll];
-    [self reload];
 }
 
 - (void)viewDidUnload
@@ -242,8 +249,11 @@
                                                case AVAssetExportSessionStatusWaiting:
                                                    break;
                                                case AVAssetExportSessionStatusCompleted:
-                                                   ++self.nbUploadElements;
-                                                   self.uploadDataBlock(m, [NSData dataWithContentsOfURL:exportURL], [exportURL absoluteString]);
+                                                   if (!m.isCancelled)
+                                                   {
+                                                       ++self.nbUploadElements;
+                                                       self.uploadDataBlock(m, [NSData dataWithContentsOfURL:exportURL], [exportURL absoluteString]);
+                                                   }
                                                    break;
                                                default:
                                                    
@@ -294,6 +304,24 @@
 - (void)updateRefresh:(NSTimer*)timer
 {
     [self.tableView reloadData];
+}
+
+- (IBAction)removeMediaUpload:(id)sender
+{
+    UIButton* btn = (UIButton*)sender;
+    SWActivityTableViewCell* cell = (SWActivityTableViewCell*)[btn superview];
+    
+    [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+        
+        SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:cell.media.serverID] inContext:localContext];
+        
+        if (media.isUploaded)
+            media.isHiddenFromActivities = YES;
+        else
+            media.isCancelled = YES;
+    }];
+    
+    [self reload];
 }
 
 - (void)updateExportProgress:(NSTimer*)timer
@@ -365,6 +393,7 @@
         else
             cell = [[SWActivityTableViewCell alloc] initWithProgressView:NO style:UITableViewCellStyleDefault reuseIdentifier:@"ActivityCellRecent"];
         cell.opaque = NO;
+        [cell.btnClear addTarget:self action:@selector(removeMediaUpload:) forControlEvents:UIControlEventTouchUpInside];
     }
 
     SWMedia* media;
@@ -373,15 +402,16 @@
     else
         media = [self.recent objectAtIndex:indexPath.row];
     
+    cell.media = media;
     cell.progress = media.uploadProgress;
     
     if ([media.album.name length] > 0)
         cell.title.text = [NSString stringWithFormat:NSLocalizedString(@"in_album", @"in album: "), media.album.name];        
     
-    if (media.isUploaded)
-    {
+    if (media.isCancelled)
+        cell.subtitle.text = NSLocalizedString(@"cancelled", @"cancelled");
+    else if (media.isUploaded)
         cell.subtitle.text = [media uploadedTime];
-    }
     else if (media.uploadProgress > 0.0f)
         cell.subtitle.text = NSLocalizedString(@"is_uploading", @"uploading...");
         

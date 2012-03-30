@@ -21,8 +21,8 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 #define ACTIONSHEET_TRASH 0
 #define ACTIONSHEET_EXPORT 1
 
-#define BUTTON_EXPORT_SAVE_PHOTO 0
-#define BUTTON_EXPORT_FORWARD_PHOTO 1
+#define BUTTON_EXPORT_FORWARD_PHOTO 0
+#define BUTTON_EXPORT_SAVE_PHOTO 1
 #define BUTTON_EXPORT_CANCEL 2
 
 @interface KTPhotoScrollViewController (KTPrivate)
@@ -513,6 +513,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
       [UIView setAnimationDuration:0.4];
    }
    
+    /*
    if ( ! [self isStatusbarHidden] ) {     
      if ([[UIApplication sharedApplication] respondsToSelector:@selector(setStatusBarHidden:withAnimation:)]) {
        [[UIApplication sharedApplication] setStatusBarHidden:hide withAnimation:NO];
@@ -521,6 +522,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
        [sharedApp setStatusBarHidden:hide animated:NO];
      }
    }
+     */
 
    CGFloat alpha = hide ? 0.0 : 1.0;
    
@@ -627,14 +629,28 @@ const CGFloat ktkDefaultToolbarHeight = 44;
 
 - (void)exportPhoto
 {
-    actionSheet_ = [[UIActionSheet alloc] initWithTitle:nil
-                                               delegate:self
-                                      cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
-                                 destructiveButtonTitle:nil
-                                      otherButtonTitles:NSLocalizedString(@"save_file", @"save file"), NSLocalizedString(@"forward_file", @"forward file"), nil];
-    [actionSheet_ setTag:ACTIONSHEET_EXPORT];
-    [actionSheet_ showInView:[self view]];
-    [actionSheet_ release];
+    if ([dataSource_ respondsToSelector:@selector(saveImageAtIndex:)] && [dataSource_ isVideoAtIndex:currentIndex_])
+    {
+        actionSheet_ = [[UIActionSheet alloc] initWithTitle:nil
+                                                   delegate:self
+                                          cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
+                                     destructiveButtonTitle:nil
+                                          otherButtonTitles:NSLocalizedString(@"forward_file", @"forward file"), nil];
+        [actionSheet_ setTag:ACTIONSHEET_EXPORT];
+        [actionSheet_ showInView:[self view]];
+        [actionSheet_ release];        
+    }
+    else 
+    {
+        actionSheet_ = [[UIActionSheet alloc] initWithTitle:nil
+                                                   delegate:self
+                                          cancelButtonTitle:NSLocalizedString(@"cancel", @"Cancel button text.")
+                                     destructiveButtonTitle:nil
+                                          otherButtonTitles:NSLocalizedString(@"forward_file", @"forward file"), NSLocalizedString(@"save_file", @"save file"), nil];
+        [actionSheet_ setTag:ACTIONSHEET_EXPORT];
+        [actionSheet_ showInView:[self view]];
+        [actionSheet_ release];        
+    }
 }
 
 

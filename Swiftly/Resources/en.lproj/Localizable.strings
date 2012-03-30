@@ -165,3 +165,6 @@
 "high_quality"                          = "High";
 "medium_quality"                        = "Medium";
 "low_quality"                           = "Low";
+"cancelled"                             = "Cancelled";
+
+"syncing"                               = "Syncing";

@@ -20,8 +20,7 @@
 {
     SWAlbum*                    _selectedAlbum;
     
-    NSMutableArray*             _arrMedias;
-    NSMutableArray*             _arrBeforeSyncMedias;
+    NSMutableArray*             _arrMediasID;
     
     SWWebImagesDataSource*      _mediaDS;
     
@@ -41,8 +40,7 @@
 
 @property (nonatomic, strong) SWPerson*                 contact;
 @property (nonatomic, strong) SWAlbum*                  selectedAlbum;
-@property (nonatomic, strong) NSMutableArray*           arrMedias;
-@property (nonatomic, strong) NSMutableArray*           arrBeforeSyncMedias;
+@property (nonatomic, strong) NSMutableArray*           arrMediasID;
 @property (nonatomic, strong) SWWebImagesDataSource*    mediaDS;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      allowAlbumEdition;

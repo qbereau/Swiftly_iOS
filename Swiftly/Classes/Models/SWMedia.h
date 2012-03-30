@@ -2,7 +2,7 @@
 //  SWMedia.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 3/7/12.
+//  Created by Quentin Bereau on 3/29/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -37,6 +37,9 @@
 @property (nonatomic, retain) NSString * thumbnailURL;
 @property (nonatomic) NSTimeInterval uploadedDate;
 @property (nonatomic) float uploadProgress;
+@property (nonatomic) BOOL isCancelled;
+@property (nonatomic) BOOL isHiddenFromActivities;
+@property (nonatomic) BOOL isSyncedFromServer;
 @property (nonatomic, retain) SWAlbum *album;
 @property (nonatomic, retain) NSSet *comments;
 @property (nonatomic, retain) NSSet *sharedPeople;
@@ -48,8 +51,10 @@
 - (void)removeCommentsObject:(SWComment *)value;
 - (void)addComments:(NSSet *)values;
 - (void)removeComments:(NSSet *)values;
+
 - (void)addSharedPeopleObject:(SWPerson *)value;
 - (void)removeSharedPeopleObject:(SWPerson *)value;
 - (void)addSharedPeople:(NSSet *)values;
 - (void)removeSharedPeople:(NSSet *)values;
+
 @end

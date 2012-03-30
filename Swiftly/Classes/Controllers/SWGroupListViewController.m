@@ -8,10 +8,11 @@
 
 #import "SWGroupListViewController.h"
 
+static NSMutableArray* syncedGroupsID;
+static NSUInteger opReq;
 
 @implementation SWGroupListViewController
 
-@synthesize syncedGroupIDs = _syncedGroupsIDs;
 @synthesize groups = _groups;
 
 - (id)initWithStyle:(UITableViewStyle)style
@@ -44,7 +45,7 @@
 
 - (void)reload
 {
-    self.groups = [SWGroup MR_findAll];
+    self.groups = [SWGroup MR_findAllSortedBy:@"name" ascending:YES];
     [self.tableView reloadData];    
 }
 
@@ -90,9 +91,10 @@
 
 + (void)synchronize
 {
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        
-        NSMutableArray* arrGroupsBeforeSync = [NSMutableArray arrayWithArray:[SWGroup MR_findAll]];    
+    NSLog(@"--->Group Sync");
+    syncedGroupsID = [NSMutableArray array];    
+    
+	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         [[SWAPIClient sharedClient] getPath:@"/groups"
                                  parameters:nil
@@ -104,17 +106,21 @@
                                             {   
                                                 [self updateGroups:responseObject];
                                                 
+                                                @synchronized(self) {
+                                                    opReq = iTotalPages - 1;
+                                                }
+                                                
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
-                                                    __block int opReq = iTotalPages - 2;
                                                     [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/groups?page=%d", i]
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
+                                                                                    @synchronized(self){
+                                                                                        --opReq;
+                                                                                    }
+                                                                                    
                                                                                     [self updateGroups:respObj2];
-                                                                                    --opReq;
-                                                                                    if (opReq == 0)
-                                                                                        [self finishedUpdateGroups:arrGroupsBeforeSync];
                                                                                 }
                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                     NSLog(@"error");
@@ -124,8 +130,10 @@
                                             }
                                             else
                                             {
+                                                @synchronized(self){
+                                                    opReq = 0;
+                                                }
                                                 [self updateGroups:responseObject];
-                                                [self finishedUpdateGroups:arrGroupsBeforeSync];
                                             }                                           
                                             
                                         }
@@ -135,17 +143,16 @@
                                         [av show];
                                     }
          ];
-    //});
+    });
 }
 
 + (void)updateGroups:(id)responseObject
 {
+    NSLog(@"--->Update Groups");
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         
         for (id obj in responseObject)
         {        
-            //[self.syncedGroupIDs addObject:[obj valueForKey:@"id"]];
-            
             SWGroup* groupObj = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"] inContext:localContext];
             
             if (!groupObj)
@@ -153,31 +160,35 @@
             
             [groupObj updateWithObject:obj inContext:localContext];
         }   
+    } completion:^{
+        for (id obj in responseObject)
+        {
+            [syncedGroupsID addObject:[obj valueForKey:@"id"]];
+        }
+        
+        if (opReq == 0)
+            [self finishedUpdateGroups];
     }];
 }
 
-+ (void)finishedUpdateGroups:(NSMutableArray*)groupsBeforeSync
++ (void)finishedUpdateGroups
 {
-    /*
-    NSMutableArray* arrGroupIDs = [NSMutableArray array];
-    for (SWGroup* g in groupsBeforeSync)
-    {
-        [arrGroupIDs addObject:[NSNumber numberWithInt:g.serverID]];
-    }
-    
-    if (arrGroupIDs && [arrGroupIDs count] > 0)
+    NSLog(@"--->Finished Update Group");    
+    if ([syncedGroupsID count] > 0)
     {
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             
-            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", arrGroupIDs];
+            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID in %@)", syncedGroupsID];
             [SWGroup MR_deleteAllMatchingPredicate:predicate inContext:localContext];
             
         } completion:^{
             [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
         }];   
     }
-     */
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];    
+    else 
+    {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWGroupSyncDone" object:nil];
+    }
 }
 
 #pragma mark - UITableView Delegates

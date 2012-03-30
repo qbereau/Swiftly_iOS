@@ -49,7 +49,7 @@
     
     if (!self.group)
         self.group = [SWGroup newEntityInContext:[NSManagedObjectContext MR_contextForCurrentThread]];
-    
+
     self.navigationItem.title = self.group.name;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];
     
@@ -63,19 +63,19 @@
 {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
-    
+
 	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
         void (^success)(AFHTTPRequestOperation*, id) = ^(AFHTTPRequestOperation *operation, id responseObject) {
             
-            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
                 if (self.group.serverID == 0)
                     self.group = [SWGroup MR_createInContext:localContext];
                 
                 [self.group updateWithObject:responseObject inContext:localContext];
-            } completion:^{
+                
                 [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                [[self navigationController] popViewControllerAnimated:YES];                
+                [[self navigationController] popViewControllerAnimated:YES];                                
             }];
             
         };
@@ -125,14 +125,15 @@
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            
-                                           SWGroup* g = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.group.serverID]];
-                                           [g MR_deleteEntity];
-
-                                           [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+                                           [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
                                            
-                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                               SWGroup* g = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.group.serverID] inContext:localContext];
+                                               [g MR_deleteInContext:localContext];
+                                               
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                               [[self navigationController] popViewControllerAnimated:YES];                                               
+                                           }];
                                            
-                                           [[self navigationController] popViewControllerAnimated:YES];
                                        }
                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];

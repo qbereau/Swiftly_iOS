@@ -52,7 +52,7 @@
     [self addChildViewController:_glvc];
     [self.view addSubview:_glvc.view];
     _glvc.view.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height);
-    _glvc.view.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    _glvc.view.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [_glvc didMoveToParentViewController:self];  
     
     _glvc.view.hidden = YES;

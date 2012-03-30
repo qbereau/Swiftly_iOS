@@ -37,105 +37,12 @@
 + (NSArray*)findLatestCommentsForMediaID:(int)mediaID inContext:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"media.serverID == %d", mediaID];
-    return [SWComment MR_findAllWithPredicate:predicate inContext:context];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWComment MR_requestAllWithPredicate:predicate inContext:context];
+    [request setSortDescriptors:sortDescriptors];    
+    return [SWComment MR_executeFetchRequest:request inContext:context];
 }
 
-// Core Data Helpers
-/*
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
-{
-    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
-    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
-    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
-}
-
-+ (NSArray *)findAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (void)deleteAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    NSError *error;
-    NSArray *items = [context executeFetchRequest:request error:&error];
-    
-    
-    for (NSManagedObject *managedObject in items) 
-    {
-        [context deleteObject:managedObject];
-    }
-    
-    [context save:&error];
-}
-
-+ (SWComment*)findObjectWithServerID:(int)serverID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
-        return nil;
-    return (SWComment*)[items objectAtIndex:0];
-}
-
-+ (NSArray*)findLatestCommentsForMediaID:(int)mediaID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"media.serverID == %d", mediaID];
-    
-    NSSortDescriptor *sorter = [[NSSortDescriptor alloc]
-                                initWithKey:@"createdDT"
-                                ascending:NO
-                                selector:@selector(compare:)];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setSortDescriptors:[NSArray arrayWithObject:sorter]];
-    [request setEntity:entity];
-    [request setFetchLimit:25];
-    [request setPredicate:predicate];
-    
-    return [[[context executeFetchRequest:request error:nil] reverseObjectEnumerator] allObjects];
-}
-
-+ (SWComment*)createEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    SWComment* obj = [NSEntityDescription
-                    insertNewObjectForEntityForName:NSStringFromClass([self class])
-                    inManagedObjectContext:context];
-    
-    return (SWComment*)obj;
-}
-
-
-+ (SWComment*)newEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWComment* obj = [[SWComment alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
-- (void)deleteEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    [context deleteObject:self];
-}
-*/
 @end

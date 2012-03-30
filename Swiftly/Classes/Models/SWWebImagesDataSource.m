@@ -91,6 +91,12 @@
     return m.isOpen;
 }
 
+- (BOOL)isOwner:(NSInteger)index
+{
+    SWMedia* m = [_filteredMedias objectAtIndex:index];
+    return m.isOwner;
+}
+
 #pragma mark - KTPhotoBrowserDataSource
 
 - (NSInteger)numberOfPhotos {

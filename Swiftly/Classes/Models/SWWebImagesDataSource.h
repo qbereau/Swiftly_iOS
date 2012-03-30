@@ -37,5 +37,6 @@
 - (void)filterByCreatorID:(NSInteger)creator_id;
 - (SWMedia*)mediaAtIndex:(NSInteger)index;
 - (BOOL)isMediaOpenAtIndex:(NSInteger)index;
+- (BOOL)isOwner:(NSInteger)index;
 
 @end

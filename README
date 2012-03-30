@@ -1,10 +1,6 @@
 Todo:
 
 - Fix bugs with multi-threading
-- Add possibility to cancel/retry an upload
-- Sort Albums by last update
-- Medias in Album are limited to 25
-- Indicate when album was updated and not seen
 - Add Privacy Policy
 - Optimize GetAB
 - Help Section

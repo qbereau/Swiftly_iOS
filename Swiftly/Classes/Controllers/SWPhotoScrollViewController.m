@@ -17,8 +17,8 @@
 #define ACTIONSHEET_TRASH 0
 #define ACTIONSHEET_EXPORT 1
 
-#define BUTTON_EXPORT_SAVE_PHOTO 0
-#define BUTTON_EXPORT_FORWARD_PHOTO 1
+#define BUTTON_EXPORT_FORWARD_PHOTO 0
+#define BUTTON_EXPORT_SAVE_PHOTO 1
 #define BUTTON_EXPORT_CANCEL 2
 
 @implementation SWPhotoScrollViewController
@@ -86,7 +86,8 @@
     {
         if (bbi.action == @selector(exportPhoto))
         {
-            [bbi setEnabled:[((SWWebImagesDataSource*)dataSource_) isMediaOpenAtIndex:currentIndex_]];
+            BOOL enabled = [((SWWebImagesDataSource*)dataSource_) isMediaOpenAtIndex:currentIndex_] || [((SWWebImagesDataSource*)dataSource_) isOwner:currentIndex_];
+            [bbi setEnabled:enabled];
         }
     }
 }

@@ -2,7 +2,7 @@
 //  SWAlbum.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 3/7/12.
+//  Created by Quentin Bereau on 3/30/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -20,10 +20,13 @@
 @property (nonatomic) BOOL isMyMediasAlbum;
 @property (nonatomic) BOOL isOwner;
 @property (nonatomic) BOOL isQuickShareAlbum;
+@property (nonatomic) NSTimeInterval lastUpdate;
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic) int32_t ownerID;
 @property (nonatomic) int32_t serverID;
 @property (nonatomic, retain) id thumbnail;
+@property (nonatomic) BOOL updated;
+@property (nonatomic, retain) NSString * thumbnailURL;
 @property (nonatomic, retain) NSSet *medias;
 @property (nonatomic, retain) NSSet *participants;
 @end
@@ -34,8 +37,10 @@
 - (void)removeMediasObject:(SWMedia *)value;
 - (void)addMedias:(NSSet *)values;
 - (void)removeMedias:(NSSet *)values;
+
 - (void)addParticipantsObject:(SWPerson *)value;
 - (void)removeParticipantsObject:(SWPerson *)value;
 - (void)addParticipants:(NSSet *)values;
 - (void)removeParticipants:(NSSet *)values;
+
 @end

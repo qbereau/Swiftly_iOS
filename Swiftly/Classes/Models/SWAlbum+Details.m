@@ -12,14 +12,16 @@
 
 - (NSArray*)participants_arr
 {
-    NSSortDescriptor* sort = [[NSSortDescriptor alloc] initWithKey:@"predicateContactName" ascending:YES];
-    NSArray* arr = [self.participants sortedArrayUsingDescriptors:[NSArray arrayWithObject:sort]];
-    arr = [arr sortedArrayUsingComparator:^(id a, id b){
-        NSString* o1 = [(SWPerson*)a predicateContactName];
-        NSString* o2 = [(SWPerson*)b predicateContactName];
-        return [o1 compare:o2];
-    }];
-    return arr;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"ANY albums.serverID = %d", self.serverID];    
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastName" ascending:YES];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSManagedObjectContext* moc = [NSManagedObjectContext MR_context];
+    NSFetchRequest *request = [SWPerson MR_requestAllWithPredicate:predicate inContext:moc];
+    [request setSortDescriptors:sortDescriptors];
+    
+    return [SWPerson MR_executeFetchRequest:request inContext:moc];    
 }
 
 - (NSString*)participants_str
@@ -36,27 +38,51 @@
     return output;
 }
 
+- (UIImage*)customThumbnail
+{
+    if (!self.updated)
+    {
+        if (!self.thumbnail)
+            [UIImage imageNamed:@"photoDefault.png"];
+        else
+            return self.thumbnail;
+    }
+    
+    UIImage* icon = [UIImage imageNamed:@"new"];
+    UIImage* thumb = self.thumbnail;
+    
+    CGSize size = CGSizeMake(78, 78);
+    
+    // Reduce contact thumbnail
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    [self.thumbnail drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    thumb = UIGraphicsGetImageFromCurrentImageContext();    
+    UIGraphicsEndImageContext();    
+    
+    
+    // Merge two images
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    
+    [thumb drawInRect:CGRectMake(0, 0, thumb.size.width, thumb.size.height)];
+    [icon drawInRect:CGRectMake(62, 0, 16, 16) blendMode:kCGBlendModeNormal alpha:1];
+    
+    UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return result;
+}
+
 - (NSArray*)sortedMedias
 {
-    /*
-    return [[self.medias allObjects] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        SWMedia* m1 = (SWMedia*)obj1;
-        SWMedia* m2 = (SWMedia*)obj2;
-        return m1.serverID < m2.serverID;
-    }];
-     */
-
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID = %d", self.serverID];    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID = %d AND isSyncedFromServer = YES", self.serverID];    
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
-        
-    NSManagedObjectContext* moc = [NSManagedObjectContext MR_contextForCurrentThread];
-        
-    NSFetchRequest *request = [SWMedia MR_requestAllWithPredicate:predicate inContext:moc];
+    
+    NSFetchRequest *request = [SWMedia MR_requestAllWithPredicate:predicate];
     [request setSortDescriptors:sortDescriptors];
-
-    return [SWMedia MR_executeFetchRequest:request inContext:moc];
+    
+    return [SWMedia MR_executeFetchRequest:request];
 }
 
 - (void)updateWithObject:(id)obj
@@ -76,14 +102,15 @@
     self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
     self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];
     
-    NSString* thumbnail_url = [obj valueForKey:@"thumbnail_url"];
-    if (thumbnail_url && [thumbnail_url class] != [NSNull class])
-    {
-        // Warning sync ... should be handled ansync!
-        self.thumbnail = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:thumbnail_url]]];
-    }
-    else
-        self.thumbnail = [UIImage imageNamed:@"photoDefault.png"]; 
+    [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+    
+    NSDate *dateFromString = [[NSDate alloc] init];
+    dateFromString = [dateFormatter dateFromString:[obj valueForKey:@"updated_at"]];    
+    self.lastUpdate         = [dateFromString timeIntervalSinceReferenceDate];
+
+    self.thumbnailURL = [obj valueForKey:@"thumbnail_url"];
 }
 
 - (SWAlbum*)deepCopyInContext:(NSManagedObjectContext*)context
@@ -136,7 +163,7 @@
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canEditMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
     
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
     NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
@@ -149,7 +176,7 @@
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO AND isLocked = NO"];
 
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
     NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
@@ -162,7 +189,7 @@
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
 
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
     NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
@@ -175,7 +202,7 @@
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES OR isMyMediasAlbum = YES"];
 
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"name" ascending:YES];
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
     
     NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
@@ -197,190 +224,6 @@
     
     return obj;
 }
-
-// Core Data Helpers
-/*
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
-{
-    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
-    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
-    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
-}
-
-+ (NSArray *)findAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWAlbum findAllObjectsInContext:context];
-}
-
-+ (NSArray *)findAllObjectsInContext:(NSManagedObjectContext*)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (void)deleteAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    NSError *error;
-    NSArray *items = [context executeFetchRequest:request error:&error];
-    
-    
-    for (NSManagedObject *managedObject in items) 
-    {
-        [context deleteObject:managedObject];
-    }
-    
-    [context save:&error];
-}
-
-+ (SWAlbum*)findObjectWithServerID:(int)serverID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWAlbum findObjectWithServerID:serverID inContext:context];
-}
-
-+ (SWAlbum*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID = %d", serverID];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
-        return nil;
-    return (SWAlbum*)[items objectAtIndex:0];
-}
-
-+ (NSArray*)findAllLinkableAlbums
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canEditMedias == %@ OR isOwner == %@) AND isQuickShareAlbum == %@ AND isMyMediasAlbum == %@", [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-
-    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSString* n1 = [(SWAlbum*)obj1 name];
-        NSString* n2 = [(SWAlbum*)obj2 name];
-        return [n1 compare:n2];        
-    }];    
-    return arr;
-}
-
-+ (NSArray*)findUnlockedSharedAlbums
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ AND isMyMediasAlbum == %@ AND (isLocked == %@ OR isLocked == nil)", [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    
-    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSString* n1 = [(SWAlbum*)obj1 name];
-        NSString* n2 = [(SWAlbum*)obj2 name];
-        return [n1 compare:n2];        
-    }];    
-    return arr;
-}
-
-+ (NSArray*)findAllSharedAlbums
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ AND isMyMediasAlbum == %@", [NSNumber numberWithBool:NO], [NSNumber numberWithBool:NO]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSString* n1 = [(SWAlbum*)obj1 name];
-        NSString* n2 = [(SWAlbum*)obj2 name];
-        return [n1 compare:n2];        
-    }];
-    return arr;
-}
-
-+ (NSArray*)findAllSpecialAlbums
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum == %@ OR isMyMediasAlbum == %@", [NSNumber numberWithBool:YES], [NSNumber numberWithBool:YES]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* arr = [[context executeFetchRequest:request error:nil] sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-        NSString* n1 = [(SWAlbum*)obj1 name];
-        NSString* n2 = [(SWAlbum*)obj2 name];
-        return [n1 compare:n2];        
-    }];    
-    return arr;
-}
-
-+ (SWAlbum*)findQuickShareAlbum
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    return [SWAlbum findQuickShareAlbumInContext:context];
-}
-
-+ (SWAlbum*)findQuickShareAlbumInContext:(NSManagedObjectContext *)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = %@", [NSNumber numberWithBool:YES]];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
-        return nil;
-    return (SWAlbum*)[items objectAtIndex:0];
-}
-
-+ (SWAlbum*)createEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWAlbum createEntityInContext:context];
-}
-
-+ (SWAlbum*)createEntityInContext:(NSManagedObjectContext *)context
-{
-    SWAlbum* obj = [NSEntityDescription
-                    insertNewObjectForEntityForName:NSStringFromClass([self class])
-                    inManagedObjectContext:context];
-    
-    return (SWAlbum*)obj;    
-}
-
-+ (SWAlbum*)newEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWAlbum* obj = [[SWAlbum alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
-- (void)deleteEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    [self deleteEntityInContext:context];
-}
-
-- (void)deleteEntityInContext:(NSManagedObjectContext*)context
-{
-    [context deleteObject:self];
-}
-*/
 
 @end
 

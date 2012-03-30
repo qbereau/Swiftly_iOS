@@ -16,17 +16,14 @@
 @interface SWGroupListViewController : UITableViewController
 {
     NSArray*            _contacts;
-    
-    NSMutableArray*     _syncedGroupIDs;
 }
 
 @property (nonatomic, strong) NSArray*          groups;
-@property (nonatomic, strong) NSMutableArray*   syncedGroupIDs;
 
 - (void)reload;
 
 + (void)synchronize;
 + (void)updateGroups:(id)responseObject;
-+ (void)finishedUpdateGroups:(NSMutableArray*)syncedGroupIDS;
++ (void)finishedUpdateGroups;
 
 @end

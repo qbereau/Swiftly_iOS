@@ -38,14 +38,14 @@
 
 - (void)updateWithObject:(id)obj
 {        
-    self.serverID       = [[obj valueForKey:@"id"] intValue];
-    self.isReady        = [[obj valueForKey:@"ready"] boolValue];
-    self.creatorID      = [[obj valueForKey:@"creator_id"] intValue];
-    self.isImage        = [[obj valueForKey:@"image"] boolValue];
-    self.isVideo        = [[obj valueForKey:@"video"] boolValue];
-    self.isOpen         = [[obj valueForKey:@"open"] boolValue];
-    self.isOwner        = [[obj valueForKey:@"owner"] boolValue];
-    self.duration       = (int)round([[obj valueForKey:@"duration"] doubleValue]);
+    self.serverID                   = [[obj valueForKey:@"id"] intValue];
+    self.isReady                    = [[obj valueForKey:@"ready"] boolValue];
+    self.creatorID                  = [[obj valueForKey:@"creator_id"] intValue];
+    self.isImage                    = [[obj valueForKey:@"image"] boolValue];
+    self.isVideo                    = [[obj valueForKey:@"video"] boolValue];
+    self.isOpen                     = [[obj valueForKey:@"open"] boolValue];
+    self.isOwner                    = [[obj valueForKey:@"owner"] boolValue];
+    self.duration                   = (int)round([[obj valueForKey:@"duration"] doubleValue]);
     
     id thumb_url = [obj valueForKey:@"thumbnail_url"];
     if (thumb_url && [thumb_url class] != [NSNull class])
@@ -70,12 +70,12 @@
 
 + (NSArray*)findInProgressObjects
 {
-    return [SWMedia MR_findAllWithPredicate:[NSPredicate predicateWithFormat:@"isUploaded = NO"]];
+    return [SWMedia MR_findAllWithPredicate:[NSPredicate predicateWithFormat:@"isUploaded = NO AND (isCancelled = NO OR isCancelled = nil)"]];
 }
 
 + (NSArray*)findRecentObjects
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded = YES"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(isUploaded = YES OR isCancelled = YES) AND (isHiddenFromActivities = NO OR isHiddenFromActivities = nil)"];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -86,162 +86,5 @@
     
     return [SWMedia MR_executeFetchRequest:request];
 }
-
-// Core Data Helpers
-/*
-+ (NSEntityDescription *)entityDescriptionInContext:(NSManagedObjectContext *)context
-{
-    return [self respondsToSelector:@selector(entityInManagedObjectContext:)] ?
-    [self performSelector:@selector(entityInManagedObjectContext:) withObject:context] :
-    [NSEntityDescription entityForName:NSStringFromClass(self) inManagedObjectContext:context];
-}
-
-+ (NSArray *)findAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (NSArray *)findAllFromCreatorID:(NSInteger)creatorID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"creatorID == %d", creatorID];    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setPredicate:predicate];
-    [request setEntity:entity];
-    return [context executeFetchRequest:request error:nil];    
-}
-
-+ (NSArray*)findInProgressObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:NO]];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (NSArray*)findRecentObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUploaded == %@", [NSNumber numberWithBool:YES]];
-    
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"serverID" ascending:NO];
-    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setFetchLimit:20];
-    [request setPredicate:predicate];
-    [request setSortDescriptors:sortDescriptors];
-    
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (void)deleteAllObjects
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    
-    NSError *error;
-    NSArray *items = [context executeFetchRequest:request error:&error];
-    
-    
-    for (SWMedia *managedObject in items) 
-    {
-        [[SDImageCache sharedImageCache] removeImageForKey:[KTPhotoView cacheKeyForIndex:managedObject.serverID]];
-        [[SDImageCache sharedImageCache] removeImageForKey:[KTThumbView cacheKeyForIndex:managedObject.serverID]];
-        
-        [context deleteObject:managedObject];
-    }
-    
-    [context save:&error];
-}
-
-+ (SWMedia*)findObjectWithServerID:(int)serverID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    return [self findObjectWithServerID:serverID inContext:context];
-}
-
-+ (SWMedia*)findObjectWithServerID:(int)serverID inContext:(NSManagedObjectContext*)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"serverID == %d", serverID];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    NSArray* items = [context executeFetchRequest:request error:nil];
-    if ([items count] == 0)
-        return nil;
-    return (SWMedia*)[items objectAtIndex:0];
-}
-
-+ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [self findMediasFromAlbumID:serverID inContext:context];
-}
-
-+ (NSArray *)findMediasFromAlbumID:(NSInteger)serverID inContext:(NSManagedObjectContext*)context
-{
-    NSEntityDescription *entity = [self entityDescriptionInContext:context];    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.serverID = %d", serverID];
-    
-    NSFetchRequest *request = [[NSFetchRequest alloc] init];
-    [request setEntity:entity];
-    [request setPredicate:predicate];
-    return [context executeFetchRequest:request error:nil];
-}
-
-+ (SWMedia*)createEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    return [SWMedia createEntityInContext:context];
-}
-
-+ (SWMedia*)createEntityInContext:(NSManagedObjectContext*)context
-{
-    SWMedia* obj = [NSEntityDescription
-                    insertNewObjectForEntityForName:NSStringFromClass([self class])
-                    inManagedObjectContext:context];
-    
-    return (SWMedia*)obj;
-}
-
-+ (SWMedia*)newEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];    
-    NSEntityDescription* entity = [NSEntityDescription entityForName:NSStringFromClass([self class]) inManagedObjectContext:context];
-    SWMedia* obj = [[SWMedia alloc] initWithEntity:entity insertIntoManagedObjectContext:nil];
-    
-    return obj;
-}
-
-- (void)deleteEntity
-{
-    NSManagedObjectContext *context = [(SWAppDelegate*)[[UIApplication sharedApplication] delegate] managedObjectContext];
-    [self deleteEntityInContext:context];
-}
-
-- (void)deleteEntityInContext:(NSManagedObjectContext*)context
-{
-    [[SDImageCache sharedImageCache] removeImageForKey:[KTPhotoView cacheKeyForIndex:self.serverID]];
-    [[SDImageCache sharedImageCache] removeImageForKey:[KTThumbView cacheKeyForIndex:self.serverID]];
-    
-    [context deleteObject:self];
-}
-*/
 
 @end

@@ -12,8 +12,7 @@
 
 @synthesize contact             = _contact;
 @synthesize displayMode         = _displayMode;
-@synthesize arrMedias           = _arrMedias;
-@synthesize arrBeforeSyncMedias = _arrBeforeSyncMedias;
+@synthesize arrMediasID         = _arrMediasID;
 @synthesize selectedAlbum       = _selectedAlbum;
 @synthesize mediaDS             = _mediaDS;
 @synthesize allowAlbumEdition   = _allowAlbumEditition;
@@ -58,13 +57,15 @@
     {             
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
-        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
+        NSArray* medias = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID] inContext:[NSManagedObjectContext MR_context]];
+        if ([medias count] == 0)
         {
-            self.arrBeforeSyncMedias = [NSMutableArray arrayWithArray:[SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID] inContext:[NSManagedObjectContext MR_context]]];
-        }
+            MBProgressHUD* hud = [MBProgressHUD showHUDAddedTo:self.parentViewController.view animated:YES];
+            hud.labelText = NSLocalizedString(@"loading", @"loading");            
+        }     
         
         // Update Medias
-        self.arrMedias = [NSMutableArray array];        
+        self.arrMediasID = [NSMutableArray array];
         
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
@@ -84,22 +85,25 @@
                                             
                                             if (iTotalPages > 1)
                                             {   
-                                                _shouldUpdate = NO;
+                                                @synchronized(self) {
+                                                    _shouldUpdate = NO;
+                                                    self.opReq = iTotalPages - 1;
+                                                }
                                                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:responseObject, @"objects", nil];
-                                                [self updateMediasWithDict:params];
+                                                [self updateMediasWithDict:params];                            
                                                 
                                                 for (int i = 2; i <= iTotalPages; ++i)
                                                 {
-                                                    self.opReq = iTotalPages - 1;
-                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"%@?page=%d", uri, self.selectedAlbum.serverID, i]
+                                                    [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"%@?page=%d", uri, i]
                                                                              parameters:nil
                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                     
-                                                                                    --self.opReq;
-                                                                                    _shouldUpdate = (self.opReq == 0) ? YES : NO;
-                                                                                    
-                                                                                    NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  respObj2, @"objects", nil];                                                                                    
-                                                                                    [self updateMediasWithDict:params];
+                                                                                    @synchronized(self){
+                                                                                        --self.opReq;
+                                                                                        _shouldUpdate = (self.opReq == 0) ? YES : NO;
+                                                                                    }
+                                                                                    NSDictionary* params2 = [NSDictionary dictionaryWithObjectsAndKeys:  respObj2, @"objects", nil];                                                                                    
+                                                                                    [self updateMediasWithDict:params2];
                                                                                 }
                                                                                 failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                                                                                     NSLog(@"error");
@@ -109,7 +113,9 @@
                                             }
                                             else
                                             {
-                                                _shouldUpdate = YES;
+                                                @synchronized(self) {
+                                                    _shouldUpdate = YES;
+                                                }
                                                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  responseObject, @"objects", nil];
                                                 [self updateMediasWithDict:params];
                                                 
@@ -142,7 +148,7 @@
 
 - (void)updateMediasWithDict:(NSDictionary*)dict
 {
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         id responseObject = [dict objectForKey:@"objects"];
                 
@@ -161,6 +167,7 @@
                 if (!mediaObj)
                     mediaObj = [SWMedia MR_createInContext:localContext];
                 [mediaObj updateWithObject:obj];
+                mediaObj.isSyncedFromServer = YES;
                 
                 if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && selAlbum)
                 {
@@ -172,44 +179,36 @@
                     [mediaObj addSharedPeopleObject:selContact];
                     [selContact addSharedMediasObject:mediaObj];
                 }
+                @synchronized(self) {
+                    [self.arrMediasID addObject:[NSNumber numberWithInt:mediaObj.serverID]];
+                }
             } 
-                
+
         } completion:^{
-            
-            /*for (id obj in responseObject)
-            {
-                SWMedia* m = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[obj valueForKey:@"id"]];
-                [self.arrMedias addObject:m];
-            }*/
-            
+                       
             if (_shouldUpdate)
             {
-                NSLog(@"!!!");
-                
-                NSArray* medias = [SWMedia MR_findByAttribute:@"album.serverID" withValue:[NSNumber numberWithInt:self.selectedAlbum.serverID]];
-                [self.arrMedias addObject:medias];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:self.parentViewController.view animated:YES];
+                }); 
                 
                 [self cleanup];
             }
         }];
         
-    });
+    //});
 }
 
 - (void)cleanup
 {
     if (_shouldUpdate && self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
     {
-        _shouldUpdate = NO;    
-        /*
-        NSMutableArray* a = [NSMutableArray array];
-        for (SWMedia* m in self.arrMedias)
-            [a addObject:[NSNumber numberWithInt:m.serverID]];
-        NSLog(@"---> %d", [a count]);
-        if ([a count] > 0)
+        _shouldUpdate = NO;
+        
+        if ([self.arrMediasID count] > 0)
         {
             [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-                NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID IN %@) AND album.serverID = %d", a, self.selectedAlbum.serverID];
+                NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT (serverID IN %@) AND album.serverID = %d", self.arrMediasID, self.selectedAlbum.serverID];
                 [SWMedia MR_deleteAllMatchingPredicate:predicate inContext:localContext];
             } completion:^{
                 [self reload];
@@ -219,8 +218,6 @@
         {
             [self reload];
         }
-         */
-        [self reload];
     }
     else
     {
@@ -229,29 +226,14 @@
 }
  
 - (void)reload
-{
+{   
     if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
         self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
     else
         self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
-    
+
     [self.mediaDS resetFilter];
     [self setDataSource:self.mediaDS];
-    
-    /*
-    dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
-            self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.selectedAlbum sortedMedias]];
-        else
-            self.mediaDS.allMedias = [NSMutableArray arrayWithArray:[self.contact sortedSharedMedias]];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.mediaDS resetFilter];
-            [self setDataSource:self.mediaDS];
-        });
-        
-    });
-     */
 }
 
 - (void)setAllowAlbumEdition:(BOOL)allowAlbumEdition

@@ -11,6 +11,7 @@
 #import "SWPerson+Details.h"
 #import "SWMedia.h"
 #import "SWMedia+Details.h"
+#import "SDWebImageDownloader.h"
 
 @interface ImageToDataTransformer : NSValueTransformer
 
@@ -21,7 +22,7 @@
 - (NSArray*)participants_arr;
 - (NSString*)participants_str;
 - (NSArray*)sortedMedias;
-
+- (UIImage*)customThumbnail;
 - (SWAlbum*)deepCopyInContext:(NSManagedObjectContext*)context;
 
 - (void)updateWithObject:(id)obj;

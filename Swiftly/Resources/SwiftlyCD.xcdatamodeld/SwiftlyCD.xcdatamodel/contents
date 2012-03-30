@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="872" systemVersion="10K549" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1171" systemVersion="11D50d" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="SWAlbum" representedClassName="SWAlbum" syncable="YES">
         <attribute name="canEditMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="canEditPeople" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -8,10 +8,13 @@
         <attribute name="isMyMediasAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isQuickShareAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="ownerID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="thumbnail" optional="YES" attributeType="Transformable" valueTransformerName="ImageToDataTransformer" syncable="YES"/>
+        <attribute name="thumbnailURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="updated" optional="YES" attributeType="Boolean" syncable="YES"/>
         <relationship name="medias" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWMedia" inverseName="album" inverseEntity="SWMedia" syncable="YES"/>
         <relationship name="participants" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="albums" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
@@ -36,10 +39,13 @@
         <attribute name="creatorID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="duration" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="filename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="isCancelled" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isHiddenFromActivities" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isImage" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOpen" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isReady" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="isSyncedFromServer" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isUploaded" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isVideo" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="localResourceURL" optional="YES" attributeType="String" syncable="YES"/>
@@ -79,10 +85,10 @@
         <relationship name="person" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="phoneNumbers" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
     <elements>
-        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="240"/>
+        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="285"/>
         <element name="SWComment" positionX="160" positionY="192" width="128" height="120"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="450"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="495"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="255"/>
         <element name="SWPhoneNumber" positionX="160" positionY="192" width="128" height="105"/>
     </elements>

@@ -22,6 +22,8 @@
     NSArray*                _comments;
     SWMedia*                _media;
     UITextField*            _textField;
+    NSInteger               _opReq;    
+    BOOL                    _shouldUpdate;    
 }
 
 @property (nonatomic, strong) SWMedia*          media;
@@ -30,9 +32,11 @@
 @property (nonatomic, strong) NSArray*          comments;
 @property (nonatomic, strong) UIToolbar*        toolbar;
 @property (nonatomic, strong) UITableView*      tableView;
+@property (nonatomic, assign) NSInteger         opReq;
 
 - (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up;
 - (void)reload;
 - (void)addCommentObject:(id)obj inContext:(NSManagedObjectContext*)context;
+- (void)updateComments:(id)responseObject;
 
 @end

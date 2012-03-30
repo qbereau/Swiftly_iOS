@@ -49,7 +49,7 @@ NSString * const kSWBaseURLString = @"http://swiftly.herokuapp.com";
     NSDictionary* dict              = [SWAPIClient userCredentials];
     NSString* key                   = (NSString*)[dict objectForKey:@"key"];
     NSString* token                 = (NSString*)[dict objectForKey:@"token"];    
-    return [NSDictionary dictionaryWithObjectsAndKeys:key, @"key", token, @"token", nil];
+    return [NSDictionary dictionaryWithObjectsAndKeys:key, @"key", token, @"token", [NSNumber numberWithInt:100], @"per_page", nil];
 }
 
 - (void)getPath:(NSString *)path 
