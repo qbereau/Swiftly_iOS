@@ -20,6 +20,7 @@
 #import "SWPeopleListViewController.h"
 #import "SWGroupListViewController.h"
 #import "SWPhoneNumber.h"
+#import "SWPrivacyPolicyViewController.h"
 
 @interface SWLoginViewController : UIViewController <UIPickerViewDelegate, UIPickerViewDataSource>
 {

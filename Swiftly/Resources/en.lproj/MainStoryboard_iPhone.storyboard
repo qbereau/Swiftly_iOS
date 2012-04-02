@@ -1,10 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="1.0" toolsVersion="1938" systemVersion="10K549" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="tCK-aX-0zf">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="1.1" toolsVersion="2182" systemVersion="11D50d" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="tCK-aX-0zf">
     <dependencies>
+        <deployment defaultVersion="1296" identifier="iOS"/>
         <development defaultVersion="4200" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="933"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="1181"/>
     </dependencies>
     <scenes>
+        <!--Login View Controller - Item-->
         <scene sceneID="FK9-Nu-537">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iu4-iA-WNC" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -22,7 +24,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <view contentMode="scaleToFill" id="cQh-Z6-CKO">
-                                        <rect key="frame" x="0.0" y="195" width="293" height="250"/>
+                                        <rect key="frame" x="0.0" y="190" width="293" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Thanks for downloading Swiftly! Please enter your phone number so we can create or activate your account on this phone." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" minimumFontSize="10" id="ZUO-Xj-HNj">
@@ -100,7 +102,7 @@
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                     </view>
                                     <view contentMode="scaleToFill" id="Vq8-Cr-ggr">
-                                        <rect key="frame" x="320" y="195" width="293" height="250"/>
+                                        <rect key="frame" x="320" y="190" width="293" height="250"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <subviews>
                                             <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="you'll receive a code via SMS in a few seconds." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" minimumFontSize="10" id="vjn-Oz-rtO">
@@ -198,11 +200,38 @@
                         <outlet property="vConfirmationCodeContainer" destination="Vq8-Cr-ggr" id="82r-cV-eE3"/>
                         <outlet property="vLoginContainer" destination="cQh-Z6-CKO" id="94r-PM-FnL"/>
                         <segue destination="4" kind="modal" identifier="goto_app" id="bMc-t6-ENw"/>
+                        <segue destination="vZ8-He-ztX" kind="modal" identifier="PrivacyPolicy" modalTransitionStyle="flipHorizontal" id="0tl-V7-xT5"/>
                     </connections>
                 </viewController>
             </objects>
             <point key="canvasLocation" x="679" y="818"/>
         </scene>
+        <!--Privacy Policy View Controller-->
+        <scene sceneID="33z-ie-tar">
+            <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="bXm-YT-K8i" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <viewController id="vZ8-He-ztX" customClass="SWPrivacyPolicyViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="E7D-eg-GeI">
+                        <rect key="frame" x="0.0" y="64" width="320" height="367"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <webView contentMode="scaleToFill" id="EdQ-w8-pgM">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="367"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            </webView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Oaa-z9-xa3"/>
+                    <connections>
+                        <outlet property="webView" destination="EdQ-w8-pgM" id="bSS-Xg-SeI"/>
+                    </connections>
+                </viewController>
+            </objects>
+            <point key="canvasLocation" x="679" y="1422"/>
+        </scene>
+        <!--Albums View Controller - Albums-->
         <scene sceneID="7cv-xb-Pm3">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ce2-Q1-6Cm" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -250,6 +279,7 @@
             </objects>
             <point key="canvasLocation" x="2323" y="-333"/>
         </scene>
+        <!--Album Thumbnails View Controller-->
         <scene sceneID="3g4-El-WtE">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Gft-rI-tI2" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -264,6 +294,7 @@
             </objects>
             <point key="canvasLocation" x="2775" y="-333"/>
         </scene>
+        <!--Activities View Controller - Second-->
         <scene sceneID="13">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="12" sceneMemberID="firstResponder"/>
@@ -311,6 +342,7 @@
             </objects>
             <point key="canvasLocation" x="1797" y="236"/>
         </scene>
+        <!--Album Choice Selection View Controller-->
         <scene sceneID="Iv7-Y0-qvf">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="er1-lo-eRP" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -329,6 +361,7 @@
             </objects>
             <point key="canvasLocation" x="2323" y="668"/>
         </scene>
+        <!--Image Picker View Controller - Share-->
         <scene sceneID="Aed-cH-mxZ">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="exe-4i-7pb" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -341,6 +374,7 @@
             </objects>
             <point key="canvasLocation" x="1797" y="843"/>
         </scene>
+        <!--People View Controller-->
         <scene sceneID="jeE-Rg-BOg">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7On-8I-Yh3" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -350,6 +384,7 @@
             </objects>
             <point key="canvasLocation" x="2323" y="1435"/>
         </scene>
+        <!--Group Edit View Controller-->
         <scene sceneID="yKE-Gp-adZ">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9bj-cE-50s" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -384,7 +419,7 @@
                                 <rect key="frame" x="0.0" y="91" width="320" height="45"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="10" y="1" width="300" height="43"/>
+                                    <rect key="frame" x="10" y="0.0" width="300" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
@@ -400,6 +435,7 @@
             </objects>
             <point key="canvasLocation" x="2835" y="1824"/>
         </scene>
+        <!--Contact View Controller-->
         <scene sceneID="tIT-kc-q1c">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GWc-GF-fJ7" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -476,6 +512,7 @@
             </objects>
             <point key="canvasLocation" x="2835" y="1225"/>
         </scene>
+        <!--Navigation Controller - People-->
         <scene sceneID="aS7-5Q-Y80">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="3Ue-CB-Nvp" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -491,6 +528,7 @@
             </objects>
             <point key="canvasLocation" x="1797" y="1435"/>
         </scene>
+        <!--Settings View Controller - Settings-->
         <scene sceneID="uqI-wd-a27">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="y8l-Qe-6re" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -514,7 +552,7 @@
                                 <rect key="frame" x="0.0" y="91" width="320" height="45"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="10" y="1" width="300" height="43"/>
+                                    <rect key="frame" x="10" y="0.0" width="300" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
@@ -529,10 +567,14 @@
                     </tableView>
                     <tabBarItem key="tabBarItem" tag="4" title="Settings" image="settings.png" id="voK-aj-wWw"/>
                     <navigationItem key="navigationItem" id="rn3-QW-hZZ"/>
+                    <connections>
+                        <segue destination="vZ8-He-ztX" kind="push" identifier="PrivacyPolicy" id="9nS-eR-0wk"/>
+                    </connections>
                 </tableViewController>
             </objects>
             <point key="canvasLocation" x="2323" y="2116"/>
         </scene>
+        <!--Album Lock View Controller-->
         <scene sceneID="tmB-dq-O77">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7cr-jx-G5X" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -561,6 +603,7 @@
             </objects>
             <point key="canvasLocation" x="2835" y="2456"/>
         </scene>
+        <!--Navigation Controller - Settings-->
         <scene sceneID="umc-pt-STV">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4Qj-9c-Re6" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -576,6 +619,7 @@
             </objects>
             <point key="canvasLocation" x="1797" y="2116"/>
         </scene>
+        <!--Tab Bar Controller-->
         <scene sceneID="15">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="14" sceneMemberID="firstResponder"/>
@@ -598,6 +642,7 @@
             </objects>
             <point key="canvasLocation" x="1128" y="818"/>
         </scene>
+        <!--Navigation Controller - Albums-->
         <scene sceneID="WSx-UK-nj5">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="QQa-tj-8tq" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -616,6 +661,7 @@
             </objects>
             <point key="canvasLocation" x="1797" y="-333"/>
         </scene>
+        <!--Upload Quality View Controller - Settings-->
         <scene sceneID="gZ3-zI-ile">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="est-wE-tqs" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -667,6 +713,7 @@
         <class className="SWActivitiesViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWActivitiesViewController.h"/>
             <relationships>
+                <relationship kind="action" name="removeMediaUpload:"/>
                 <relationship kind="outlet" name="navigationBar" candidateClass="UINavigationBar"/>
                 <relationship kind="outlet" name="tableView" candidateClass="SWTableView"/>
             </relationships>
@@ -734,6 +781,13 @@
         <class className="SWPeopleViewController" superclassName="UIViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWPeopleViewController.h"/>
         </class>
+        <class className="SWPrivacyPolicyViewController" superclassName="UIViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/SWPrivacyPolicyViewController.h"/>
+            <relationships>
+                <relationship kind="action" name="done:"/>
+                <relationship kind="outlet" name="webView" candidateClass="UIWebView"/>
+            </relationships>
+        </class>
         <class className="SWSettingsViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/SWSettingsViewController.h"/>
         </class>
@@ -757,5 +811,6 @@
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
         <segue reference="wgK-Vh-qdu"/>
+        <segue reference="9nS-eR-0wk"/>
     </inferredMetricsTieBreakers>
 </document>

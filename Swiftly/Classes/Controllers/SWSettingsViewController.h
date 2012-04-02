@@ -12,6 +12,7 @@
 #import "SWAlbumLockViewController.h"
 #import "KVPasscodeViewController.h"
 #import "SWUploadQualityViewController.h"
+#import "SWPrivacyPolicyViewController.h"
 
 @interface SWSettingsViewController : UITableViewController
 

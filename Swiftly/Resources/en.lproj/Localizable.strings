@@ -98,7 +98,7 @@
 
 "share_sms"                             = "Hi, check out Swiftly. It's an iPhone app that allows people to privately share their photos and videos. Get it now for free on http://swiftly-app.com";
 
-"help"                                  = "Help";
+"help_info"                             = "Help & Information";
 "app_settings"                          = "App Settings";
 "app_version"                           = "Version: %@";
 "delete_account"                        = "Delete my account";
@@ -168,3 +168,4 @@
 "cancelled"                             = "Cancelled";
 
 "syncing"                               = "Syncing";
+"privacy_policy"                        = "Privacy Policy";

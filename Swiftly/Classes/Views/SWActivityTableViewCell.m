@@ -54,7 +54,7 @@
     
     self.btnClear = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.btnClear setBackgroundImage:[UIImage imageNamed:@"cancel"] forState:UIControlStateNormal];
-    [self.btnClear setBackgroundImage:[UIImage imageNamed:@"cancelPressed"] forState:UIControlStateHighlighted];    
+    //[self.btnClear setBackgroundImage:[UIImage imageNamed:@"cancelPressed"] forState:UIControlStateHighlighted];    
     self.btnClear.frame = CGRectMake(self.frame.size.width - 30, 9, 22, 22);
     [self addSubview:self.btnClear];
 }

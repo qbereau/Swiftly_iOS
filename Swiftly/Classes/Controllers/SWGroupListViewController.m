@@ -45,8 +45,12 @@ static NSUInteger opReq;
 
 - (void)reload
 {
-    self.groups = [SWGroup MR_findAllSortedBy:@"name" ascending:YES];
-    [self.tableView reloadData];    
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+    } completion:^{
+        self.groups = [SWGroup MR_findAllSortedBy:@"name" ascending:YES];
+        [self.tableView reloadData];
+    }];
 }
 
 - (void)viewDidUnload

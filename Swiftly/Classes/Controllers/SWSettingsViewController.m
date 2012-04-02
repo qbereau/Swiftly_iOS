@@ -63,6 +63,14 @@
     }
 }
 
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([[segue identifier] isEqualToString:@"PrivacyPolicy"])
+    {
+        SWPrivacyPolicyViewController *vc = segue.destinationViewController;
+        vc.isModal = NO;
+    }
+}
 
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -83,7 +91,7 @@
             v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"app_settings", @"App Settings")];
             break;
         case 1:
-            v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"help", @"help")];  
+            v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"help_info", @"help & information")];  
             break;
         case 2:
             v.text = nil;
@@ -99,7 +107,7 @@
         case 0:
             return 3;
         case 1:
-            return 1;
+            return 2;
         case 2:
             return 1;
         default:
@@ -163,6 +171,11 @@
                 cell.isSlider = YES;
                 cell.title.text = NSLocalizedString(@"how_do_i", @"how do I");                
             }
+            else 
+            {
+                cell.isSlider = YES;
+                cell.title.text = NSLocalizedString(@"privacy_policy", @"privacy policy");
+            }
             break;
         case 2:
             if (indexPath.row == 0)
@@ -192,6 +205,10 @@
         UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
         SWUploadQualityViewController* uploadQualityVC = [storyboard instantiateViewControllerWithIdentifier:@"UploadQualityViewController"];
         [self.navigationController pushViewController:uploadQualityVC animated:YES];   
+    }
+    else if (indexPath.section == 1 && indexPath.row == 1)
+    {
+        [self performSegueWithIdentifier:@"PrivacyPolicy" sender:nil];
     }
     else if (indexPath.section == 2 && indexPath.row == 0)
     {        

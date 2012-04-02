@@ -1,11 +1,8 @@
 Todo:
 
-- Fix bugs with multi-threading
-- Add Privacy Policy
-- Optimize GetAB
+- Add Privacy Policy --> DONE... Still need to add REAL Privacy Policy
 - Help Section
 - Used Storage + Buy
-- Video Save (Disable??)
 
 - Image / Video Quality --> OK... Still need to to some check when server won't encode videos and compress images
 

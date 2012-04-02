@@ -43,7 +43,7 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     [self reload];
-    [self synchronize];    
+    [self synchronize];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uploadMediaDone:)

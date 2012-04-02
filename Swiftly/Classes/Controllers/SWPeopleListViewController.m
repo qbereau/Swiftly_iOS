@@ -14,6 +14,7 @@
 
 static NSInteger nbUploadPeoplePages = 0;
 
+@synthesize spinner                 = _spinner;
 @synthesize selectedContacts        = _selectedContacts;
 @synthesize contacts                = _contacts;
 @synthesize mode                    = _mode;
@@ -109,6 +110,12 @@ static NSInteger nbUploadPeoplePages = 0;
         
         [self.view addSubview:groupView];
     }
+    
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    self.spinner.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.spinner.frame = self.view.frame;
+    [self.spinner startAnimating];
+    [self.view addSubview:self.spinner];
 }
 
 - (NSArray*)findPeople
@@ -201,14 +208,17 @@ static NSInteger nbUploadPeoplePages = 0;
     
     if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE && !self.selectedContacts)
         self.selectedContacts = [NSMutableArray array];
-    
-    self.contacts = [self findPeople];
 }
 
 - (void)reloadData
 {
-    self.contacts = [self findPeople];    
-    [self.tableView reloadData];
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+    } completion:^{
+        self.contacts = [self findPeople];
+        [self.tableView reloadData];
+        [self.spinner stopAnimating];
+    }];
 }
 
 - (void)viewDidUnload
@@ -232,6 +242,8 @@ static NSInteger nbUploadPeoplePages = 0;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    
+    [self reloadData];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

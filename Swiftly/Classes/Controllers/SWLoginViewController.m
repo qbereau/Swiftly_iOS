@@ -56,7 +56,6 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
-    
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
     [keychain setObject:@"80A4F23BBF417BBD6E89341E3C7DE195" forKey:(__bridge id)kSecAttrAccount];
     [keychain setObject:@"622673F034A64C220D08A17CF19D10FB" forKey:(__bridge id)kSecValueData];
@@ -64,7 +63,6 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
-     
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
@@ -97,6 +95,15 @@
     [super didReceiveMemoryWarning];
     
     // Release any cached data, images, etc that aren't in use.
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([[segue identifier] isEqualToString:@"PrivacyPolicy"])
+    {
+        SWPrivacyPolicyViewController *vc = segue.destinationViewController;
+        vc.isModal = YES;
+    }
 }
 
 #pragma mark - View lifecycle
@@ -232,6 +239,8 @@
                                                                   options: UIViewAnimationCurveEaseInOut
                                                                animations:^{
                                                                    self.vLoginContainer.frame    = CGRectMake(VIEW_CONTAINER_CENTER_POS_X, self.vLoginContainer.frame.origin.y, self.vLoginContainer.frame.size.width, self.vLoginContainer.frame.size.height);
+                                                                   
+                                                                   [self performSegueWithIdentifier:@"PrivacyPolicy" sender:nil];
                                                                }
                                                                completion:^(BOOL f3) {
                                                                    

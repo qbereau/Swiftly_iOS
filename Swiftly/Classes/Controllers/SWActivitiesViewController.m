@@ -176,9 +176,13 @@
 
 - (void)reload
 {
-    self.inProgress = [SWMedia findInProgressObjects];
-    self.recent = [SWMedia findRecentObjects];
-    [self.tableView reloadData];    
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+    } completion:^{
+        self.inProgress = [SWMedia findInProgressObjects];
+        self.recent = [SWMedia findRecentObjects];
+        [self.tableView reloadData];
+    }];
 }
 
 - (void)uploadFiles

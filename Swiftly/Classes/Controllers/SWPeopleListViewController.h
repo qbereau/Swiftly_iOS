@@ -23,23 +23,25 @@
 
 @interface SWPeopleListViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 {
-    NSArray*            _contacts;
-    NSMutableArray*     _selectedContacts;
-    NSInteger           _mode;
-    UITableView*        _tableView;
+    NSArray*                        _contacts;
+    NSMutableArray*                 _selectedContacts;
+    NSInteger                       _mode;
+    UITableView*                    _tableView;
     
-    BOOL                _showOnlyUsers;
+    BOOL                            _showOnlyUsers;
     
-    NSArray*            _groups;
-    UIScrollView*       _scrollView;
+    NSArray*                        _groups;
+    UIScrollView*                   _scrollView;
+    UIActivityIndicatorView*        _spinner;
 }
 
-@property (nonatomic, assign) id <SWPeopleListViewControllerDelegate> delegate;
-@property (nonatomic, strong) NSArray*          contacts;
-@property (nonatomic, strong) NSMutableArray*   selectedContacts;
-@property (nonatomic, assign) NSInteger         mode;
-@property (nonatomic, strong) UITableView*      tableView;
-@property (nonatomic, assign) BOOL              showOnlyUsers;
+@property (nonatomic, assign) id <SWPeopleListViewControllerDelegate>   delegate;
+@property (nonatomic, strong) NSArray*                                  contacts;
+@property (nonatomic, strong) NSMutableArray*                           selectedContacts;
+@property (nonatomic, assign) NSInteger                                 mode;
+@property (nonatomic, strong) UITableView*                              tableView;
+@property (nonatomic, assign) BOOL                                      showOnlyUsers;
+@property (nonatomic, strong) UIActivityIndicatorView*                  spinner;
 
 - (NSPredicate*)predicateForSection:(NSInteger)idx;
 - (void)pushedButton:(SWSwitchButton*)sender;
