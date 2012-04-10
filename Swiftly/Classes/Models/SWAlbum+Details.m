@@ -110,7 +110,11 @@
     dateFromString = [dateFormatter dateFromString:[obj valueForKey:@"updated_at"]];    
     self.lastUpdate         = [dateFromString timeIntervalSinceReferenceDate];
 
-    self.thumbnailURL = [obj valueForKey:@"thumbnail_url"];
+    NSString* thumbURL = [obj valueForKey:@"thumbnail_url"];
+    if (!thumbURL || [thumbURL class] == [NSNull class])
+        self.thumbnailURL = nil;
+    else 
+        self.thumbnailURL = thumbURL;
 }
 
 - (SWAlbum*)deepCopyInContext:(NSManagedObjectContext*)context
@@ -127,6 +131,8 @@
     a.isMyMediasAlbum = self.isMyMediasAlbum;
     a.ownerID = self.ownerID;
     a.thumbnail = self.thumbnail;
+    a.lastUpdate = self.lastUpdate;
+    a.thumbnailURL = self.thumbnailURL;
     
     for (SWMedia* m in self.medias)
     {

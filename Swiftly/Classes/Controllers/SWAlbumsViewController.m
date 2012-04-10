@@ -387,7 +387,7 @@
         self.shouldResync = NO;
     }
     
-    [self.tableView reloadData];
+    [self reload];
 }
 
 - (void)viewWillDisappear:(BOOL)animated

@@ -517,7 +517,7 @@ static NSInteger itemsPerPage = 0;
                                                 [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
                                                     
                                                     NSMutableArray* arrAddedOrigPhoneNumbers = [NSMutableArray array];
-                                                    
+
                                                     for (id newObj in responseObject)
                                                     {
                                                         SWPerson* abPerson = [SWPerson findObjectWithPhoneNumber:[newObj valueForKey:@"original_phone_number"] inContext:localContext people:peopleAB];
@@ -645,78 +645,5 @@ static NSInteger itemsPerPage = 0;
             
     //});
 }
-
-/*
-+ (void)checkNewNumbers:(NSArray*)peopleAB
-{
-    NSLog(@"---->[checkNewNumbers]");
-	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{    
-    // Step 3:  We still need to check if there are new users to the                                            
-    //          AddressBook and sync them with server
-    //          A user might also have changed a friend's phone number
-    //          In that case, we need to relink the new phone number
-    //          In the end we'll only display contacts coming from AddressBook
-    //          With phone numbers matching the ones that the app have               
-    
-    NSMutableArray* newPhoneNumbers = [NSMutableArray array];
-    NSMutableArray* newContacts = [NSMutableArray array];    
-    
-    [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
-        
-        for (SWPerson* p in peopleAB)
-        {
-            BOOL addNewPN = NO;
-            for (SWPhoneNumber* pn in [p.phoneNumbers allObjects])
-            {
-                SWPhoneNumber* localPN = [SWPhoneNumber MR_findFirstByAttribute:@"phoneNumber" withValue:pn.phoneNumber inContext:localContext];
-                if (!localPN)
-                {
-                    addNewPN                = YES;
-                    localPN                 = [SWPhoneNumber MR_createInContext:localContext];
-                    localPN.phoneNumber     = pn.phoneNumber;
-                    localPN.normalized      = NO;
-                    localPN.invalid         = NO;
-                    
-                    [newPhoneNumbers addObject:pn.phoneNumber];
-                }
-            }
-            if (addNewPN)
-                [newContacts addObject:p];
-        }            
-        
-        // Create new link with this contact
-        if ([newPhoneNumbers count] > 0)
-        {
-            if ([newPhoneNumbers count] > itemsPerPage)
-            {
-                int totalItems = [newPhoneNumbers count];
-                int steps = (int)floor(totalItems/itemsPerPage);
-                nbUploadPeoplePages = steps + 1;
-                for (int i = 0; i <= steps; ++i)
-                {
-                    NSRange range = NSMakeRange(i * itemsPerPage, itemsPerPage);
-                    if (i == steps)
-                        range = NSMakeRange(i * itemsPerPage, totalItems - (i * itemsPerPage));
-                    NSArray* sub = [newPhoneNumbers subarrayWithRange:range];
-                    NSDictionary* dict = [NSDictionary dictionaryWithObject:sub forKey:@"phone_numbers"];
-                    [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
-                }
-            }
-            else
-            {
-                nbUploadPeoplePages = 1;
-                NSDictionary* dict = [NSDictionary dictionaryWithObject:newPhoneNumbers forKey:@"phone_numbers"];
-                [SWPeopleListViewController uploadPeople:dict newContacts:newContacts peopleAB:peopleAB];
-            }
-        }
-        else
-        {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"SWABProcessDone" object:nil];
-        }         
-        
-    }];
-    //});
-}
-*/
 
 @end

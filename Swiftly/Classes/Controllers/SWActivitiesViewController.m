@@ -114,7 +114,7 @@
                                                         {
                                                             NSLog(@"Delete file error: %@", errDel);
                                                         }
-                                                    }                                                
+                                                    }
                                                     
                                                     [blockSelf reload];                                                
                                                     

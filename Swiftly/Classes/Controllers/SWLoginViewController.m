@@ -56,6 +56,7 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
+    
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
     [keychain setObject:@"80A4F23BBF417BBD6E89341E3C7DE195" forKey:(__bridge id)kSecAttrAccount];
     [keychain setObject:@"622673F034A64C220D08A17CF19D10FB" forKey:(__bridge id)kSecValueData];
@@ -63,6 +64,7 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
     [defaults synchronize];
+     
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
