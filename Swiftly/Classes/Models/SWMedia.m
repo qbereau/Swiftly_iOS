@@ -2,7 +2,7 @@
 //  SWMedia.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 3/29/12.
+//  Created by Quentin Bereau on 4/11/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -14,33 +14,40 @@
 
 @implementation SWMedia
 
-@dynamic acl;
+@dynamic originalACL;
 @dynamic assetURL;
-@dynamic awsAccessKeyID;
+@dynamic originalAWSAccessKeyID;
 @dynamic bucketURL;
-@dynamic contentType;
+@dynamic originalContentType;
 @dynamic creatorID;
 @dynamic duration;
-@dynamic filename;
+@dynamic originalFilename;
+@dynamic isCancelled;
+@dynamic isHiddenFromActivities;
 @dynamic isImage;
 @dynamic isOpen;
 @dynamic isOwner;
 @dynamic isReady;
+@dynamic isSyncedFromServer;
 @dynamic isUploaded;
 @dynamic isVideo;
 @dynamic localResourceURL;
 @dynamic localThumbnailURL;
-@dynamic policy;
+@dynamic originalPolicy;
 @dynamic resourceURL;
 @dynamic serverID;
-@dynamic signature;
+@dynamic originalSignature;
 @dynamic thumbnail;
 @dynamic thumbnailURL;
 @dynamic uploadedDate;
 @dynamic uploadProgress;
-@dynamic isCancelled;
-@dynamic isHiddenFromActivities;
-@dynamic isSyncedFromServer;
+@dynamic thumbnailACL;
+@dynamic thumbnailAWSAccessKeyID;
+@dynamic thumbnailContentType;
+@dynamic thumbnailFilename;
+@dynamic thumbnailPolicy;
+@dynamic thumbnailSignature;
+@dynamic nbComments;
 @dynamic album;
 @dynamic comments;
 @dynamic sharedPeople;

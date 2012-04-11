@@ -59,7 +59,8 @@
 
 - (void)setup;
 - (void)accountValidated;
-- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token userID:(int)userID;
+- (void)registerServiceWithUserID:(int)userID;
+- (void)codeValidatedWithUserID:(int)userID serviceID:(int)serviceID;
 - (void)codeNotValidated;
 - (void)gotoApp;
 - (void)moveTextViewForKeyboard:(NSNotification*)aNotification up:(BOOL)up;

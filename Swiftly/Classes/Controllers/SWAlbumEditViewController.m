@@ -84,14 +84,27 @@
                 NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];                
                 NSString* fileType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
                 
-                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
+                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];  
+                
+                // Video Duration
+                __block int videoDuration = -1;
+                ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+                [assetslibrary assetForURL:mediaUrl
+                               resultBlock:^(ALAsset *asset) {
+                                   videoDuration = [[asset valueForProperty:ALAssetPropertyDuration] intValue];
+                               } failureBlock:^(NSError *error) {
+                                   
+                               }];
+                NSLog(@"==> Video Duration: %d", videoDuration);
+                // ---
                 
                 NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  fileType, @"content_type", 
-                                                                                    [NSNumber numberWithInt:album.serverID], @"album_id", 
+                                                                                    @"data", @"type",
+                                                                                    [NSNumber numberWithInt:album.serverID], @"parent_id", 
                                                                                     [NSNumber numberWithBool:canExportMedias], @"open",
                                         nil];
                 
-                [[SWAPIClient sharedClient] postPath:@"/medias"
+                [[SWAPIClient sharedClient] postPath:@"/nodes"
                                           parameters:params
                                              success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                  
@@ -111,7 +124,7 @@
                                                      
                                                      blockSelf.tabBarController.selectedIndex = 1;
                                                      [blockSelf.navigationController popToRootViewControllerAnimated:NO];
-                                                 }                                                     
+                                                 }
                                                  
                                              } 
                                              failure:blockSelf.genericFailureBlock
@@ -198,7 +211,7 @@
 
             self.album.name = self.inputAlbumName.text;
             
-            [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/albums/%d", self.album.serverID]
+            [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/nodes/%d", self.album.serverID]
                                          parameters:[self.album toDictionnary]
                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                 
@@ -222,18 +235,9 @@
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
 
             self.album.name = self.inputAlbumName.text;
-            
-            NSMutableArray* contacts_arr = [NSMutableArray array];
-            for (SWPerson* p in self.album.participants)
-            {
-                [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
-            }
-            NSMutableDictionary* params = [NSMutableDictionary dictionaryWithDictionary:[self.album toDictionnary]];
-            [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:contacts_arr forKey:@"add_account_ids"]];
 
-
-            [[SWAPIClient sharedClient] postPath:@"/albums"
-                                      parameters:params
+            [[SWAPIClient sharedClient] postPath:@"/nodes"
+                                      parameters:[self.album toDictionnary]
                                          success:^(AFHTTPRequestOperation *operation, id responseObject) {
 
                                              self.album = [SWAlbum MR_createEntity];
@@ -277,9 +281,21 @@
                 
                 UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
                 
-                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", nil];
+                // Video Duration
+                __block int videoDuration = -1;
+                ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+                [assetslibrary assetForURL:mediaUrl
+                               resultBlock:^(ALAsset *asset) {
+                                   videoDuration = [[asset valueForProperty:ALAssetPropertyDuration] intValue];
+                               } failureBlock:^(NSError *error) {
+                                   
+                               }];
+                NSLog(@"==> Video Duration: %d", videoDuration);
+                // ---
                 
-                [[SWAPIClient sharedClient] postPath:@"/medias"
+                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", self.album.serverID, @"parent_id", nil];
+                
+                [[SWAPIClient sharedClient] postPath:@"/nodes"
                                           parameters:params
                                              success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                  
@@ -306,7 +322,7 @@
                                                                                        newMedias, @"media_ids",
                                                                                        accountIDs, @"account_ids"
                                                                                        , nil];
-                                                     [[SWAPIClient sharedClient] putPath:@"/medias/quickshare"
+                                                     [[SWAPIClient sharedClient] putPath:@"/nodes/quickshare"
                                                                               parameters:quickshareParams
                                                                                  success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                      
@@ -331,6 +347,8 @@
 
 - (void)cleanupAlbum:(BOOL)shouldUnlink
 {
+    NSLog(@"TODO");
+    /*
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self.navigationController.view animated:YES];
 	hud.labelText = NSLocalizedString(@"loading", @"loading");
     
@@ -342,7 +360,7 @@
         else
             unlink = @"";
         
-        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/albums/%d/cleanup%@", self.album.serverID, unlink]
+        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/nodes/%d/cleanup%@", self.album.serverID, unlink]
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
@@ -351,6 +369,7 @@
                                     failure:self.genericFailureBlock
          ];
     });
+     */
 }
 
 - (void)deleteAlbum:(BOOL)shouldUnlink
@@ -366,7 +385,7 @@
         else
             unlink = @"";
         
-        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/albums/%d%@", self.album.serverID, unlink]
+        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/nodes/%d%@", self.album.serverID, unlink]
                                     parameters:nil
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            

@@ -72,10 +72,10 @@
             NSString* uri = @"";
             if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
             {
-                uri = [NSString stringWithFormat:@"/albums/%d/medias", self.selectedAlbum.serverID];
+                uri = [NSString stringWithFormat:@"/nodes/%d/children", self.selectedAlbum.serverID];
             }
             else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
-                uri = [NSString stringWithFormat:@"/accounts/%d/medias", self.contact.serverID];
+                uri = [NSString stringWithFormat:@"/users/%d/nodes", self.contact.serverID];
             
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:uri, self.selectedAlbum.serverID]
                                      parameters:nil

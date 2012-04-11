@@ -10,8 +10,8 @@
 
 #import "SWAlbumEditViewController.h"
 
-#define BUTTON_UNLINKPHOTO 0
-#define BUTTON_DELETEPHOTO 1
+#define BUTTON_DELETEPHOTO 0
+#define BUTTON_UNLINKPHOTO 1
 #define BUTTON_CANCEL 2
 
 #define ACTIONSHEET_TRASH 0
@@ -62,7 +62,7 @@
                                                destructiveButtonTitle:(m.isOwner ? NSLocalizedString(@"delete_file", @"Delete file button text.") : nil)
                                                     otherButtonTitles:NSLocalizedString(@"unlink_file", @"Unlink file"), nil];
 
-    [actionSheet_ setTag:ACTIONSHEET_TRASH];
+    [actionSheet setTag:ACTIONSHEET_TRASH];
     [actionSheet showInView:[self view]];
 }
 
@@ -76,8 +76,7 @@
 - (void)updateExportPhotoButtonState
 {
     SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];    
-    NSInteger iComments = [[SWComment findLatestCommentsForMediaID:m.serverID inContext:[NSManagedObjectContext MR_context]] count];
-    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), iComments] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
+    UIBarButtonItem* btnComments = [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:NSLocalizedString(@"menu_comments", @"comments"), m.nbComments] style:UIBarButtonItemStylePlain target:self action:@selector(comments:)];
     self.navigationItem.rightBarButtonItem = btnComments;
     
     
@@ -100,7 +99,7 @@
 {
     SWMedia* m = [((SWWebImagesDataSource*)dataSource_) mediaAtIndex:currentIndex_];
     
-    if ([actionSheet_ tag] == ACTIONSHEET_TRASH)
+    if ([actionSheet tag] == ACTIONSHEET_TRASH)
     {
         NSString* strUnlink = @"";
         BOOL shouldRemove = NO;
@@ -116,7 +115,7 @@
         
         if (shouldRemove)
         {
-            [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/medias/%d%@", m.serverID, strUnlink]
+            [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/nodes/%d%@", m.serverID, strUnlink]
                                         parameters:nil 
                                            success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                [super deleteCurrentPhoto];
@@ -130,7 +129,7 @@
         
         [self startChromeDisplayTimer];
     }
-    else if ([actionSheet_ tag] == ACTIONSHEET_EXPORT)
+    else if ([actionSheet tag] == ACTIONSHEET_EXPORT)
     {
         if (buttonIndex == BUTTON_EXPORT_SAVE_PHOTO)
         {

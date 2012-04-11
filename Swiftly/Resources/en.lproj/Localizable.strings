@@ -169,3 +169,4 @@
 
 "syncing"                               = "Syncing";
 "privacy_policy"                        = "Privacy Policy";
+"error_register_service"                = "A strange error happened! Maybe your internet connection dropped? We're very sorry for the inconvenience, could you retry to register?";

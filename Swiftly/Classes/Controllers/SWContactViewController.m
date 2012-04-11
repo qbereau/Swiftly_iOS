@@ -207,9 +207,9 @@
         
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
             
-            NSString* uri = @"/accounts/block";
+            NSString* uri = @"/users/block";
             if (self.contact.isBlocked)
-                uri = @"/accounts/unblock";
+                uri = @"/users/unblock";
             
             NSArray* arr_ids = [NSArray arrayWithObject:[NSNumber numberWithInt:self.contact.serverID]];
             NSDictionary* params = [NSDictionary dictionaryWithObject:arr_ids forKey:@"ids"];

@@ -19,6 +19,7 @@ typedef void (^GenericFailureBlock)(AFHTTPRequestOperation*, NSError*);
 
 @property (strong, nonatomic) UIWindow *window;
 
++ (int)serviceID;
 - (NSURL *)applicationDocumentsDirectory;
 
 @end

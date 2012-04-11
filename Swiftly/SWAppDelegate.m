@@ -13,6 +13,17 @@
 
 @synthesize window = _window;
 
+static int sID = -1;
++ (int)serviceID
+{
+    if (sID != -1)
+        return sID;
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    sID = [defaults integerForKey:@"sid"];        
+    return sID;
+}
+
 - (void)customizeUI
 {
     
@@ -171,6 +182,7 @@
     if (application.applicationState != UIApplicationStateActive)
         application.applicationIconBadgeNumber += 1;
     
+    /*
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         // Format: "[2, 123]"
         NSString* s = [userInfo valueForKey:@"album_ids"];
@@ -184,6 +196,9 @@
     } completion:^{
         [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNewMedias" object:nil];        
     }];
+     */
+    NSLog(@"todo: notifications support");
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNewMedias" object:nil];
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken 

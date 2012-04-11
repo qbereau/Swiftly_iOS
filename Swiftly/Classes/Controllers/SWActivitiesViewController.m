@@ -37,99 +37,122 @@
     __block SWActivitiesViewController* blockSelf = self;
     self.uploadDataBlock = ^(SWMedia* m, NSData* data, NSString* filePath) {
             
-            NSDictionary* headers = [NSDictionary dictionaryWithObjectsAndKeys: 
-                                     m.filename, @"key", 
-                                     m.awsAccessKeyID, @"AWSAccessKeyId",
-                                     m.acl, @"acl",
-                                     m.policy, @"policy",
-                                     m.signature, @"signature",
-                                     m.contentType, @"Content-Type",
+            NSDictionary* thumbnailHeaders = [NSDictionary dictionaryWithObjectsAndKeys: 
+                                                 m.thumbnailFilename, @"key", 
+                                                 m.thumbnailAWSAccessKeyID, @"AWSAccessKeyId",
+                                                 m.thumbnailACL, @"acl",
+                                                 m.thumbnailPolicy, @"policy",
+                                                 m.thumbnailSignature, @"signature",
+                                                 m.thumbnailContentType, @"Content-Type",
+                                            nil];
+        
+            NSDictionary* dataHeaders = [NSDictionary dictionaryWithObjectsAndKeys: 
+                                             m.originalFilename, @"key", 
+                                             m.originalAWSAccessKeyID, @"AWSAccessKeyId",
+                                             m.originalACL, @"acl",
+                                             m.originalPolicy, @"policy",
+                                             m.originalSignature, @"signature",
+                                             m.originalContentType, @"Content-Type",
                                      nil];
             AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:m.bucketURL]];                               
-            NSMutableURLRequest *request = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:headers constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {
-                [formData appendPartWithFileData:data name:@"file" fileName:m.filename mimeType:m.contentType];
+            NSMutableURLRequest *thumbnailRequest = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:thumbnailHeaders constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {
+                [formData appendPartWithFileData:UIImagePNGRepresentation(m.thumbnail) name:@"file" fileName:m.thumbnailFilename mimeType:m.thumbnailContentType];
+            }];
+        
+            NSMutableURLRequest *dataRequest = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:dataHeaders constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {
+                [formData appendPartWithFileData:data name:@"file" fileName:m.originalFilename mimeType:m.originalContentType];
             }];
 
-            AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
-            __weak AFHTTPRequestOperation* op = operation;
-            [operation setUploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+            AFHTTPRequestOperation *thumbnailOperation = [[AFHTTPRequestOperation alloc] initWithRequest:thumbnailRequest];
+        
+            [thumbnailOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                 
-                if (m.isCancelled)
-                {
-                    [op cancel];
-                    return;
-                }
-                
-                if (m.isVideo)
-                    m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite / 2 + 0.5f;
-                else
-                    m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
-
-                [blockSelf launchRefreshTimer];
-            }];
-            [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
-                
-                NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObject:m.signature forKey:@"signature"];
-                --blockSelf.nbUploadElements;
-                if (blockSelf.nbUploadElements <= 0)
-                    [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:@"notify"]];
-                
-                [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/medias/%d/confirm_upload", m.serverID]
-                                         parameters:params
-                                            success:^(AFHTTPRequestOperation *opReq, id respObjReq) {
-                                                
-                                                [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                // Thumbnail is uploaded, upload data
+                AFHTTPRequestOperation *dataOperation = [[AFHTTPRequestOperation alloc] initWithRequest:dataRequest];
+                __weak AFHTTPRequestOperation* dataOp = dataOperation;
+                [dataOperation setUploadProgressBlock:^(NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite) {
+                    
+                    if (m.isCancelled)
+                    {
+                        [dataOp cancel];
+                        return;
+                    }
+                    
+                    if (m.isVideo)
+                        m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite / 2 + 0.5f;
+                    else
+                        m.uploadProgress = (float)totalBytesWritten / (float)totalBytesExpectedToWrite;
+                    
+                    [blockSelf launchRefreshTimer];
+                }];
+                [dataOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+                    
+                    NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObject:m.originalSignature forKey:@"signature"];
+                    --blockSelf.nbUploadElements;
+                    if (blockSelf.nbUploadElements <= 0)
+                        [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:@"notify"]];
+                    
+                    [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/nodes/%d/confirm_upload", m.serverID]
+                                             parameters:params
+                                                success:^(AFHTTPRequestOperation *opReq, id respObjReq) {
                                                     
-                                                    SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
-                                                    media.uploadProgress = 1.0f;
-                                                    media.isUploaded = YES;
-                                                    media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
-                                                    
-                                                    NSError *errDel;
-                                                    if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
-                                                    {
-                                                        if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                    [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                                                        
+                                                        SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
+                                                        media.uploadProgress = 1.0f;
+                                                        media.isUploaded = YES;
+                                                        media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];
+                                                        
+                                                        NSError *errDel;
+                                                        if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
                                                         {
-                                                            NSLog(@"Delete file error: %@", errDel);
+                                                            if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                            {
+                                                                NSLog(@"Delete file error: %@", errDel);
+                                                            }
                                                         }
-                                                    }
+                                                        
+                                                        [blockSelf reload];
+                                                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];                                                      
+                                                    }];
+                                                }
+                                                failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
                                                     
-                                                    [blockSelf reload];
-                                                    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];                                                      
-                                                }];
-                                            }
-                                            failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
-                                                
-                                                [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
-                                                    
-                                                    SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
-                                                    media.uploadProgress = 1.0f;
-                                                    media.isUploaded = YES;
-                                                    media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];                                           
-                                                    
-                                                    NSError *errDel;
-                                                    if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
-                                                    {
-                                                        if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                    [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                                                        
+                                                        SWMedia* media = [SWMedia MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:m.serverID] inContext:localContext];
+                                                        media.uploadProgress = 1.0f;
+                                                        media.isUploaded = YES;
+                                                        media.uploadedDate = [[NSDate date] timeIntervalSinceReferenceDate];                                           
+                                                        
+                                                        NSError *errDel;
+                                                        if (filePath && [[NSFileManager defaultManager] fileExistsAtPath:filePath])
                                                         {
-                                                            NSLog(@"Delete file error: %@", errDel);
+                                                            if (![[NSFileManager defaultManager] removeItemAtPath:filePath error:&errDel])
+                                                            {
+                                                                NSLog(@"Delete file error: %@", errDel);
+                                                            }
                                                         }
-                                                    }
-                                                    
-                                                    [blockSelf reload];                                                
-                                                    
-                                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                                        UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                                        [av show];
-                                                    });
-                                                }];
-                                            }
-                 ];
+                                                        
+                                                        [blockSelf reload];                                                
+                                                        
+                                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                                            UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                                            [av show];
+                                                        });
+                                                    }];
+                                                }
+                     ];
+                    
+                } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                    NSLog(@"error: %@", [operation responseString]);                
+                }];
+                [dataOperation start];                
                 
             } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                 NSLog(@"error: %@", [operation responseString]);                
             }];
-            [operation start];
+            [thumbnailOperation start];
     };
 }
 
@@ -150,7 +173,6 @@
     [super viewDidAppear:animated];
 
     [self reload];
-    [self uploadFiles];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -182,6 +204,8 @@
         self.inProgress = [SWMedia findInProgressObjects];
         self.recent = [SWMedia findRecentObjects];
         [self.tableView reloadData];
+        
+        [self uploadFiles];        
     }];
 }
 
@@ -209,14 +233,14 @@
                 [assetslibrary assetForURL:[NSURL URLWithString:m.assetURL]
                                resultBlock:^(ALAsset *asset) {
                                    
-                                   if ([m.contentType isEqualToString:@"image/png"])
+                                   if ([m.originalContentType isEqualToString:@"image/png"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];
                                        NSData* imgData = UIImagePNGRepresentation(img);
                                        ++self.nbUploadElements;
                                        self.uploadDataBlock(m, imgData, nil);
                                    }
-                                   else if ([m.contentType isEqualToString:@"image/jpg"] || [m.contentType isEqualToString:@"image/jpeg"])
+                                   else if ([m.originalContentType isEqualToString:@"image/jpg"] || [m.originalContentType isEqualToString:@"image/jpeg"])
                                    {
                                        UIImage* img = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];                                   
                                        NSData* imgData = UIImageJPEGRepresentation(img, imageCompression);
@@ -238,7 +262,7 @@
                                        
                                        NSArray *dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
                                        NSString *documentsDirectoryPath = [dirs objectAtIndex:0];
-                                       NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:m.filename];
+                                       NSString* exportPath = [documentsDirectoryPath stringByAppendingPathComponent:m.originalFilename];
                                        [[NSFileManager defaultManager] removeItemAtPath:exportPath error:nil];
                                        
                                        NSURL* exportURL = [NSURL fileURLWithPath:exportPath];

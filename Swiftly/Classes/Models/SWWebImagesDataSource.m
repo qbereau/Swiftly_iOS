@@ -118,10 +118,10 @@
 - (void)mediaAtIndex:(NSInteger)index photoView:(KTPhotoView*)photoView 
 {
     SWMedia* m = [_filteredMedias objectAtIndex:index];
-    if (m.isImage)
-        [self imageAtIndex:index photoView:photoView];
-    else if (m.isVideo)
+    if (m.isVideo)
         [self videoAtIndex:index photoView:photoView];
+    else
+        [self imageAtIndex:index photoView:photoView];
 }
 
 - (void)videoAtIndex:(NSInteger)index photoView:(KTPhotoView*)photoView
@@ -159,13 +159,6 @@
             
             [library writeImageToSavedPhotosAlbum:img.CGImage metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
 
-            }];
-        }
-        else if (m.isVideo)
-        {
-            [library writeVideoAtPathToSavedPhotosAlbum:[NSURL URLWithString:m.resourceURL] completionBlock:^(NSURL *assetURL, NSError *error) {
-                NSLog(@"Video Saved!");
-                NSLog(@"Eror: %@", [error description]);
             }];
         }
 

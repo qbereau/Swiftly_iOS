@@ -31,14 +31,10 @@
         <relationship name="contacts" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="groups" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
     <entity name="SWMedia" representedClassName="SWMedia" syncable="YES">
-        <attribute name="acl" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="assetURL" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="awsAccessKeyID" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bucketURL" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="contentType" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="creatorID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="duration" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="filename" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="isCancelled" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isHiddenFromActivities" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isImage" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -50,11 +46,22 @@
         <attribute name="isVideo" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="localResourceURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="localThumbnailURL" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="policy" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="nbComments" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="originalACL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalAWSAccessKeyID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalContentType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalFilename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalPolicy" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="originalSignature" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="resourceURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="serverID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="signature" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbnail" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="thumbnailACL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailAWSAccessKeyID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailContentType" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailFilename" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailPolicy" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnailSignature" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbnailURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="uploadedDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="uploadProgress" optional="YES" attributeType="Float" defaultValueString="0" syncable="YES"/>
@@ -88,7 +95,7 @@
         <element name="SWAlbum" positionX="126" positionY="360" width="128" height="285"/>
         <element name="SWComment" positionX="160" positionY="192" width="128" height="120"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="495"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="600"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="255"/>
         <element name="SWPhoneNumber" positionX="160" positionY="192" width="128" height="105"/>
     </elements>

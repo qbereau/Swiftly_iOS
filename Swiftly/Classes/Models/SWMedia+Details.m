@@ -10,6 +10,9 @@
 #import "SDImageCache.h"
 #import "KTPhotoView+SDWebImage.h"
 #import "KTThumbView+SDWebImage.h"
+#import <AssetsLibrary/ALAssetsLibrary.h>
+#import <AssetsLibrary/ALAsset.h>
+#import <AssetsLibrary/ALAssetRepresentation.h>
 
 @implementation SWMedia (Details)
 
@@ -39,13 +42,29 @@
 - (void)updateWithObject:(id)obj
 {        
     self.serverID                   = [[obj valueForKey:@"id"] intValue];
-    self.isReady                    = [[obj valueForKey:@"ready"] boolValue];
+    self.isReady                    = [obj objectForKey:@"ready"] ? [[obj valueForKey:@"ready"] boolValue] : YES;
     self.creatorID                  = [[obj valueForKey:@"creator_id"] intValue];
-    self.isImage                    = [[obj valueForKey:@"image"] boolValue];
-    self.isVideo                    = [[obj valueForKey:@"video"] boolValue];
-    self.isOpen                     = [[obj valueForKey:@"open"] boolValue];
+    
+    NSString* contentType = [obj objectForKey:@"content_type"];
+    if ([contentType rangeOfString:@"image"].location != NSNotFound)
+    {
+        self.isImage    = YES;
+        self.isVideo    = NO;
+    }
+    else if ([contentType rangeOfString:@"video"].location != NSNotFound)
+    {
+        self.isImage    = NO;
+        self.isVideo    = YES;
+    }
+
     self.isOwner                    = [[obj valueForKey:@"owner"] boolValue];
-    self.duration                   = (int)round([[obj valueForKey:@"duration"] doubleValue]);
+    self.nbComments                 = [[obj valueForKey:@"comment_count"] intValue];
+    
+    // --
+    NSLog(@"WRONG isOpen & duration should use userData");
+    self.isOpen                     = YES; // [[obj valueForKey:@"open"] boolValue];
+    self.duration                   = 0; // (int)round([[obj valueForKey:@"duration"] doubleValue]); 
+    // --
     
     id thumb_url = [obj valueForKey:@"thumbnail_url"];
     if (thumb_url && [thumb_url class] != [NSNull class])
@@ -55,16 +74,26 @@
     if (res_url && [res_url class] != [NSNull class])
         self.resourceURL = res_url;
     
-    id uploadInfo = [obj valueForKey:@"upload_info"];
+    id uploadInfo = [obj valueForKey:@"meta"];
     if (uploadInfo && [uploadInfo class] != [NSNull class])
     {
-        self.contentType    = [uploadInfo valueForKey:@"content_type"];
-        self.signature      = [uploadInfo valueForKey:@"signature"];
-        self.policy         = [uploadInfo valueForKey:@"policy"];
-        self.acl            = [uploadInfo valueForKey:@"acl"];
-        self.filename       = [uploadInfo valueForKey:@"filename"];
-        self.awsAccessKeyID = [uploadInfo valueForKey:@"aws_access_key_id"];
-        self.bucketURL      = [uploadInfo valueForKey:@"bucket_url"];
+        self.bucketURL      = [uploadInfo valueForKey:@"bucket_url"];        
+        
+        id orig                     = [uploadInfo valueForKey:@"original"];
+        self.originalContentType    = [orig valueForKey:@"content_type"];
+        self.originalSignature      = [orig valueForKey:@"signature"];
+        self.originalPolicy         = [orig valueForKey:@"policy"];
+        self.originalACL            = [orig valueForKey:@"acl"];
+        self.originalFilename       = [orig valueForKey:@"filename"];
+        self.originalAWSAccessKeyID = [orig valueForKey:@"aws_access_key_id"];
+        
+        id th                        = [uploadInfo valueForKey:@"thumbnail"];
+        self.thumbnailContentType    = [th valueForKey:@"content_type"];
+        self.thumbnailSignature      = [th valueForKey:@"signature"];
+        self.thumbnailPolicy         = [th valueForKey:@"policy"];
+        self.thumbnailACL            = [th valueForKey:@"acl"];
+        self.thumbnailFilename       = [th valueForKey:@"filename"];
+        self.thumbnailAWSAccessKeyID = [th valueForKey:@"aws_access_key_id"];        
     }
 }
 

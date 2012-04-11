@@ -412,7 +412,7 @@ static NSInteger itemsPerPage = 0;
 
             NSArray* peopleAB = [SWPerson getPeopleABInContext:context];        
 
-            [[SWAPIClient sharedClient] getPath:@"/accounts"
+            [[SWAPIClient sharedClient] getPath:@"/users"
                                      parameters:nil
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             if ([responseObject isKindOfClass:[NSArray class]])
@@ -430,7 +430,7 @@ static NSInteger itemsPerPage = 0;
 
                                                     for (int i = 2; i <= iTotalPages; ++i)
                                                     {
-                                                        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/accounts?page=%d", i]
+                                                        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/users?page=%d", i]
                                                                                  parameters:nil
                                                                                     success:^(AFHTTPRequestOperation *op2, id respObj2) {
 
@@ -508,7 +508,7 @@ static NSInteger itemsPerPage = 0;
     NSLog(@"---->[uploadPeople]");
 	//dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
-            [[SWAPIClient sharedClient] putPath:@"/accounts/link" 
+            [[SWAPIClient sharedClient] putPath:@"/users/link" 
                                      parameters:dict 
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             if ([responseObject isKindOfClass:[NSArray class]])

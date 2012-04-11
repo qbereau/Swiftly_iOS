@@ -25,5 +25,6 @@
 
 #define MR_SHORTHAND
 
-#define SWIFTLY_APP_ID @"com.swiftly.swiftly"
-#define SWIFTLY_LOCK_ID @"com.swiftly.swiftly_locks"
+#define SWIFTLY_SERVICE_NAME    @"swiftly"
+#define SWIFTLY_APP_ID          @"com.swiftly.swiftly"
+#define SWIFTLY_LOCK_ID         @"com.swiftly.swiftly_locks"

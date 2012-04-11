@@ -56,15 +56,16 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
-    
+    /*
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
-    [keychain setObject:@"80A4F23BBF417BBD6E89341E3C7DE195" forKey:(__bridge id)kSecAttrAccount];
-    [keychain setObject:@"622673F034A64C220D08A17CF19D10FB" forKey:(__bridge id)kSecValueData];
+    [keychain setObject:@"6ABB8B3498E9AFD2CCD842764143457A" forKey:(__bridge id)kSecAttrAccount];
+    [keychain setObject:@"FB5AF49B7ABEF82F2BA6BA3978B10F14" forKey:(__bridge id)kSecValueData];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
+    [defaults setInteger:1 forKey:@"sid"];
     [defaults synchronize];
-     
+     */
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];
@@ -272,16 +273,12 @@
                      }];
 }
 
-- (void)codeValidatedWithKey:(NSString*)key token:(NSString*)token userID:(int)userID
+- (void)codeValidatedWithUserID:(int)userID serviceID:(int)serviceID
 { 
-    // Save to Keychain
-    KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
-    [keychain setObject:key forKey:(__bridge id)kSecAttrAccount];
-    [keychain setObject:token forKey:(__bridge id)kSecValueData];
-    
-    // Also save a dummy BOOL that will be erased if the deletes the app
+    // save a dummy BOOL that will be erased if the deletes the app
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
+    [defaults setInteger:serviceID forKey:@"sid"];
     [defaults synchronize];
     
     // Still needs to push device token
@@ -293,7 +290,7 @@
                                     [NSNumber numberWithBool:YES], @"enabled",
                                 nil];
         NSDictionary* registerDevice = [NSDictionary dictionaryWithObject:params forKey:@"register_device"];
-        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/accounts/%d", userID] 
+        [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/users/%d", userID] 
                                   parameters:registerDevice 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                          [self gotoApp];
@@ -302,7 +299,7 @@
                                          [self gotoApp];
                                          NSLog(@"error");
                                      }
-         ];         
+         ];
     }
     else
     {
@@ -364,7 +361,7 @@
         // Check API
         _userPhoneNumber = [NSString stringWithFormat:@"%@%@", self.lblPhonePrefix.text, self.inputPhoneNumber.text];
         NSDictionary* dict = [NSDictionary dictionaryWithObject:_userPhoneNumber forKey:@"phone_number"];
-        [[SWAPIClient sharedClient] postPath:@"/accounts" 
+        [[SWAPIClient sharedClient] postPath:@"/users" 
                                   parameters:dict 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) 
                                      {
@@ -427,7 +424,7 @@
     // API Call
     NSString* code = self.inputValidationCode.text;
     NSDictionary* dict = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:_userPhoneNumber, code, nil] forKeys:[NSArray arrayWithObjects:@"phone_number", @"activation_code", nil]];
-    [[SWAPIClient sharedClient] postPath:@"/accounts/activate" 
+    [[SWAPIClient sharedClient] postPath:@"/users/activate" 
                               parameters:dict 
                                  success:^(AFHTTPRequestOperation *operation, id responseObject) 
                                         {
@@ -445,12 +442,38 @@
                                             
                                             [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                             
-                                            [self codeValidatedWithKey:key token:token userID:userID];
+                                            // Save to Keychain
+                                            KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
+                                            [keychain setObject:key forKey:(__bridge id)kSecAttrAccount];
+                                            [keychain setObject:token forKey:(__bridge id)kSecValueData];
+                                            NSLog(@"key: %@", key);
+                                            NSLog(@"token: %@", token);
+                                            
+                                            [self registerServiceWithUserID:userID];
                                         }
                                  failure:^(AFHTTPRequestOperation *operation, NSError *error) 
                                         {
                                             [self codeNotValidated];
                                         }
+     ];    
+}
+
+- (void)registerServiceWithUserID:(int)userID
+{
+    [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/services/subscribe?service_name=%@", SWIFTLY_SERVICE_NAME] 
+                             parameters:nil 
+                                success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                    int serviceID = [[responseObject objectForKey:@"id"] intValue];
+                                    [self codeValidatedWithUserID:userID serviceID:serviceID];
+                                }
+                                failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@""
+                                                                                    message:NSLocalizedString(@"error_register_service", @"something weird happened")
+                                                                                   delegate:self
+                                                                          cancelButtonTitle:@"OK"
+                                                                          otherButtonTitles:nil];
+                                    [alert show];
+                                }
      ];    
 }
 

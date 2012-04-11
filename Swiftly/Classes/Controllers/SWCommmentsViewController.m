@@ -89,7 +89,7 @@
     
     dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];        
-        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
+        [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/nodes/%d/comments", self.media.serverID]
                                                             parameters:nil 
                                                                success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                                    if ([responseObject isKindOfClass:[NSArray class]])
@@ -111,7 +111,7 @@
                                                                            
                                                                            for (int i = 2; i <= iTotalPages; ++i)
                                                                            {
-                                                                               [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/medias/%d/comments?page=%d", self.media.serverID, i]
+                                                                               [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/nodes/%d/comments?page=%d", self.media.serverID, i]
                                                                                                         parameters:nil
                                                                                                            success:^(AFHTTPRequestOperation *op2, id respObj2) {
                                                                                                                
@@ -194,7 +194,7 @@
             
             NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
             
-            [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/medias/%d/comments", self.media.serverID]
+            [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/nodes/%d/comments", self.media.serverID]
                                      parameters:param 
                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                             

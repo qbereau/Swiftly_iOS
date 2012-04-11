@@ -95,12 +95,31 @@
         self.name = album_name;
     
     self.serverID           = [[obj valueForKey:@"id"] intValue];
-    self.canEditPeople      = [[obj valueForKey:@"edit_accounts"] boolValue];
-    self.canEditMedias      = [[obj valueForKey:@"edit_medias"] boolValue];
-    self.ownerID            = [[obj valueForKey:@"owner_id"] intValue];
+    
+    // --
+    NSLog(@"==> Should come from userData");
+    self.canEditPeople      = [[obj valueForKey:@"grant"] boolValue];
+    self.canEditMedias      = [[obj valueForKey:@"write"] boolValue];
+    // --
+    
+    self.ownerID            = [[obj valueForKey:@"creator_id"] intValue];
     self.isOwner            = [[obj valueForKey:@"owner"] boolValue];    
-    self.isQuickShareAlbum  = [[obj valueForKey:@"quickshare_medias"] boolValue];
-    self.isMyMediasAlbum    = [[obj valueForKey:@"created_medias"] boolValue];
+    
+    NSArray* tags = [obj valueForKey:@"tags"];
+    self.isQuickShareAlbum = NO;
+    for (NSString* s in tags)
+    {
+        if ([s isEqualToString:@"quickshare"])
+        {
+            self.isQuickShareAlbum = YES;
+            break;
+        }
+    }
+    
+    // Wrong
+    NSLog(@"==> Should come from userData");
+    self.isMyMediasAlbum = NO;
+    // ---
     
     [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -113,8 +132,14 @@
     NSString* thumbURL = [obj valueForKey:@"thumbnail_url"];
     if (!thumbURL || [thumbURL class] == [NSNull class])
         self.thumbnailURL = nil;
-    else 
+    else
+    {
+        self.updated = NO;
+        if (![[[self.thumbnailURL componentsSeparatedByString:@"?"] objectAtIndex:0] isEqualToString:[[thumbURL componentsSeparatedByString:@"?"] objectAtIndex:0]])
+            self.updated = YES;
+        
         self.thumbnailURL = thumbURL;
+    }
 }
 
 - (SWAlbum*)deepCopyInContext:(NSManagedObjectContext*)context
@@ -154,13 +179,34 @@
     if (self.name)
         [dict setObject:self.name forKey:@"name"];
     
-    if (self.serverID == 0 || self.isOwner)
+    if ([self.participants count] > 0)
     {
-        [dict setObject:[NSNumber numberWithBool:self.canEditPeople] forKey:@"edit_accounts"];
-        [dict setObject:[NSNumber numberWithBool:self.canEditMedias] forKey:@"edit_medias"];        
+        NSMutableArray* contacts_arr = [NSMutableArray array];
+        for (SWPerson* p in self.participants)
+        {
+            if (!p.isSelf)
+                [contacts_arr addObject:[NSNumber numberWithInt:p.serverID]];
+        }
+        
+        if ([contacts_arr count] > 0)
+        {
+            NSDictionary* right = [NSDictionary dictionaryWithObjectsAndKeys:contacts_arr, @"user_ids", 
+                                                                             [NSNumber numberWithBool:YES], @"read", 
+                                                                             [NSNumber numberWithBool:self.canEditMedias], @"write", 
+                                                                             [NSNumber numberWithBool:self.canEditPeople], @"grant",
+                                    nil];
+            [dict setObject:[NSArray arrayWithObject:right] forKey:@"rights"];
+        }
+    }
+
+    if (!self.serverID || self.serverID == 0)
+    {
+        [dict setObject:[NSNumber numberWithInt:[SWAppDelegate serviceID]] forKey:@"parent_id"];
+        [dict setObject:@"folder" forKey:@"type"];
     }
     
-    [dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
+    NSLog(@"This should go to user_data");
+    //[dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
     
     return dict;
 }

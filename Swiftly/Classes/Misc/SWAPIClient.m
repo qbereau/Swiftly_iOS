@@ -1,10 +1,7 @@
 #import "SWAPIClient.h"
 #import "AFJSONRequestOperation.h"
 
-// DevKey: 80A4F23BBF417BBD6E89341E3C7DE195
-// KeyToken: 622673F034A64C220D08A17CF19D10FB
-
-NSString * const kSWBaseURLString = @"http://swiftly.herokuapp.com";
+NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
 
 @implementation SWAPIClient
 
