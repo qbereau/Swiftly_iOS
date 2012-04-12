@@ -194,8 +194,9 @@
 		1998334C14DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334714DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png */; };
 		1998334D14DAF0140083E5C3 /* segcontrol_sel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334814DAF0140083E5C3 /* segcontrol_sel@2x.png */; };
 		1998334E14DAF0140083E5C3 /* segcontrol_unsel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334914DAF0140083E5C3 /* segcontrol_unsel@2x.png */; };
-		19A349A11525F99C0084CC05 /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 19A349A01525F99C0084CC05 /* SWAlbum.m */; };
 		19CCB4D51535E83400255C3A /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 19CCB4D41535E83400255C3A /* SWMedia.m */; };
+		19CCB5611536F53900255C3A /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 19CCB5601536F53900255C3A /* SWAlbum.m */; };
+		19CCB6A7153737F300255C3A /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19CCB6A6153737F300255C3A /* CoreLocation.framework */; };
 		19D1B8F814FB9E5800C69DA1 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 19D1B8F614FB9E5800C69DA1 /* valid.png */; };
 		19D1B8F914FB9E5800C69DA1 /* valid@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 19D1B8F714FB9E5800C69DA1 /* valid@2x.png */; };
 		19F1C69E14DFCC9500B0A469 /* back_button_landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 19F1C69C14DFCC9500B0A469 /* back_button_landscape.png */; };
@@ -488,10 +489,11 @@
 		1998334714DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_left_unsel_right_unsel@2x.png"; sourceTree = "<group>"; };
 		1998334814DAF0140083E5C3 /* segcontrol_sel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_sel@2x.png"; sourceTree = "<group>"; };
 		1998334914DAF0140083E5C3 /* segcontrol_unsel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_unsel@2x.png"; sourceTree = "<group>"; };
-		19A3499F1525F99C0084CC05 /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
-		19A349A01525F99C0084CC05 /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
 		19CCB4D31535E83400255C3A /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
 		19CCB4D41535E83400255C3A /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
+		19CCB55F1536F53900255C3A /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
+		19CCB5601536F53900255C3A /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
+		19CCB6A6153737F300255C3A /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		19D1B8F614FB9E5800C69DA1 /* valid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = valid.png; sourceTree = "<group>"; };
 		19D1B8F714FB9E5800C69DA1 /* valid@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "valid@2x.png"; sourceTree = "<group>"; };
 		19F1C69C14DFCC9500B0A469 /* back_button_landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back_button_landscape.png; sourceTree = "<group>"; };
@@ -563,6 +565,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19CCB6A7153737F300255C3A /* CoreLocation.framework in Frameworks */,
 				192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */,
 				192A6F9014E9845E00B8EACA /* CoreData.framework in Frameworks */,
 				192A6F5C14E968E600B8EACA /* Security.framework in Frameworks */,
@@ -672,6 +675,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				19CCB6A6153737F300255C3A /* CoreLocation.framework */,
 				192A702014EC06A500B8EACA /* AVFoundation.framework */,
 				192A6F8F14E9845E00B8EACA /* CoreData.framework */,
 				192A6F5B14E968E600B8EACA /* Security.framework */,
@@ -907,10 +911,10 @@
 				19F32F7C1507658300F3108E /* SWPhoneNumber.m */,
 				19F32F751507658200F3108E /* SWComment.h */,
 				19F32F761507658200F3108E /* SWComment.m */,
-				19A3499F1525F99C0084CC05 /* SWAlbum.h */,
-				19A349A01525F99C0084CC05 /* SWAlbum.m */,
 				19CCB4D31535E83400255C3A /* SWMedia.h */,
 				19CCB4D41535E83400255C3A /* SWMedia.m */,
+				19CCB55F1536F53900255C3A /* SWAlbum.h */,
+				19CCB5601536F53900255C3A /* SWAlbum.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1349,9 +1353,9 @@
 				19F32F94150769C300F3108E /* SWMedia+Details.m in Sources */,
 				19F32F95150769C300F3108E /* SWPhoneNumber+Details.m in Sources */,
 				19F32F9815076A6E00F3108E /* SWAlbum+Details.m in Sources */,
-				19A349A11525F99C0084CC05 /* SWAlbum.m in Sources */,
 				1980BFBF1529FA680097AE93 /* SWPrivacyPolicyViewController.m in Sources */,
 				19CCB4D51535E83400255C3A /* SWMedia.m in Sources */,
+				19CCB5611536F53900255C3A /* SWAlbum.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

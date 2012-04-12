@@ -59,12 +59,15 @@
 
     self.isOwner                    = [[obj valueForKey:@"owner"] boolValue];
     self.nbComments                 = [[obj valueForKey:@"comment_count"] intValue];
+    self.isOpen                     = [[obj objectForKey:@"grant"] boolValue];
     
     // --
-    NSLog(@"WRONG isOpen & duration should use userData");
-    self.isOpen                     = YES; // [[obj valueForKey:@"open"] boolValue];
-    self.duration                   = 0; // (int)round([[obj valueForKey:@"duration"] doubleValue]); 
-    // --
+    id uData = [obj objectForKey:@"udata"];
+    if (uData && [uData class] != [NSNull class])
+    {
+        self.duration    = [uData objectForKey:@"duration"] ? (int)round([[uData objectForKey:@"duration"] doubleValue]) : 0;
+    }
+    // --    
     
     id thumb_url = [obj valueForKey:@"thumbnail_url"];
     if (thumb_url && [thumb_url class] != [NSNull class])

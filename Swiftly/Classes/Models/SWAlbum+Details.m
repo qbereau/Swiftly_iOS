@@ -26,16 +26,19 @@
 
 - (NSString*)participants_str
 {
-    NSMutableString* output = [[NSMutableString alloc] init];
-    for (SWPerson* p in [self participants_arr])
+    NSArray* p_arr = [self participants_arr];
+    if ([p_arr count] > 1)
     {
-        [output appendFormat:@"%@, ", [p name]];
+        NSMutableString* output = [[NSMutableString alloc] init];        
+        for (SWPerson* p in p_arr)
+        {
+            [output appendFormat:@"%@, ", [p name]];
+        }
+        
+        return [output substringToIndex:[output length] - 2];        
     }
     
-    if ([[self participants] count] > 0)
-        return [output substringToIndex:[output length] - 2];
-    
-    return output;
+    return NSLocalizedString(@"me", @"me");
 }
 
 - (UIImage*)customThumbnail
@@ -97,29 +100,43 @@
     self.serverID           = [[obj valueForKey:@"id"] intValue];
     
     // --
-    NSLog(@"==> Should come from userData");
-    self.canEditPeople      = [[obj valueForKey:@"grant"] boolValue];
-    self.canEditMedias      = [[obj valueForKey:@"write"] boolValue];
+    id uData = [obj objectForKey:@"udata"];
+    if (uData && [uData class] != [NSNull class])
+    {
+        self.canEditPeople      = [uData objectForKey:@"canEditPeople"] ? [[uData objectForKey:@"canEditPeople"] boolValue] : NO;
+        self.canAddMedias      = [uData objectForKey:@"canAddMedias"] ? [[uData objectForKey:@"canAddMedias"] boolValue] : NO;
+        self.canExportMedias    = [uData objectForKey:@"canExportMedias"] ? [[uData objectForKey:@"canExportMedias"] boolValue] : NO;
+    }
     // --
     
     self.ownerID            = [[obj valueForKey:@"creator_id"] intValue];
     self.isOwner            = [[obj valueForKey:@"owner"] boolValue];    
     
-    NSArray* tags = [obj valueForKey:@"tags"];
+    
+    // Is QuickShare Album ?
     self.isQuickShareAlbum = NO;
-    for (NSString* s in tags)
+    
+    if ([[obj objectForKey:@"tags"] isKindOfClass:[NSArray class]])
     {
-        if ([s isEqualToString:@"quickshare"])
+        NSArray* tags = [obj objectForKey:@"tags"];
+        for (NSString* s in tags)
         {
-            self.isQuickShareAlbum = YES;
-            break;
+            if ([s isEqualToString:@"quickshare"])
+            {
+                self.isQuickShareAlbum = YES;
+                break;
+            }
         }
     }
-    
-    // Wrong
-    NSLog(@"==> Should come from userData");
-    self.isMyMediasAlbum = NO;
-    // ---
+    else if ([[obj objectForKey:@"tags"] isKindOfClass:[NSString class]])
+    {
+        NSString* tag = [obj objectForKey:@"tags"];
+        if ([tag isEqualToString:@"quickshare"])
+        {
+            self.isQuickShareAlbum = YES;
+        }
+    }
+    // ----
     
     [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
@@ -148,12 +165,11 @@
     a.name = self.name;
     a.serverID = self.serverID;
     a.canEditPeople = self.canEditPeople;
-    a.canEditMedias = self.canEditMedias;
+    a.canAddMedias = self.canAddMedias;
     a.canExportMedias = self.canExportMedias;
     a.isLocked = self.isLocked;
     a.isOwner = self.isOwner;
     a.isQuickShareAlbum = self.isQuickShareAlbum;
-    a.isMyMediasAlbum = self.isMyMediasAlbum;
     a.ownerID = self.ownerID;
     a.thumbnail = self.thumbnail;
     a.lastUpdate = self.lastUpdate;
@@ -192,7 +208,7 @@
         {
             NSDictionary* right = [NSDictionary dictionaryWithObjectsAndKeys:contacts_arr, @"user_ids", 
                                                                              [NSNumber numberWithBool:YES], @"read", 
-                                                                             [NSNumber numberWithBool:self.canEditMedias], @"write", 
+                                                                             [NSNumber numberWithBool:self.canAddMedias], @"write", 
                                                                              [NSNumber numberWithBool:self.canEditPeople], @"grant",
                                     nil];
             [dict setObject:[NSArray arrayWithObject:right] forKey:@"rights"];
@@ -205,15 +221,18 @@
         [dict setObject:@"folder" forKey:@"type"];
     }
     
-    NSLog(@"This should go to user_data");
-    //[dict setObject:[NSNumber numberWithBool:self.canExportMedias] forKey:@"open_medias"];
+    NSDictionary* uData = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:self.canEditPeople], @"canEditPeople",
+                                                                     [NSNumber numberWithBool:self.canAddMedias], @"canAddMedias",
+                                                                     [NSNumber numberWithBool:self.canExportMedias], @"canExportMedias",
+                           nil];
+    [dict setObject:uData forKey:@"udata"];
     
     return dict;
 }
 
 + (NSArray*)findAllLinkableAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canEditMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canAddMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO"];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -226,7 +245,7 @@
 
 + (NSArray*)findUnlockedSharedAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO AND isLocked = NO"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isLocked = NO"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -239,7 +258,7 @@
 
 + (NSArray *)findAllSharedAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isMyMediasAlbum = NO"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -252,7 +271,7 @@
 
 + (NSArray *)findAllSpecialAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES OR isMyMediasAlbum = YES"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -266,7 +285,10 @@
 + (SWAlbum*)findQuickShareAlbum:(NSManagedObjectContext*)context
 {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES"];
-    return [[SWAlbum MR_findAllWithPredicate:predicate inContext:context] objectAtIndex:0];
+    NSArray* rez = [SWAlbum MR_findAllWithPredicate:predicate inContext:context];
+    if ([rez count] > 0)
+        return [rez objectAtIndex:0];
+    return nil;
 }
 
 + (SWAlbum*)newEntityInContext:(NSManagedObjectContext*)context

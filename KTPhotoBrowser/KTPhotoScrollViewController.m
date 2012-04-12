@@ -385,7 +385,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
     
     currentIndex_ = newIndex;
 
-    [self loadPhoto:currentIndex_];    
+    [self loadPhoto:currentIndex_];
     [self loadPhoto:currentIndex_ + 1];
     [self loadPhoto:currentIndex_ - 1];
     [self unloadPhoto:currentIndex_ + 2];
@@ -394,7 +394,7 @@ const CGFloat ktkDefaultToolbarHeight = 44;
     [self setTitleWithCurrentPhotoIndex];
     [self toggleNavButtons];
     
-    timerPhotoUpdate_ = [NSTimer scheduledTimerWithTimeInterval:0.1
+    timerPhotoUpdate_ = [NSTimer scheduledTimerWithTimeInterval:0.05
                                                          target:self
                                                        selector:@selector(update)
                                                        userInfo:nil

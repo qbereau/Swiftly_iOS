@@ -74,65 +74,8 @@
     self.title = NSLocalizedString(@"edit_album", @"edit album");
     
     
-    __block SWAlbumEditViewController* blockSelf = self;
-    self.uploadMediasBlock = ^(SWAlbum* album, BOOL canExportMedias) {
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
-            __block int processedEntity = 0;
-            for (NSDictionary* media in blockSelf.filesToUpload)
-            {
-                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];                
-                NSString* fileType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
-                
-                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];  
-                
-                // Video Duration
-                __block int videoDuration = -1;
-                ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
-                [assetslibrary assetForURL:mediaUrl
-                               resultBlock:^(ALAsset *asset) {
-                                   videoDuration = [[asset valueForProperty:ALAssetPropertyDuration] intValue];
-                               } failureBlock:^(NSError *error) {
-                                   
-                               }];
-                NSLog(@"==> Video Duration: %d", videoDuration);
-                // ---
-                
-                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:  fileType, @"content_type", 
-                                                                                    @"data", @"type",
-                                                                                    [NSNumber numberWithInt:album.serverID], @"parent_id", 
-                                                                                    [NSNumber numberWithBool:canExportMedias], @"open",
-                                        nil];
-                
-                [[SWAPIClient sharedClient] postPath:@"/nodes"
-                                          parameters:params
-                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                 
-                                                 SWMedia* mediaObj = [SWMedia MR_createEntity];
-                                                 [mediaObj updateWithObject:responseObject];
-                                                 mediaObj.uploadProgress    = 0.0f;
-                                                 mediaObj.isUploaded        = NO;
-                                                 mediaObj.thumbnail         = mediaThumbnail;
-                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
-                                                 mediaObj.album             = album;
-                                                 
-                                                 ++processedEntity;
-                                                 if (processedEntity == [blockSelf.filesToUpload count])
-                                                 {
-                                                     [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                     [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
-                                                     
-                                                     blockSelf.tabBarController.selectedIndex = 1;
-                                                     [blockSelf.navigationController popToRootViewControllerAnimated:NO];
-                                                 }
-                                                 
-                                             } 
-                                             failure:blockSelf.genericFailureBlock
-                 ];                                        
-            }
-        });        
-    };
     
+    __block SWAlbumEditViewController* blockSelf = self;
     self.genericFailureBlock = ^(AFHTTPRequestOperation *operation, NSError *error) {
         NSLog(@"Error: %@", [error description]);
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -141,6 +84,157 @@
             [av show];                                               
         });
     };
+}
+
+static int processedEntity = 0;
+
+- (void)uploadMediaWithDict:(NSDictionary*)dict
+{    
+    SWAlbum* album          = [dict objectForKey:@"album"];
+    NSArray* accountIDs     = [dict objectForKey:@"accountIDs"];
+    NSString* tag           = [dict objectForKey:@"tag"]; 
+    BOOL canExportMedias    = [[dict objectForKey:@"canExport"] boolValue];
+    NSNumber* videoDuration = [dict objectForKey:@"videoDuration"];
+    NSDate* creationDate    = [dict objectForKey:@"creationDate"];
+    NSNumber* orientation   = [dict objectForKey:@"orientation"];
+    CLLocation* location    = [dict objectForKey:@"location"];
+    NSURL* mediaUrl         = [dict objectForKey:@"mediaUrl"];
+    UIImage* mediaThumbnail = [dict objectForKey:@"mediaThumbnail"];
+    NSString* contentType   = [dict objectForKey:@"contentType"];
+    
+    
+    NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:  
+                                   @"data", @"type",
+                                   contentType, @"content_type", 
+                                   [NSNumber numberWithInt:album.serverID], @"parent_id",
+                                   nil];
+    
+    NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
+    [fmt setDateFormat:@"yyyy/MM/dd'T'hh:mm:ss'Z'"];
+    
+    NSMutableDictionary* uData = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                  [fmt stringFromDate:creationDate], @"creationDate",
+                                  orientation, @"orientation",
+                                  nil];
+    if ([videoDuration intValue] > 0)
+    {
+        [uData addEntriesFromDictionary:[NSDictionary dictionaryWithObject:videoDuration forKey:@"duration"]];
+    }
+    
+    if (location.coordinate.latitude != 0 && location.coordinate.longitude != 0)
+    {
+        [uData addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+                                         [NSNumber numberWithDouble:location.coordinate.latitude], @"lat",
+                                         [NSNumber numberWithDouble:location.coordinate.longitude], @"lng",
+                                         nil]];
+    }
+    
+    [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:uData forKey:@"udata"]];    
+    
+    if ([tag length] > 0)
+        [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:tag forKey:@"tags"]];
+    
+    if ([accountIDs count] > 0)
+    {
+        NSDictionary* right  = [NSDictionary dictionaryWithObjectsAndKeys:
+                                accountIDs, @"user_ids",
+                                [NSNumber numberWithBool:YES], @"read",
+                                [NSNumber numberWithBool:NO], @"write",
+                                [NSNumber numberWithBool:canExportMedias], @"grant",
+                                nil];  
+        
+        [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:[NSArray arrayWithObject:right] forKey:@"rights"]];
+    }    
+    
+    [[SWAPIClient sharedClient] postPath:@"/nodes"
+                              parameters:params
+                                 success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                     
+                                     SWMedia* mediaObj = [SWMedia MR_createEntity];
+                                     [mediaObj updateWithObject:responseObject];
+                                     mediaObj.uploadProgress    = 0.0f;
+                                     mediaObj.isUploaded        = NO;
+                                     mediaObj.thumbnail         = mediaThumbnail;
+                                     mediaObj.assetURL          = [mediaUrl absoluteString];
+                                     mediaObj.album             = album;
+                                     
+                                     ++processedEntity;
+                                     if (processedEntity == [self.filesToUpload count])
+                                     {
+                                         [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+                                         [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                         
+                                         self.tabBarController.selectedIndex = 1;
+                                         [self.navigationController popToRootViewControllerAnimated:NO];
+                                     }
+                                     
+                                 } 
+                                 failure:self.genericFailureBlock
+     ];      
+}
+
+- (void)processMediasForAlbum:(SWAlbum*)album accounts:(NSArray*)accounts canExportMedias:(BOOL)canExport
+{
+    processedEntity = 0;
+    
+    NSMutableArray* accountIDs = [NSMutableArray array];
+    for (SWPerson* p in accounts)
+    {
+        if (!p.isSelf)
+            [accountIDs addObject:[NSNumber numberWithInt:p.serverID]];
+    }    
+    
+    for (NSDictionary* dict in self.filesToUpload)
+    {
+        NSMutableDictionary* d = [NSMutableDictionary dictionaryWithDictionary:dict];
+        [d addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+                                     album, @"album",
+                                     [NSNumber numberWithBool:canExport], @"canExport",
+                                     accountIDs, @"accountIDs",
+                                     nil]];
+        
+        if (album.isQuickShareAlbum)
+            [d addEntriesFromDictionary:[NSDictionary dictionaryWithObject:@"quickshare" forKey:@"tag"]];
+        
+        [self processMediaFromDict:d];
+    }
+}
+
+- (void)processMediaFromDict:(NSDictionary*)dict
+{
+    NSURL* mediaUrl = [dict valueForKey:@"UIImagePickerControllerReferenceURL"];
+    NSString* contentType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
+    UIImage* mediaThumbnail =  [dict valueForKey:@"UIImagePickerControllerThumbnail"];
+    
+    NSMutableDictionary* output = [NSMutableDictionary dictionaryWithDictionary:dict];    
+    [output addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+                                      mediaUrl, @"mediaUrl", 
+                                      mediaThumbnail, @"mediaThumbnail",
+                                      contentType, @"contentType",
+                                      nil]
+     ];    
+    
+    // Video Duration
+    ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+    [assetslibrary assetForURL:mediaUrl
+                   resultBlock:^(ALAsset *asset) {
+                       NSNumber* videoDuration  = [asset valueForProperty:ALAssetPropertyDuration];
+                       NSDate* creationDate     = [asset valueForProperty:ALAssetPropertyDate];
+                       NSNumber* orientation    = [asset valueForProperty:ALAssetPropertyOrientation];
+                       CLLocation* location     = [asset valueForProperty:ALAssetPropertyLocation];
+                       
+                       [output addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                         videoDuration, @"videoDuration",
+                                                         creationDate, @"creationDate",
+                                                         orientation, @"orientation",
+                                                         location, @"location",
+                                                         nil]];
+                       
+                       [self uploadMediaWithDict:output];
+                       
+                   } failureBlock:^(NSError *error) {
+                       [self uploadMediaWithDict:output];
+                   }];
 }
 
 - (void)setFilesToUpload:(NSArray *)filesToUpload
@@ -170,7 +264,7 @@
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
-
+        self.album = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_contextForCurrentThread]];
     }
 }
 
@@ -180,7 +274,7 @@
     {
         self.album.name             = self.originalAlbum.name;
         self.album.canEditPeople    = self.originalAlbum.canEditPeople;
-        self.album.canEditMedias    = self.originalAlbum.canEditMedias;
+        self.album.canAddMedias    = self.originalAlbum.canAddMedias;
         self.album.canExportMedias  = self.originalAlbum.canExportMedias;
         self.album.isLocked         = self.originalAlbum.isLocked;
         
@@ -246,7 +340,7 @@
 
                                              [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
 
-                                             self.uploadMediasBlock(self.album, self.album.canExportMedias);
+                                             [self processMediasForAlbum:self.album accounts:[self.album.participants allObjects] canExportMedias:self.album.canExportMedias];
                                          }
                                          failure:self.genericFailureBlock 
              ];
@@ -264,84 +358,13 @@
         }
         else
         {
-            self.uploadMediasBlock(_selectedLinkedAlbum, _canExportMediasForLinkedAlbum);
+            [self processMediasForAlbum:_selectedLinkedAlbum accounts:[_selectedLinkedAlbum.participants allObjects] canExportMedias:_canExportMediasForLinkedAlbum];
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
-        __block SWAlbumEditViewController* blockSelf = self;
-        dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            
-            __block int processedEntity = 0;
-            __block NSMutableArray* newMedias = [NSMutableArray array];
-            for (NSDictionary* media in blockSelf.filesToUpload)
-            {                    
-                NSURL* mediaUrl = [media valueForKey:@"UIImagePickerControllerReferenceURL"];                
-                NSString* fileType = [SWMedia retrieveContentTypeFromMediaURL:mediaUrl];
-                
-                UIImage* mediaThumbnail =  [media valueForKey:@"UIImagePickerControllerThumbnail"];                    
-                
-                // Video Duration
-                __block int videoDuration = -1;
-                ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
-                [assetslibrary assetForURL:mediaUrl
-                               resultBlock:^(ALAsset *asset) {
-                                   videoDuration = [[asset valueForProperty:ALAssetPropertyDuration] intValue];
-                               } failureBlock:^(NSError *error) {
-                                   
-                               }];
-                NSLog(@"==> Video Duration: %d", videoDuration);
-                // ---
-                
-                NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:fileType, @"content_type", self.album.serverID, @"parent_id", nil];
-                
-                [[SWAPIClient sharedClient] postPath:@"/nodes"
-                                          parameters:params
-                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                 
-                                                 SWMedia* mediaObj = [SWMedia MR_createEntity];
-                                                 [mediaObj updateWithObject:responseObject];
-                                                 mediaObj.uploadProgress    = 0.0f;
-                                                 mediaObj.isUploaded        = NO;
-                                                 mediaObj.thumbnail         = mediaThumbnail;
-                                                 mediaObj.assetURL          = [mediaUrl absoluteString];
-                                                 mediaObj.album             = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_context]];
-                                                 
-                                                 [newMedias addObject:[NSNumber numberWithInt:mediaObj.serverID]];
-                                                 
-                                                 ++processedEntity;
-                                                 if (processedEntity == [blockSelf.filesToUpload count])
-                                                 {
-                                                     NSMutableArray* accountIDs = [NSMutableArray array]; 
-                                                     for (SWPerson* p in _quickSharePeople)
-                                                     {
-                                                         [accountIDs addObject:[NSNumber numberWithInt:p.serverID]];
-                                                     }
-                                                     
-                                                     NSDictionary* quickshareParams = [NSDictionary dictionaryWithObjectsAndKeys:
-                                                                                       newMedias, @"media_ids",
-                                                                                       accountIDs, @"account_ids"
-                                                                                       , nil];
-                                                     [[SWAPIClient sharedClient] putPath:@"/nodes/quickshare"
-                                                                              parameters:quickshareParams
-                                                                                 success:^(AFHTTPRequestOperation *op2, id respObj2) {
-                                                                                     
-                                                                                     [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                                                     [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
-                                                                                     
-                                                                                     blockSelf.tabBarController.selectedIndex = 1;
-                                                                                     [blockSelf.navigationController popToRootViewControllerAnimated:NO];                                                                                      
-                                                                                     
-                                                                                 } 
-                                                                                 failure:blockSelf.genericFailureBlock
-                                                      ];                                                         
-                                                 }                                                     
-                                                 
-                                             } 
-                                             failure:blockSelf.genericFailureBlock
-                 ];                                        
-            }
-        });
+        SWAlbum* qsAlbum = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_contextForCurrentThread]];
+        [self processMediasForAlbum:qsAlbum accounts:_quickSharePeople canExportMedias:YES];
     }
 }
 
@@ -356,7 +379,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"?unlink=1";
+            unlink = @"?unlink";
         else
             unlink = @"";
         
@@ -381,7 +404,7 @@
         
         NSString* unlink; 
         if (shouldUnlink)
-            unlink = @"?unlink=1";
+            unlink = @"?unlink";
         else
             unlink = @"";
         
@@ -1000,7 +1023,7 @@
     {
         cell.title.text = NSLocalizedString(@"album_settings_allow_add_files", @"allow people to add their own files");
         
-        cell.accessoryType = self.album.canEditMedias ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;  
+        cell.accessoryType = self.album.canAddMedias ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;  
     }
 }
 
@@ -1102,7 +1125,7 @@
     if (indexPath.row == 0)
         self.album.canEditPeople = !self.album.canEditPeople;
     else
-        self.album.canEditMedias = !self.album.canEditMedias;            
+        self.album.canAddMedias = !self.album.canAddMedias;            
     
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:indexPath.section] withRowAnimation:YES];
 }

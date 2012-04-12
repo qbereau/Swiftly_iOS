@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
 #import "UIAlertView+Blocks.h"
 #import "SWPeopleListViewController.h"
 #import "SWActivitiesViewController.h"
@@ -63,6 +64,10 @@ typedef void (^UploadMediasBlock)(SWAlbum*, BOOL);
 @property (nonatomic, strong) NSArray*              linkableAlbums;
 @property (nonatomic, copy)   UploadMediasBlock     uploadMediasBlock;
 @property (nonatomic, copy)   GenericFailureBlock   genericFailureBlock;
+
+- (void)uploadMediaWithDict:(NSDictionary*)dict;
+- (void)processMediasForAlbum:(SWAlbum*)album accounts:(NSArray*)accounts canExportMedias:(BOOL)canExport;
+- (void)processMediaFromDict:(NSDictionary*)dict;
 
 - (void)back:(id)sender;
 - (void)updateTitleAfterAnimation:(NSTimer*)timer;

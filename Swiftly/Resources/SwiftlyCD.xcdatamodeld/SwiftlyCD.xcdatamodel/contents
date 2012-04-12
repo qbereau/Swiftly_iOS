@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1171" systemVersion="11D50d" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="SWAlbum" representedClassName="SWAlbum" syncable="YES">
-        <attribute name="canEditMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="canAddMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="canEditPeople" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="canExportMedias" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isLocked" optional="YES" attributeType="Boolean" syncable="YES"/>
-        <attribute name="isMyMediasAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isOwner" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="isQuickShareAlbum" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="lastUpdate" optional="YES" attributeType="Date" syncable="YES"/>
@@ -92,10 +91,10 @@
         <relationship name="person" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SWPerson" inverseName="phoneNumbers" inverseEntity="SWPerson" syncable="YES"/>
     </entity>
     <elements>
-        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="285"/>
+        <element name="SWAlbum" positionX="126" positionY="360" width="128" height="270"/>
         <element name="SWComment" positionX="160" positionY="192" width="128" height="120"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="600"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="495"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="255"/>
         <element name="SWPhoneNumber" positionX="160" positionY="192" width="128" height="105"/>
     </elements>

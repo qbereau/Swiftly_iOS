@@ -285,11 +285,7 @@
     NSString* deviceToken = [defaults valueForKey:@"device_token"];
     if (deviceToken.length > 0)
     {
-        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    deviceToken, @"uuid",
-                                    [NSNumber numberWithBool:YES], @"enabled",
-                                nil];
-        NSDictionary* registerDevice = [NSDictionary dictionaryWithObject:params forKey:@"register_device"];
+        NSDictionary* registerDevice = [NSDictionary dictionaryWithObject:deviceToken forKey:@"register_device"];
         [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/users/%d", userID] 
                                   parameters:registerDevice 
                                      success:^(AFHTTPRequestOperation *operation, id responseObject) {

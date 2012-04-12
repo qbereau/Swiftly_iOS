@@ -49,7 +49,7 @@
 
 - (void)refreshedAB:(NSNotification*)notification;
 - (void)uploadMediaDone:(NSNotification*)notification;
-
+- (void)checkAndCreateSpecialAlbums;
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
 - (void)updateAlbumAccounts:(SWAlbum*)album;
 - (void)processAlbumID:(int)albumID accounts:(id)responseObject;

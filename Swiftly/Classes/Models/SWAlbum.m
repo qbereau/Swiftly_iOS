@@ -2,7 +2,7 @@
 //  SWAlbum.m
 //  Swiftly
 //
-//  Created by Quentin Bereau on 3/30/12.
+//  Created by Quentin Bereau on 4/12/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -13,11 +13,10 @@
 
 @implementation SWAlbum
 
-@dynamic canEditMedias;
+@dynamic canAddMedias;
 @dynamic canEditPeople;
 @dynamic canExportMedias;
 @dynamic isLocked;
-@dynamic isMyMediasAlbum;
 @dynamic isOwner;
 @dynamic isQuickShareAlbum;
 @dynamic lastUpdate;
@@ -25,8 +24,8 @@
 @dynamic ownerID;
 @dynamic serverID;
 @dynamic thumbnail;
-@dynamic updated;
 @dynamic thumbnailURL;
+@dynamic updated;
 @dynamic medias;
 @dynamic participants;
 

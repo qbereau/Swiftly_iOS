@@ -56,7 +56,7 @@
                                      nil];
             AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:m.bucketURL]];                               
             NSMutableURLRequest *thumbnailRequest = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:thumbnailHeaders constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {
-                [formData appendPartWithFileData:UIImagePNGRepresentation(m.thumbnail) name:@"file" fileName:m.thumbnailFilename mimeType:m.thumbnailContentType];
+                [formData appendPartWithFileData:UIImageJPEGRepresentation(m.thumbnail, 1.0f) name:@"file" fileName:m.thumbnailFilename mimeType:m.thumbnailContentType];
             }];
         
             NSMutableURLRequest *dataRequest = [httpClient multipartFormRequestWithMethod:@"POST" path:@"" parameters:dataHeaders constructingBodyWithBlock: ^(id <AFMultipartFormData>formData) {

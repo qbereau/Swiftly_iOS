@@ -184,7 +184,7 @@
     } completion:^{
         self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
         self.specialAlbums = [SWAlbum findAllSpecialAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
-        [self.tableView reloadData];        
+        [self.tableView reloadData];
     }];
 }
 
@@ -330,41 +330,61 @@
     }];
 }
 
-/*
 - (void)removeOldAlbums
 {
     if ([self.arrAlbumsID count] > 0)
     {
-        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {        
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", self.arrAlbumsID];
-            [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];
+            [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];            
         } completion:^{
-            [self reload];
+            [self checkAndCreateSpecialAlbums];
         }];
     }
     else
     {
-        [self reload];
+        [self checkAndCreateSpecialAlbums];
     }
 }
- */
 
-- (void)removeOldAlbums
+- (void)checkAndCreateSpecialAlbums
 {
-    if ([self.arrAlbumsID count] > 0)
-    {
-        [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {        
-            NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", self.arrAlbumsID];
-            [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];
-            //[self reload];
-            [SWPeopleListViewController synchronize];
-        }];
-    }
-    else
-    {
-        //[self reload];
-        [SWPeopleListViewController synchronize];
-    }
+    [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+        
+    } completion:^{
+        SWAlbum* qsAlbum = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_contextForCurrentThread]];
+        if (!qsAlbum)
+        {
+            NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:  @"folder", @"type",
+                                                                              @"QuickShare", @"name",
+                                                                              [NSNumber numberWithInt:[SWAppDelegate serviceID]], @"parent_id",
+                                                                              @"quickshare", @"tags",
+                                  nil];
+            [[SWAPIClient sharedClient] postPath:@"/nodes"
+                                      parameters:dict 
+                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                             
+                                             [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                                                 
+                                                 SWAlbum* localAlbum = [SWAlbum MR_createInContext:localContext];
+                                                 localAlbum.updated = NO;
+                                                 localAlbum.isLocked = NO;
+                                                 [localAlbum updateWithObject:responseObject];
+                                                 
+                                             } completion:^{
+                                                 [SWPeopleListViewController synchronize];                                                
+                                             }];
+                                             
+                                         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                             [SWPeopleListViewController synchronize];
+                                         }
+             ];
+        }
+        else 
+        {
+            [SWPeopleListViewController synchronize];        
+        }        
+    }];
 }
 
 - (void)unlockAlbums:(UIButton*)sender

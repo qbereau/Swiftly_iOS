@@ -226,7 +226,7 @@ static NSArray* __sharedAllValidObjects;
 + (NSArray *)findValidObjectsInContext:(NSManagedObjectContext *)context
 {
     NSArray* output = [SWPerson sharedAllValidObjects:context];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser = YES"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser = NO"]; // YES
     return [output filteredArrayUsingPredicate:predicate];
 }
 
