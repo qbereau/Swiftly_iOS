@@ -89,8 +89,6 @@
                     
                     NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObject:m.originalSignature forKey:@"signature"];
                     --blockSelf.nbUploadElements;
-                    if (blockSelf.nbUploadElements <= 0)
-                        [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:@"notify"]];
                     
                     [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/nodes/%d/confirm_upload", m.serverID]
                                              parameters:params
@@ -113,7 +111,26 @@
                                                         }
                                                         
                                                         [blockSelf reload];
-                                                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];                                                      
+                                                        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWUploadMediaDone" object:m];
+                                                        
+                                                        if (blockSelf.nbUploadElements <= 0)                                                        
+                                                        {
+                                                            NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                                                    @"push", @"type",
+                                                                                    [NSNumber numberWithInt:m.album.serverID], @"node_id",
+                                                                                    @"Test Notification", @"message",
+                                                                                    [NSDictionary dictionaryWithObjectsAndKeys:
+                                                                                     [NSNumber numberWithInt:m.album.serverID], @"album_id",
+                                                                                     nil], @"attributes",
+                                                                                    nil];
+                                                            [[SWAPIClient sharedClient] postPath:@"/notify" 
+                                                                                      parameters:params
+                                                                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                                                             
+                                                                                         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                                                             
+                                                                                         }];
+                                                        }
                                                     }];
                                                 }
                                                 failure:^(AFHTTPRequestOperation *opReq, NSError *errorReq) {
