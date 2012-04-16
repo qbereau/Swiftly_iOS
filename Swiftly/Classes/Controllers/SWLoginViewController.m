@@ -58,7 +58,7 @@
     // For Dev, instead of having to resubscribe....
     /*
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
-    [keychain setObject:@"6ABB8B3498E9AFD2CCD842764143457A" forKey:(__bridge id)kSecAttrAccount];
+    [keychain setObject:@"A6F2085022FA14B7D1B29CFB6788C11F" forKey:(__bridge id)kSecAttrAccount];
     [keychain setObject:@"FB5AF49B7ABEF82F2BA6BA3978B10F14" forKey:(__bridge id)kSecValueData];
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

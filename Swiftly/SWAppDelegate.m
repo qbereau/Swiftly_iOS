@@ -182,23 +182,12 @@ static int sID = -1;
     if (application.applicationState != UIApplicationStateActive)
         application.applicationIconBadgeNumber += 1;
     
-    /*
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-        // Format: "[2, 123]"
-        NSString* s = [userInfo valueForKey:@"album_ids"];
-        s = [s substringWithRange:NSMakeRange(1, [s length] - 2)];
-        
-        for (NSString* sep in [s componentsSeparatedByString:@", "])
-        {
-            SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:[sep intValue]] inContext:localContext];
-            album.updated = YES;
-        }
+        SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[userInfo valueForKey:@"album_id"] inContext:localContext];
+        album.updated = YES;
     } completion:^{
         [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNewMedias" object:nil];        
-    }];
-     */
-    NSLog(@"todo: notifications support");
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNewMedias" object:nil];
+    }];    
 }
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken 

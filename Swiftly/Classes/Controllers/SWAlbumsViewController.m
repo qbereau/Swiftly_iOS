@@ -289,7 +289,7 @@
                     if (!localAlbum)
                     {
                         localAlbum = [SWAlbum MR_createInContext:localContext];
-                        localAlbum.updated = NO;
+                        localAlbum.updated = YES;
                         localAlbum.isLocked = NO;
                     }
                     [localAlbum updateWithObject:obj];
@@ -367,7 +367,7 @@
                                              [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
                                                  
                                                  SWAlbum* localAlbum = [SWAlbum MR_createInContext:localContext];
-                                                 localAlbum.updated = NO;
+                                                 localAlbum.updated = YES;
                                                  localAlbum.isLocked = NO;
                                                  [localAlbum updateWithObject:responseObject];
                                                  

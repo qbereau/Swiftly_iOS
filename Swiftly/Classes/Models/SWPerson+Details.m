@@ -53,7 +53,7 @@
     UIImage* icon;
     if (self.isBlocked)
         icon = [UIImage imageNamed:@"block"];
-    else if (self.isUser)
+    else if (self.isLinked)
         icon = [UIImage imageNamed:@"valid"];
     else 
         return self.thumbnail;
@@ -198,6 +198,11 @@ static NSArray* __sharedAllValidObjects;
         
         BOOL bFoundInDB = NO;
         
+        if ([p.firstName isEqualToString:@"Quentin"])
+        {
+            NSLog(@"==> BLABLA: %@", p);
+        }
+        
         // Warning: Bottleneck!!
         for (SWPhoneNumber* pn in p.phoneNumbers)
         {
@@ -226,7 +231,7 @@ static NSArray* __sharedAllValidObjects;
 + (NSArray *)findValidObjectsInContext:(NSManagedObjectContext *)context
 {
     NSArray* output = [SWPerson sharedAllValidObjects:context];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isUser = NO"]; // YES
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isLinked = YES"];
     return [output filteredArrayUsingPredicate:predicate];
 }
 

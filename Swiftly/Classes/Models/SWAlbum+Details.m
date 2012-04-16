@@ -100,12 +100,12 @@
     self.serverID           = [[obj valueForKey:@"id"] intValue];
     
     // --
-    id uData = [obj objectForKey:@"udata"];
-    if (uData && [uData class] != [NSNull class])
+    id aData = [obj objectForKey:@"adata"];
+    if (aData && [aData class] != [NSNull class])
     {
-        self.canEditPeople      = [uData objectForKey:@"canEditPeople"] ? [[uData objectForKey:@"canEditPeople"] boolValue] : NO;
-        self.canAddMedias      = [uData objectForKey:@"canAddMedias"] ? [[uData objectForKey:@"canAddMedias"] boolValue] : NO;
-        self.canExportMedias    = [uData objectForKey:@"canExportMedias"] ? [[uData objectForKey:@"canExportMedias"] boolValue] : NO;
+        self.canEditPeople      = [aData objectForKey:@"canEditPeople"] ? [[aData objectForKey:@"canEditPeople"] boolValue] : NO;
+        self.canAddMedias       = [aData objectForKey:@"canAddMedias"] ? [[aData objectForKey:@"canAddMedias"] boolValue] : NO;
+        self.canExportMedias    = [aData objectForKey:@"canExportMedias"] ? [[aData objectForKey:@"canExportMedias"] boolValue] : NO;
     }
     // --
     
@@ -152,7 +152,7 @@
     else
     {
         self.updated = NO;
-        if (![[[self.thumbnailURL componentsSeparatedByString:@"?"] objectAtIndex:0] isEqualToString:[[thumbURL componentsSeparatedByString:@"?"] objectAtIndex:0]])
+        if (![[[self.thumbnailURL componentsSeparatedByString:@"?"] objectAtIndex:0] isEqualToString:[[thumbURL componentsSeparatedByString:@"?"] objectAtIndex:0]] || ( [self.thumbnailURL length] == 0 && [thumbURL length] > 0) )
             self.updated = YES;
         
         self.thumbnailURL = thumbURL;
@@ -221,11 +221,11 @@
         [dict setObject:@"folder" forKey:@"type"];
     }
     
-    NSDictionary* uData = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:self.canEditPeople], @"canEditPeople",
+    NSDictionary* aData = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:self.canEditPeople], @"canEditPeople",
                                                                      [NSNumber numberWithBool:self.canAddMedias], @"canAddMedias",
                                                                      [NSNumber numberWithBool:self.canExportMedias], @"canExportMedias",
                            nil];
-    [dict setObject:uData forKey:@"udata"];
+    [dict setObject:aData forKey:@"adata"];
     
     return dict;
 }

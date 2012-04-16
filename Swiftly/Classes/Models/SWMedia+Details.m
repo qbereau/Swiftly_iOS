@@ -62,10 +62,10 @@
     self.isOpen                     = [[obj objectForKey:@"grant"] boolValue];
     
     // --
-    id uData = [obj objectForKey:@"udata"];
-    if (uData && [uData class] != [NSNull class])
+    id aData = [obj objectForKey:@"adata"];
+    if (aData && [aData class] != [NSNull class])
     {
-        self.duration    = [uData objectForKey:@"duration"] ? (int)round([[uData objectForKey:@"duration"] doubleValue]) : 0;
+        self.duration    = [aData objectForKey:@"duration"] ? (int)round([[aData objectForKey:@"duration"] doubleValue]) : 0;
     }
     // --    
     

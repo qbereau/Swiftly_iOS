@@ -35,12 +35,17 @@
     
     self.navigationBarHidden = NO;
     self.navigationController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];     
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
     
     SWAlbumPickerViewController* albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];
     albumController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]]; 
 	self.viewControllers = [NSArray arrayWithObject:albumController];
     
-    [albumController setParent:self];
+    [albumController setParent:self];    
 }
 
 - (void)viewDidUnload

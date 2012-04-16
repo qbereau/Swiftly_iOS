@@ -150,7 +150,7 @@
 "no_linkable_album_subtitle"            = "Currently no albums can receive your files";
 "select_linkable_album"                 = "Please select an album";
 
-"error_no_alassets_access"              = "You did not give access to Swiftly to access your library";
+"error_no_alassets_access"              = "You did not give access Swiftly to access your library";
 
 "uploaded_time"                         = "Uploaded: %@";
 "is_uploading"                          = "Uploading....";
@@ -170,3 +170,5 @@
 "syncing"                               = "Syncing";
 "privacy_policy"                        = "Privacy Policy";
 "error_register_service"                = "A strange error happened! Maybe your internet connection dropped? We're very sorry for the inconvenience, could you retry to register?";
+
+"send_notification"                     = "Someone shared new files with you";

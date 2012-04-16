@@ -112,24 +112,24 @@ static int processedEntity = 0;
     NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
     [fmt setDateFormat:@"yyyy/MM/dd'T'hh:mm:ss'Z'"];
     
-    NSMutableDictionary* uData = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+    NSMutableDictionary* aData = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                   [fmt stringFromDate:creationDate], @"creationDate",
                                   orientation, @"orientation",
                                   nil];
     if ([videoDuration intValue] > 0)
     {
-        [uData addEntriesFromDictionary:[NSDictionary dictionaryWithObject:videoDuration forKey:@"duration"]];
+        [aData addEntriesFromDictionary:[NSDictionary dictionaryWithObject:videoDuration forKey:@"duration"]];
     }
     
     if (location.coordinate.latitude != 0 && location.coordinate.longitude != 0)
     {
-        [uData addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
+        [aData addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:
                                          [NSNumber numberWithDouble:location.coordinate.latitude], @"lat",
                                          [NSNumber numberWithDouble:location.coordinate.longitude], @"lng",
                                          nil]];
     }
     
-    [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:uData forKey:@"udata"]];    
+    [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:aData forKey:@"adata"]];    
     
     if ([tag length] > 0)
         [params addEntriesFromDictionary:[NSDictionary dictionaryWithObject:tag forKey:@"tags"]];
@@ -413,6 +413,12 @@ static int processedEntity = 0;
                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {    
                                            
                                            SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID]];
+                                           
+                                           for (SWMedia* m in album.medias)
+                                           {
+                                               [m MR_deleteEntity];
+                                           }
+                                           
                                            [album MR_deleteEntity];
                                            [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
                                            [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
@@ -531,8 +537,8 @@ static int processedEntity = 0;
     {
         case SW_ALBUM_MODE_EDIT:
             if (self.album.isOwner)
-                return 6;
-            return 5;         
+                return 5;
+            return 4;
         case SW_ALBUM_MODE_CREATE:
             return 5;
         case SW_ALBUM_MODE_LINK:
@@ -574,12 +580,9 @@ static int processedEntity = 0;
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"album_settings", @"album settings")];
                     break;
                 case 3:
-                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];
-                    break;
-                case 4:
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];
                     break;
-                case 5:
+                case 4:
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
                     break;
             }        
@@ -595,12 +598,9 @@ static int processedEntity = 0;
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"linked_people", @"people linked to this album")];
                     break;
                 case 2:
-                    v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"media_settings", @"media settings")];                
-                    break;
-                case 3:
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"security", @"security")];                
                     break;
-                case 4:
+                case 3:
                     v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"settings", @"settings")];
                     break;
             }
@@ -671,8 +671,6 @@ static int processedEntity = 0;
                 case 3:
                     return 1;
                 case 4:
-                    return 1;
-                case 5:
                     return 3;
             }        
         }
@@ -687,8 +685,6 @@ static int processedEntity = 0;
                 case 2:
                     return 1;
                 case 3:
-                    return 1;
-                case 4:
                     return 2;
             }            
         }        
@@ -803,12 +799,9 @@ static int processedEntity = 0;
                     [self setupSectionAlbumSettings:cell indexPath:indexPath];
                     break;
                 case 3:
-                    [self setupSectionMediaSettings:cell indexPath:indexPath];
-                    break;
-                case 4:
                     [self setupSectionSecurity:cell indexPath:indexPath];
                     break;
-                case 5:
+                case 4:
                     [self setupSectionSettings:cell indexPath:indexPath];
                     break;
             }
@@ -821,12 +814,9 @@ static int processedEntity = 0;
                     [self setupSectionParticipants:cell indexPath:indexPath];
                     break;
                 case 2:
-                    [self setupSectionMediaSettings:cell indexPath:indexPath];
-                    break;
-                case 3:
                     [self setupSectionSecurity:cell indexPath:indexPath];
                     break;
-                case 4:
+                case 3:
                     [self setupSectionSettings:cell indexPath:indexPath];
                     break;
             }        
@@ -892,12 +882,9 @@ static int processedEntity = 0;
                     [self handleSectionAlbumSettingsWithIndexPath:indexPath];
                     break;
                 case 3:
-                    [self handleSectionMediaSettingsWithIndexPath:indexPath];
-                    break;
-                case 4:
                     [self handleSectionSecurityWithIndexPath:indexPath];
                     break;
-                case 5:
+                case 4:
                     [self handleSectionSettingsWithIndexPath:indexPath];
                     break;
             }
@@ -910,12 +897,9 @@ static int processedEntity = 0;
                     [self handleSectionParticipantsWithIndexPath:indexPath];
                     break;
                 case 2:
-                    [self handleSectionMediaSettingsWithIndexPath:indexPath];
-                    break;
-                case 3:
                     [self handleSectionSecurityWithIndexPath:indexPath];
                     break;
-                case 4:
+                case 3:
                     [self handleSectionSettingsWithIndexPath:indexPath];
                     break;
             }        
@@ -985,7 +969,8 @@ static int processedEntity = 0;
         
         for (SWPerson* p in arr)
         {
-            [self.album addParticipantsObject:p];
+            if (p.serverID > 0)
+                [self.album addParticipantsObject:p];
         }
         
         [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];

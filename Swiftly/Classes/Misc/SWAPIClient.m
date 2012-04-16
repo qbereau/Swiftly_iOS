@@ -36,6 +36,7 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
 
     [self registerHTTPOperationClass:[AFJSONRequestOperation class]];    
 	[self setDefaultHeader:@"Accept" value:@"application/json"];
+    
     self.parameterEncoding = AFJSONParameterEncoding;
     
     return self;
