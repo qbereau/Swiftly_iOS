@@ -232,7 +232,7 @@
 
 + (NSArray*)findAllLinkableAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canAddMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"canAddMedias = YES OR isOwner = YES OR isQuickShareAlbum = YES"];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
@@ -245,33 +245,7 @@
 
 + (NSArray*)findUnlockedSharedAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO AND isLocked = NO"];
-
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
-    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
-    
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
-    [request setSortDescriptors:sortDescriptors];
-    
-    return [SWAlbum MR_executeFetchRequest:request inContext:context];
-}
-
-+ (NSArray *)findAllSharedAlbums:(NSManagedObjectContext*)context
-{
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = NO"];
-
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
-    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
-    
-    NSFetchRequest *request = [SWAlbum MR_requestAllWithPredicate:predicate inContext:context];
-    [request setSortDescriptors:sortDescriptors];
-    
-    return [SWAlbum MR_executeFetchRequest:request inContext:context];
-}
-
-+ (NSArray *)findAllSpecialAlbums:(NSManagedObjectContext*)context
-{
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isQuickShareAlbum = YES"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"isLocked = NO OR isQuickShareAlbum = YES"];
 
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];

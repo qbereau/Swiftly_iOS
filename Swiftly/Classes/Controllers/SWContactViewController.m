@@ -137,7 +137,7 @@
     self.cellShareApp.title.text = NSLocalizedString(@"share_app", @"share this app");
     self.cellBlock.title.text = NSLocalizedString(@"block_person", @"block this person");
     
-    if (self.contact.isUser)
+    if (self.contact.isLinked)
     {
         self.cellShareApp.hidden    = YES;
         self.cellViewFiles.hidden   = NO;

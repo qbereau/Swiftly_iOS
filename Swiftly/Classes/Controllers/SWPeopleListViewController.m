@@ -423,7 +423,7 @@ static NSInteger itemsPerPage = 0;
                                                 if (iTotalPages > 1)
                                                 {   
                                                     [SWPeopleListViewController processAddressBook:peopleAB results:responseObject];
-                                                    
+
                                                     @synchronized(self){
                                                         opReq = iTotalPages - 1;
                                                     };

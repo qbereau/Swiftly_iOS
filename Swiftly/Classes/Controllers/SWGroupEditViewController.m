@@ -88,28 +88,39 @@
             [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
         };
         
-        NSMutableArray* arr_ids = [NSMutableArray array];
-        for (SWPerson* p in self.group.contacts)
+        if ([SWAPIClient isNetworkReachable])
         {
-            [arr_ids addObject:[NSNumber numberWithInt:p.serverID]];
-        }        
-        
-        NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:self.inputGroupName.text, @"name", arr_ids, @"account_ids", nil];        
-        if (self.group.serverID != 0)
-        {
-            [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
-                                      parameters:params
-                                         success:success
-                                         failure:failure
-             ];
+            NSMutableArray* arr_ids = [NSMutableArray array];
+            for (SWPerson* p in self.group.contacts)
+            {
+                [arr_ids addObject:[NSNumber numberWithInt:p.serverID]];
+            }        
+            
+            NSDictionary* params = [NSDictionary dictionaryWithObjectsAndKeys:self.inputGroupName.text, @"name", arr_ids, @"account_ids", nil];        
+            if (self.group.serverID != 0)
+            {
+                [[SWAPIClient sharedClient] putPath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
+                                          parameters:params
+                                             success:success
+                                             failure:failure
+                 ];
+            }
+            else
+            {
+                [[SWAPIClient sharedClient] postPath:@"/groups"
+                                         parameters:params
+                                            success:success
+                                            failure:failure
+                 ];
+            }
         }
         else
         {
-            [[SWAPIClient sharedClient] postPath:@"/groups"
-                                     parameters:params
-                                        success:success
-                                        failure:failure
-             ];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                [av show];                                                
+            });
         }
     });
 }
@@ -121,27 +132,38 @@
     
 	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
-                                    parameters:nil
-                                       success:^(AFHTTPRequestOperation *operation, id responseObject) {    
-                                           
-                                           [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
-                                           
-                                               SWGroup* g = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.group.serverID] inContext:localContext];
-                                               [g MR_deleteInContext:localContext];
+        if ([SWAPIClient isNetworkReachable])
+        {
+            [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/groups/%d", self.group.serverID]
+                                        parameters:nil
+                                           success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                               
+                                               [MRCoreDataAction saveDataWithBlock:^(NSManagedObjectContext *localContext) {
+                                               
+                                                   SWGroup* g = [SWGroup MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.group.serverID] inContext:localContext];
+                                                   [g MR_deleteInContext:localContext];
+                                                   
+                                                   [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                   [[self navigationController] popViewControllerAnimated:YES];                                               
+                                               }];
+                                               
+                                           }
+                                           failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                               UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                                               [av show];
                                                
                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                               [[self navigationController] popViewControllerAnimated:YES];                                               
-                                           }];
-                                           
-                                       }
-                                       failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                           UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
-                                           [av show];
-                                           
-                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                       }
-         ];
+                                           }
+             ];
+        }
+        else
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                [av show];                                                
+            });            
+        }
     });
 }
 

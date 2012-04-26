@@ -7,6 +7,11 @@ extern NSString * const kSWClientID;
 extern NSString * const kSWBaseURLString;
 
 @interface SWAPIClient : AFHTTPClient
+{
+    BOOL    _isNetworkReachable;
+}
+
++ (BOOL)isNetworkReachable;
 + (NSDictionary*)userCredentials;
 + (SWAPIClient *)sharedClient;
 - (NSDictionary*)credentials;

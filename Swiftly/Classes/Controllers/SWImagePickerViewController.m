@@ -10,6 +10,8 @@
 
 @implementation SWImagePickerViewController
 
+@synthesize albumController;
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -33,6 +35,8 @@
 {
     [super viewDidLoad];
     
+    self.tabBarController.delegate = self;
+    
     self.navigationBarHidden = NO;
     self.navigationController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]];     
 }
@@ -41,11 +45,19 @@
 {
     [super viewWillAppear:animated];
     
-    SWAlbumPickerViewController* albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];
-    albumController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]]; 
-	self.viewControllers = [NSArray arrayWithObject:albumController];
-    
-    [albumController setParent:self];    
+    if (!self.albumController)
+    {
+        self.albumController = [[SWAlbumPickerViewController alloc] initWithNibName:@"ELCAlbumPickerController" bundle:[NSBundle mainBundle]];
+        self.albumController.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"linen"]]; 
+        self.viewControllers = [NSArray arrayWithObject:self.albumController];
+        
+        [self.albumController setParent:self];
+    }
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
 }
 
 - (void)viewDidUnload
@@ -61,7 +73,7 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
--(void)selectedAssets:(NSArray*)_assets 
+- (void)selectedAssets:(NSArray*)_assets 
 {    
 	NSMutableArray *returnArray = [[NSMutableArray alloc] init];
 	
@@ -80,7 +92,18 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"MainStoryboard_iPhone" bundle:nil];
     SWAlbumChoiceSelectionViewController* vc = [storyboard instantiateViewControllerWithIdentifier:@"AlbumChoiceSelectionViewController"];
     vc.filesToUpload = returnArray;
-    [self pushViewController:vc animated:YES];    
+    [self pushViewController:vc animated:YES];
+}
+
+- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController
+{
+    NSUInteger indexOfTab = [tabBarController.viewControllers indexOfObject:viewController];
+    UITabBarItem *item = [tabBarController.tabBar.items objectAtIndex:indexOfTab];
+    
+    if (item.tag != 2) // Share
+    {
+        self.albumController = nil;
+    }
 }
 
 @end

@@ -19,7 +19,6 @@
 @interface SWAlbumsViewController : UITableViewController <JSLockScreenDelegate, SDWebImageDownloaderDelegate>
 {
     NSArray*                        _sharedAlbums;
-    NSArray*                        _specialAlbums;    
     
     
     JSLockScreenViewController*     _lockScreenViewController;    
@@ -40,16 +39,16 @@
 @property (nonatomic, strong) NSMutableArray*           arrAlbumsID;
 @property (nonatomic, strong) NSMutableArray*           receivedAlbums;
 @property (nonatomic, strong) NSArray*                  sharedAlbums;
-@property (nonatomic, strong) NSArray*                  specialAlbums;
 @property (nonatomic, strong) NSManagedObjectContext*   managedObjectContext;
 @property (nonatomic, assign) int                       reqOps;
 @property (nonatomic, assign) int                       reqAlbumsOps;
 @property (nonatomic, strong) NSOperationQueue*         operationQueue;
 @property (nonatomic, assign) BOOL                      shouldResync;
 
+- (void)receivedNetworkStatus:(NSNotification*)notification;
 - (void)refreshedAB:(NSNotification*)notification;
 - (void)uploadMediaDone:(NSNotification*)notification;
-- (void)checkAndCreateSpecialAlbums;
+- (void)checkAndCreateQuickShareAlbum;
 - (void)processAlbumsWithDict:(NSDictionary*)dict;
 - (void)updateAlbumAccounts:(SWAlbum*)album;
 - (void)processAlbumID:(int)albumID accounts:(id)responseObject;

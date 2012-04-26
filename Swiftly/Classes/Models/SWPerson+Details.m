@@ -136,12 +136,16 @@
     {
         ABRecordRef ref = CFArrayGetValueAtIndex(allPeople, i);
         
+        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);        
+        int phoneCount = ABMultiValueGetCount(phoneNumbers);
+        if (phoneCount <= 0)
+            continue;
+        
         SWPerson* p = [SWPerson newEntityInContext:context];
         p.firstName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonFirstNameProperty);
         p.lastName = (__bridge NSString*)ABRecordCopyValue(ref, kABPersonLastNameProperty);
         
-        ABMultiValueRef phoneNumbers = ABRecordCopyValue(ref, kABPersonPhoneProperty);
-        for (CFIndex i = 0; i < ABMultiValueGetCount(phoneNumbers); i++)
+        for (CFIndex i = 0; i < phoneCount; i++)
         {
             SWPhoneNumber* pn = [SWPhoneNumber newEntityInContext:context];
             pn.phoneNumber  = (__bridge NSString*)ABMultiValueCopyValueAtIndex(phoneNumbers,i);
@@ -198,11 +202,6 @@ static NSArray* __sharedAllValidObjects;
         
         BOOL bFoundInDB = NO;
         
-        if ([p.firstName isEqualToString:@"Quentin"])
-        {
-            NSLog(@"==> BLABLA: %@", p);
-        }
-        
         // Warning: Bottleneck!!
         for (SWPhoneNumber* pn in p.phoneNumbers)
         {
@@ -215,11 +214,7 @@ static NSArray* __sharedAllValidObjects;
                 break;
             }
         }
-        
-        if (!bFoundInDB)
-        {
-            [output addObject:p];
-        }
+         
     }
     
     

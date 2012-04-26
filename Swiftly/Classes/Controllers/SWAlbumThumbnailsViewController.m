@@ -50,10 +50,10 @@
     
     self.mediaDS = [[SWWebImagesDataSource alloc] init];    
     
-    if ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
-         (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
+    if ( ( (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM && self.selectedAlbum) || 
+           (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT && self.contact)
+         ) && [SWAPIClient isNetworkReachable]
        )
-    //if (NO)
     {             
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
         
@@ -75,7 +75,7 @@
                 uri = [NSString stringWithFormat:@"/nodes/%d/children", self.selectedAlbum.serverID];
             }
             else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
-                uri = [NSString stringWithFormat:@"/users/%d/nodes", self.contact.serverID];
+                uri = [NSString stringWithFormat:@"/users/%d/nodes?type=data", self.contact.serverID];
             
             [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:uri, self.selectedAlbum.serverID]
                                      parameters:nil
@@ -132,7 +132,10 @@
              ];  
             
         });
-        
+    }
+    else 
+    {
+        [self reload];
     }
     
     UISegmentedControl *segmentedControl = [[UISegmentedControl alloc] initWithItems:

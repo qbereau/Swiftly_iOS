@@ -14,7 +14,6 @@
 @synthesize operationQueue = _operationQueue;
 @synthesize receivedAlbums = _receivedAlbums;
 @synthesize sharedAlbums = _sharedAlbums;
-@synthesize specialAlbums = _specialAlbums;
 @synthesize managedObjectContext = _managedObjectContext;
 @synthesize reqOps = _reqOps;
 @synthesize reqAlbumsOps = _reqAlbumsOps;
@@ -43,7 +42,15 @@
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     [self reload];
-    [self synchronize];
+    
+    if ([SWAPIClient isNetworkReachable])
+        [self synchronize];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(receivedNetworkStatus:)
+                                                 name:@"SWReceivedNetworkStatus"
+                                               object:nil
+     ];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uploadMediaDone:)
@@ -74,6 +81,12 @@
                                                  name:@"SWGroupSyncDone"
                                                object:nil
      ];
+}
+
+- (void)receivedNetworkStatus:(NSNotification*)notification
+{
+    if ([SWAPIClient isNetworkReachable])
+        [self synchronize];
 }
 
 - (void)refreshedAB:(NSNotification*)notification
@@ -183,7 +196,6 @@
         
     } completion:^{
         self.sharedAlbums  = [SWAlbum findUnlockedSharedAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
-        self.specialAlbums = [SWAlbum findAllSpecialAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
         [self.tableView reloadData];
     }];
 }
@@ -338,16 +350,16 @@
             NSPredicate* predicate = [NSPredicate predicateWithFormat:@"NOT serverID IN %@", self.arrAlbumsID];
             [SWAlbum MR_deleteAllMatchingPredicate:predicate inContext:localContext];            
         } completion:^{
-            [self checkAndCreateSpecialAlbums];
+            [self checkAndCreateQuickShareAlbum];
         }];
     }
     else
     {
-        [self checkAndCreateSpecialAlbums];
+        [self checkAndCreateQuickShareAlbum];
     }
 }
 
-- (void)checkAndCreateSpecialAlbums
+- (void)checkAndCreateQuickShareAlbum
 {
     [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
         
@@ -449,50 +461,24 @@
         NSIndexPath* idxPath = [self.tableView indexPathForSelectedRow];
         SWAlbum* selectedAlbum = [self.sharedAlbums objectAtIndex:idxPath.row];
         SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
-        albumThumbnailsVC.allowAlbumEdition = YES;
+        albumThumbnailsVC.allowAlbumEdition = !selectedAlbum.isQuickShareAlbum;
         albumThumbnailsVC.selectedAlbum = selectedAlbum;
         
         [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
             selectedAlbum.updated = NO;
         }];
     }
-    else if ([[segue identifier] isEqualToString:@"SelectedOtherAlbum"])
-    {
-        NSIndexPath* idxPath = [self.tableView indexPathForSelectedRow];
-        SWAlbum* selectedAlbum = [self.specialAlbums objectAtIndex:idxPath.row];
-        SWAlbumThumbnailsViewController* albumThumbnailsVC = (SWAlbumThumbnailsViewController*)segue.destinationViewController;
-        albumThumbnailsVC.allowAlbumEdition = NO;
-        albumThumbnailsVC.selectedAlbum = selectedAlbum;
-
-        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
-            selectedAlbum.updated = NO;
-        }];        
-    }
 }
 
 #pragma mark - UITableView Delegates
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-	return 2;
+	return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (section == 0)
-        return [self.sharedAlbums count];
-    return [self.specialAlbums count];
-}
-
-- (UIView*)tableView:(UITableView*)tableView viewForHeaderInSection:(NSInteger)section
-{
-    UILabel* v = (UILabel*)[tableView tableHeaderView];
-    
-    if (section == 0)
-        v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"albums_shared_albums_header", @"shared albums")];
-    else
-        v.text = [NSString stringWithFormat:@"   %@", NSLocalizedString(@"albums_other_albums_header", @"other albums")];
-    
-    return v;
+    return [self.sharedAlbums count];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -502,18 +488,8 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    SWTableViewCell* cell;
-    SWAlbum* album;
-    if (indexPath.section == 0)
-    {
-        cell = [tableView dequeueReusableCellWithIdentifier:@"CellAlbum"];
-        album = [self.sharedAlbums objectAtIndex:indexPath.row];
-    }
-    else if (indexPath.section == 1)
-    {
-        cell = [tableView dequeueReusableCellWithIdentifier:@"CellSharedAlbum"];
-        album = [self.specialAlbums objectAtIndex:indexPath.row];
-    }
+    SWTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:@"CellAlbum"];
+    SWAlbum* album = [self.sharedAlbums objectAtIndex:indexPath.row];
     
     cell.title.text = album.name;
     cell.subtitle.text = [album participants_str];
@@ -525,7 +501,7 @@
 #pragma mark - JSLockScreenViewController
 - (void)lockScreenDidUnlock:(JSLockScreenViewController *)lockScreen
 {
-    self.sharedAlbums   = [SWAlbum findAllSharedAlbums:[NSManagedObjectContext MR_contextForCurrentThread]];
+    self.sharedAlbums   = [SWAlbum MR_findAll];
     [self.tableView reloadData];
 }
 

@@ -303,48 +303,69 @@ static int processedEntity = 0;
     {        
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
 
-            self.album.name = self.inputAlbumName.text;
-            
-            [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/nodes/%d", self.album.serverID]
-                                         parameters:[self.album toDictionnary]
-                                            success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                                
-                                                if (self.album.serverID == 0)
-                                                    self.album = [SWAlbum MR_createEntity];
-                                                
-                                                self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
-                                                [self.album updateWithObject:responseObject];                                               
-                                                
-                                                [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                                
-                                                [self.navigationController popToRootViewControllerAnimated:NO];
-                                            }
-                                            failure:self.genericFailureBlock
-             ];
+            if ([SWAPIClient isNetworkReachable])
+            {            
+                self.album.name = self.inputAlbumName.text;
+
+                [[SWAPIClient sharedClient]     putPath:[NSString stringWithFormat:@"/nodes/%d", self.album.serverID]
+                                             parameters:[self.album toDictionnary]
+                                                success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                                    
+                                                    if (self.album.serverID == 0)
+                                                        self.album = [SWAlbum MR_createEntity];
+                                                    
+                                                    self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
+                                                    [self.album updateWithObject:responseObject];                                               
+                                                    
+                                                    [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+                                                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                                    
+                                                    [self.navigationController popToRootViewControllerAnimated:NO];
+                                                }
+                                                failure:self.genericFailureBlock
+                 ];
+            }
+            else 
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                    [av show];                                                
+                });
+            }
         });
     }
     else if (self.mode == SW_ALBUM_MODE_CREATE)
     {
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
 
-            self.album.name = self.inputAlbumName.text;
+            if ([SWAPIClient isNetworkReachable])
+            {
+                self.album.name = self.inputAlbumName.text;
 
-            [[SWAPIClient sharedClient] postPath:@"/nodes"
-                                      parameters:[self.album toDictionnary]
-                                         success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                [[SWAPIClient sharedClient] postPath:@"/nodes"
+                                          parameters:[self.album toDictionnary]
+                                             success:^(AFHTTPRequestOperation *operation, id responseObject) {
 
-                                             self.album = [SWAlbum MR_createEntity];
-                                             self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
-                                             [self.album updateWithObject:responseObject];
+                                                 self.album = [SWAlbum MR_createEntity];
+                                                 self.album.isLocked = _shouldLockAlbumBeingEditedOrCreated;
+                                                 [self.album updateWithObject:responseObject];
 
-                                             [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+                                                 [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
 
-                                             [self processMediasForAlbum:self.album accounts:[self.album.participants allObjects] canExportMedias:self.album.canExportMedias];
-                                         }
-                                         failure:self.genericFailureBlock 
-             ];
-
+                                                 [self processMediasForAlbum:self.album accounts:[self.album.participants allObjects] canExportMedias:self.album.canExportMedias];
+                                             }
+                                             failure:self.genericFailureBlock 
+                 ];
+            }
+            else 
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                    [av show];                                                
+                });
+            }
         });
     }
     else if (self.mode == SW_ALBUM_MODE_LINK)
@@ -358,13 +379,35 @@ static int processedEntity = 0;
         }
         else
         {
-            [self processMediasForAlbum:_selectedLinkedAlbum accounts:[_selectedLinkedAlbum.participants allObjects] canExportMedias:_canExportMediasForLinkedAlbum];
+            if ([SWAPIClient isNetworkReachable])
+            {
+                [self processMediasForAlbum:_selectedLinkedAlbum accounts:[_selectedLinkedAlbum.participants allObjects] canExportMedias:_canExportMediasForLinkedAlbum];
+            }
+            else 
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                    [av show];                                                
+                });
+            }
         }
     }
     else if (self.mode == SW_ALBUM_MODE_QUICK_SHARE)
     {
-        SWAlbum* qsAlbum = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_contextForCurrentThread]];
-        [self processMediasForAlbum:qsAlbum accounts:_quickSharePeople canExportMedias:YES];
+        if ([SWAPIClient isNetworkReachable])
+        {
+            SWAlbum* qsAlbum = [SWAlbum findQuickShareAlbum:[NSManagedObjectContext MR_contextForCurrentThread]];
+            [self processMediasForAlbum:qsAlbum accounts:_quickSharePeople canExportMedias:YES];
+        }
+        else 
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                [av show];                                                
+            });
+        }
     }
 }
 
@@ -402,30 +445,41 @@ static int processedEntity = 0;
     
 	dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         
-        NSString* unlink; 
-        if (shouldUnlink)
-            unlink = @"?unlink";
-        else
-            unlink = @"";
-        
-        [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/nodes/%d%@", self.album.serverID, unlink]
-                                    parameters:nil
-                                       success:^(AFHTTPRequestOperation *operation, id responseObject) {    
-                                           
-                                           SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID]];
-                                           
-                                           for (SWMedia* m in album.medias)
-                                           {
-                                               [m MR_deleteEntity];
+        if ([SWAPIClient isNetworkReachable])
+        {        
+            NSString* unlink; 
+            if (shouldUnlink)
+                unlink = @"?unlink";
+            else
+                unlink = @"";
+            
+            [[SWAPIClient sharedClient] deletePath:[NSString stringWithFormat:@"/nodes/%d%@", self.album.serverID, unlink]
+                                        parameters:nil
+                                           success:^(AFHTTPRequestOperation *operation, id responseObject) {    
+                                               
+                                               SWAlbum* album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID]];
+                                               
+                                               for (SWMedia* m in album.medias)
+                                               {
+                                                   [m MR_deleteEntity];
+                                               }
+                                               
+                                               [album MR_deleteEntity];
+                                               [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
+                                               [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                                               [[self navigationController] popToRootViewControllerAnimated:YES];
                                            }
-                                           
-                                           [album MR_deleteEntity];
-                                           [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];
-                                           [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
-                                           [[self navigationController] popToRootViewControllerAnimated:YES];
-                                       }
-                                       failure:self.genericFailureBlock
-         ];
+                                           failure:self.genericFailureBlock
+             ];
+        }
+        else 
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                [av show];                                                
+            });
+        }
     });
 }
 

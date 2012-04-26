@@ -199,6 +199,7 @@
 		19CCB6A7153737F300255C3A /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19CCB6A6153737F300255C3A /* CoreLocation.framework */; };
 		19D1B8F814FB9E5800C69DA1 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 19D1B8F614FB9E5800C69DA1 /* valid.png */; };
 		19D1B8F914FB9E5800C69DA1 /* valid@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 19D1B8F714FB9E5800C69DA1 /* valid@2x.png */; };
+		19E52257153D6A7600820C89 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19E52256153D6A7600820C89 /* SystemConfiguration.framework */; };
 		19F1C69E14DFCC9500B0A469 /* back_button_landscape.png in Resources */ = {isa = PBXBuildFile; fileRef = 19F1C69C14DFCC9500B0A469 /* back_button_landscape.png */; };
 		19F1C69F14DFCC9500B0A469 /* back_button_landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 19F1C69D14DFCC9500B0A469 /* back_button_landscape@2x.png */; };
 		19F1C6A614DFCFE100B0A469 /* segcontrol_left_sel_right_unsel_landscape@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 19F1C6A114DFCFE100B0A469 /* segcontrol_left_sel_right_unsel_landscape@2x.png */; };
@@ -496,6 +497,7 @@
 		19CCB6A6153737F300255C3A /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		19D1B8F614FB9E5800C69DA1 /* valid.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = valid.png; sourceTree = "<group>"; };
 		19D1B8F714FB9E5800C69DA1 /* valid@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "valid@2x.png"; sourceTree = "<group>"; };
+		19E52256153D6A7600820C89 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		19F1C69C14DFCC9500B0A469 /* back_button_landscape.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = back_button_landscape.png; sourceTree = "<group>"; };
 		19F1C69D14DFCC9500B0A469 /* back_button_landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "back_button_landscape@2x.png"; sourceTree = "<group>"; };
 		19F1C6A114DFCFE100B0A469 /* segcontrol_left_sel_right_unsel_landscape@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_left_sel_right_unsel_landscape@2x.png"; sourceTree = "<group>"; };
@@ -565,6 +567,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19E52257153D6A7600820C89 /* SystemConfiguration.framework in Frameworks */,
 				19CCB6A7153737F300255C3A /* CoreLocation.framework in Frameworks */,
 				192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */,
 				192A6F9014E9845E00B8EACA /* CoreData.framework in Frameworks */,
@@ -675,6 +678,7 @@
 		1950B7D314D6AFB400302BF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				19E52256153D6A7600820C89 /* SystemConfiguration.framework */,
 				19CCB6A6153737F300255C3A /* CoreLocation.framework */,
 				192A702014EC06A500B8EACA /* AVFoundation.framework */,
 				192A6F8F14E9845E00B8EACA /* CoreData.framework */,

@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
+#import "SWAPIClient.h"
 #import "SWTableViewCell.h"
 #import "SWAlbumLockViewController.h"
 #import "KVPasscodeViewController.h"

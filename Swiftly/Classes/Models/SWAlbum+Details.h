@@ -29,9 +29,7 @@
 - (NSDictionary*)toDictionnary;
 
 + (NSArray *)findAllLinkableAlbums:(NSManagedObjectContext*)context;
-+ (NSArray *)findAllSharedAlbums:(NSManagedObjectContext*)context;
 + (NSArray*)findUnlockedSharedAlbums:(NSManagedObjectContext*)context;
-+ (NSArray *)findAllSpecialAlbums:(NSManagedObjectContext*)context;
 + (SWAlbum*)findQuickShareAlbum:(NSManagedObjectContext*)context;
 + (SWAlbum*)newEntityInContext:(NSManagedObjectContext*)context;
 

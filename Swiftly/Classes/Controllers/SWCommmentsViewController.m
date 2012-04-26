@@ -192,25 +192,36 @@
         [[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];    
         dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
-            NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
-            
-            [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/nodes/%d/comments", self.media.serverID]
-                                     parameters:param 
-                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
-                                            
-                                            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            if ([SWAPIClient isNetworkReachable])
+            {         
+                NSDictionary* param = [NSDictionary dictionaryWithObject:self.textfield.text forKey:@"content"];
+                
+                [[SWAPIClient sharedClient] postPath:[NSString stringWithFormat:@"/nodes/%d/comments", self.media.serverID]
+                                         parameters:param 
+                                            success:^(AFHTTPRequestOperation *operation, id responseObject) {
                                                 
-                                                [self addCommentObject:responseObject inContext:localContext];                                          
-                                                
-                                            } completion:^{
-                                                self.textfield.text = @"";
-                                                [self reload];
-                                            }];
-                                        } 
-                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-                                            NSLog(@"ERROR: %@", [error description]);
-                                        }
-             ];
+                                                [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                                                    
+                                                    [self addCommentObject:responseObject inContext:localContext];                                          
+                                                    
+                                                } completion:^{
+                                                    self.textfield.text = @"";
+                                                    [self reload];
+                                                }];
+                                            } 
+                                            failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                                NSLog(@"ERROR: %@", [error description]);
+                                            }
+                 ];
+            }
+            else 
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                    UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                    [av show];                                                
+                });
+            }
         });
     }
 }
@@ -248,7 +259,7 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationPortrait);
+    return YES;
 }
 
 - (void)reload

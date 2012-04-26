@@ -224,7 +224,18 @@
 {
     if (buttonIndex != [alertView cancelButtonIndex])
     {
-        NSLog(@"[SWSettingsViewController#alertview] Delete Account...");
+        if ([SWAPIClient isNetworkReachable])
+        {
+            NSLog(@"[SWSettingsViewController#alertview] Delete Account...");
+        }
+        else 
+        {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MBProgressHUD hideHUDForView:self.navigationController.view animated:YES];
+                UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"not_connected", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
+                [av show];                                                
+            });
+        }
     }
 }
 

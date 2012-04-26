@@ -124,6 +124,7 @@
 "passcode_info_use"                     = "Try again or tap to cancel";
 
 "generic_error_desc"                    = "An unexpected error occured. Please retry.";
+"not_connected"                         = "You are not connected to the internet.";
 
 "select_an_album"                       = "Select an album";
 "error"                                 = "Error";

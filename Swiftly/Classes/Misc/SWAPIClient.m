@@ -2,8 +2,14 @@
 #import "AFJSONRequestOperation.h"
 
 NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
+BOOL gIsNetworkReachable = YES;
 
 @implementation SWAPIClient
+
++ (BOOL)isNetworkReachable
+{
+    return gIsNetworkReachable;
+}
 
 + (NSDictionary*)userCredentials
 {
@@ -34,6 +40,12 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
         return nil;
     }
 
+    [self setReachabilityStatusChangeBlock:^(BOOL isNetworkReachable) {
+        gIsNetworkReachable = isNetworkReachable;
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"SWReceivedNetworkStatus" object:nil];
+    }];
+    
     [self registerHTTPOperationClass:[AFJSONRequestOperation class]];    
 	[self setDefaultHeader:@"Accept" value:@"application/json"];
     
@@ -55,9 +67,12 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
         success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    [dict addEntriesFromDictionary:[self credentials]];
-    [super getPath:path parameters:dict success:success failure:failure];
+    if ([SWAPIClient isNetworkReachable])
+    {
+        NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
+        [dict addEntriesFromDictionary:[self credentials]];
+        [super getPath:path parameters:dict success:success failure:failure];
+    }
 }
 
 - (void)postPath:(NSString *)path 
@@ -65,9 +80,12 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
          success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
          failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    [dict addEntriesFromDictionary:[self credentials]];
-    [super postPath:path parameters:dict success:success failure:failure];
+    if ([SWAPIClient isNetworkReachable])
+    {    
+        NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
+        [dict addEntriesFromDictionary:[self credentials]];
+        [super postPath:path parameters:dict success:success failure:failure];
+    }
 }
 
 - (void)putPath:(NSString *)path 
@@ -75,9 +93,12 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
         success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
         failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    [dict addEntriesFromDictionary:[self credentials]];
-    [super putPath:path parameters:dict success:success failure:failure];
+    if ([SWAPIClient isNetworkReachable])
+    {    
+        NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
+        [dict addEntriesFromDictionary:[self credentials]];
+        [super putPath:path parameters:dict success:success failure:failure];
+    }
 }
 
 - (void)deletePath:(NSString *)path 
@@ -85,9 +106,12 @@ NSString * const kSWBaseURLString = @"http://swiftly-node.herokuapp.com";
            success:(void (^)(AFHTTPRequestOperation *operation, id responseObject))success
            failure:(void (^)(AFHTTPRequestOperation *operation, NSError *error))failure
 {
-    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
-    [dict addEntriesFromDictionary:[self credentials]];
-    [super deletePath:path parameters:dict success:success failure:failure];
+    if ([SWAPIClient isNetworkReachable])
+    {
+        NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithDictionary:parameters];
+        [dict addEntriesFromDictionary:[self credentials]];
+        [super deletePath:path parameters:dict success:success failure:failure];
+    }
 }
 
 @end

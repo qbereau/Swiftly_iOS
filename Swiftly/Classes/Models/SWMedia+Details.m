@@ -43,7 +43,7 @@
 {        
     self.serverID                   = [[obj valueForKey:@"id"] intValue];
     self.isReady                    = [obj objectForKey:@"ready"] ? [[obj valueForKey:@"ready"] boolValue] : YES;
-    self.creatorID                  = [[obj valueForKey:@"creator_id"] intValue];
+    self.creatorID                  = ([obj valueForKey:@"creator_id"] != nil && [obj valueForKey:@"creator_id"] != [NSNull null]) ? [[obj valueForKey:@"creator_id"] intValue] : 0;
     
     NSString* contentType = [obj objectForKey:@"content_type"];
     if ([contentType rangeOfString:@"image"].location != NSNotFound)

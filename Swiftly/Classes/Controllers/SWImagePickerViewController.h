@@ -11,6 +11,11 @@
 #import "SWAlbumPickerViewController.h"
 #import "SWAlbumChoiceSelectionViewController.h"
 
-@interface SWImagePickerViewController : ELCImagePickerController
+@interface SWImagePickerViewController : ELCImagePickerController <UITabBarControllerDelegate>
+{
+    SWAlbumPickerViewController*    _albumController;
+}
+
+@property (nonatomic, retain) SWAlbumPickerViewController* albumController;
 
 @end

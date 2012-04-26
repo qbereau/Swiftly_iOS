@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MBProgressHUD.h"
+#import <SystemConfiguration/SystemConfiguration.h>
 #import "AFNetworking.h"
 
 typedef void (^GenericFailureBlock)(AFHTTPRequestOperation*, NSError*);
