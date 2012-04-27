@@ -61,6 +61,15 @@
     self.nbComments                 = [[obj valueForKey:@"comment_count"] intValue];
     self.isOpen                     = [[obj objectForKey:@"grant"] boolValue];
     
+    
+    // Date
+    [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+    
+    self.createdAt = [[dateFormatter dateFromString:[obj valueForKey:@"created_at"]] timeIntervalSinceReferenceDate];
+    self.updatedAt = [[dateFormatter dateFromString:[obj valueForKey:@"updated_at"]] timeIntervalSinceReferenceDate];
+    
     // --
     id aData = [obj objectForKey:@"adata"];
     if (aData && [aData class] != [NSNull class])
@@ -117,6 +126,23 @@
     [request setSortDescriptors:sortDescriptors];
     
     return [SWMedia MR_executeFetchRequest:request];
+}
+
++ (SWMedia*)lastQuickShareMedia
+{
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"album.isQuickShareAlbum = YES"];    
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"updatedAt" ascending:NO];
+    NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];
+    
+    NSFetchRequest *request = [SWMedia MR_requestAllWithPredicate:predicate];
+    [request setFetchLimit:1];
+    [request setSortDescriptors:sortDescriptors];
+    
+    NSArray* arr = [SWMedia MR_executeFetchRequest:request];
+    if ([arr count] > 0)
+        return [arr objectAtIndex:0];
+    return nil;
 }
 
 @end

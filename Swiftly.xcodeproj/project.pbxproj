@@ -62,6 +62,7 @@
 		192A6F9614E985A600B8EACA /* SwiftlyCD.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 192A6F9414E985A600B8EACA /* SwiftlyCD.xcdatamodeld */; };
 		192A6FF414EAAFB000B8EACA /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */; };
 		192A702114EC06A700B8EACA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 192A702014EC06A500B8EACA /* AVFoundation.framework */; };
+		193EAE65154947D000F8E543 /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 193EAE64154947D000F8E543 /* SWMedia.m */; };
 		194D209214E3ADAD00B72A40 /* SWContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 194D209114E3ADAD00B72A40 /* SWContactViewController.m */; };
 		194D209514E3C34100B72A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 194D209414E3C34100B72A40 /* MessageUI.framework */; };
 		194D20A014E3FE4C00B72A40 /* block.png in Resources */ = {isa = PBXBuildFile; fileRef = 194D209E14E3FE4C00B72A40 /* block.png */; };
@@ -194,7 +195,6 @@
 		1998334C14DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334714DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png */; };
 		1998334D14DAF0140083E5C3 /* segcontrol_sel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334814DAF0140083E5C3 /* segcontrol_sel@2x.png */; };
 		1998334E14DAF0140083E5C3 /* segcontrol_unsel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1998334914DAF0140083E5C3 /* segcontrol_unsel@2x.png */; };
-		19CCB4D51535E83400255C3A /* SWMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 19CCB4D41535E83400255C3A /* SWMedia.m */; };
 		19CCB5611536F53900255C3A /* SWAlbum.m in Sources */ = {isa = PBXBuildFile; fileRef = 19CCB5601536F53900255C3A /* SWAlbum.m */; };
 		19CCB6A7153737F300255C3A /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19CCB6A6153737F300255C3A /* CoreLocation.framework */; };
 		19D1B8F814FB9E5800C69DA1 /* valid.png in Resources */ = {isa = PBXBuildFile; fileRef = 19D1B8F614FB9E5800C69DA1 /* valid.png */; };
@@ -302,6 +302,8 @@
 		192A6FF214EAAFB000B8EACA /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		192A6FF314EAAFB000B8EACA /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		192A702014EC06A500B8EACA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		193EAE63154947D000F8E543 /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
+		193EAE64154947D000F8E543 /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
 		194D209014E3ADAD00B72A40 /* SWContactViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWContactViewController.h; sourceTree = "<group>"; };
 		194D209114E3ADAD00B72A40 /* SWContactViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWContactViewController.m; sourceTree = "<group>"; };
 		194D209414E3C34100B72A40 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -490,8 +492,6 @@
 		1998334714DAF0140083E5C3 /* segcontrol_left_unsel_right_unsel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_left_unsel_right_unsel@2x.png"; sourceTree = "<group>"; };
 		1998334814DAF0140083E5C3 /* segcontrol_sel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_sel@2x.png"; sourceTree = "<group>"; };
 		1998334914DAF0140083E5C3 /* segcontrol_unsel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "segcontrol_unsel@2x.png"; sourceTree = "<group>"; };
-		19CCB4D31535E83400255C3A /* SWMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWMedia.h; sourceTree = "<group>"; };
-		19CCB4D41535E83400255C3A /* SWMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWMedia.m; sourceTree = "<group>"; };
 		19CCB55F1536F53900255C3A /* SWAlbum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SWAlbum.h; sourceTree = "<group>"; };
 		19CCB5601536F53900255C3A /* SWAlbum.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SWAlbum.m; sourceTree = "<group>"; };
 		19CCB6A6153737F300255C3A /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
@@ -915,10 +915,10 @@
 				19F32F7C1507658300F3108E /* SWPhoneNumber.m */,
 				19F32F751507658200F3108E /* SWComment.h */,
 				19F32F761507658200F3108E /* SWComment.m */,
-				19CCB4D31535E83400255C3A /* SWMedia.h */,
-				19CCB4D41535E83400255C3A /* SWMedia.m */,
 				19CCB55F1536F53900255C3A /* SWAlbum.h */,
 				19CCB5601536F53900255C3A /* SWAlbum.m */,
+				193EAE63154947D000F8E543 /* SWMedia.h */,
+				193EAE64154947D000F8E543 /* SWMedia.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -1358,8 +1358,8 @@
 				19F32F95150769C300F3108E /* SWPhoneNumber+Details.m in Sources */,
 				19F32F9815076A6E00F3108E /* SWAlbum+Details.m in Sources */,
 				1980BFBF1529FA680097AE93 /* SWPrivacyPolicyViewController.m in Sources */,
-				19CCB4D51535E83400255C3A /* SWMedia.m in Sources */,
 				19CCB5611536F53900255C3A /* SWAlbum.m in Sources */,
+				193EAE65154947D000F8E543 /* SWMedia.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -72,7 +72,16 @@
             NSString* uri = @"";
             if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_ALBUM)
             {
-                uri = [NSString stringWithFormat:@"/nodes/%d/children", self.selectedAlbum.serverID];
+                if (self.selectedAlbum.isQuickShareAlbum)
+                {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    int user_id = [defaults integerForKey:@"sid"];    
+                    uri = [NSString stringWithFormat:@"/nodes?tags=quickshare&type=data&per_page=1&creator_id=!%d", user_id];
+                }
+                else
+                {
+                    uri = [NSString stringWithFormat:@"/nodes/%d/children", self.selectedAlbum.serverID];                    
+                }
             }
             else if (self.displayMode == ALBUM_THUMBNAIL_DISPLAY_MODE_CONTACT)
                 uri = [NSString stringWithFormat:@"/users/%d/nodes?type=data", self.contact.serverID];

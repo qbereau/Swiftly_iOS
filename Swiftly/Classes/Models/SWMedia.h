@@ -2,7 +2,7 @@
 //  SWMedia.h
 //  Swiftly
 //
-//  Created by Quentin Bereau on 4/11/12.
+//  Created by Quentin Bereau on 4/26/12.
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
@@ -13,14 +13,10 @@
 
 @interface SWMedia : NSManagedObject
 
-@property (nonatomic, retain) NSString * originalACL;
 @property (nonatomic, retain) NSString * assetURL;
-@property (nonatomic, retain) NSString * originalAWSAccessKeyID;
 @property (nonatomic, retain) NSString * bucketURL;
-@property (nonatomic, retain) NSString * originalContentType;
 @property (nonatomic) int32_t creatorID;
 @property (nonatomic) int32_t duration;
-@property (nonatomic, retain) NSString * originalFilename;
 @property (nonatomic) BOOL isCancelled;
 @property (nonatomic) BOOL isHiddenFromActivities;
 @property (nonatomic) BOOL isImage;
@@ -32,21 +28,27 @@
 @property (nonatomic) BOOL isVideo;
 @property (nonatomic, retain) NSString * localResourceURL;
 @property (nonatomic, retain) NSString * localThumbnailURL;
+@property (nonatomic) int32_t nbComments;
+@property (nonatomic, retain) NSString * originalACL;
+@property (nonatomic, retain) NSString * originalAWSAccessKeyID;
+@property (nonatomic, retain) NSString * originalContentType;
+@property (nonatomic, retain) NSString * originalFilename;
 @property (nonatomic, retain) NSString * originalPolicy;
+@property (nonatomic, retain) NSString * originalSignature;
 @property (nonatomic, retain) NSString * resourceURL;
 @property (nonatomic) int32_t serverID;
-@property (nonatomic, retain) NSString * originalSignature;
 @property (nonatomic, retain) id thumbnail;
-@property (nonatomic, retain) NSString * thumbnailURL;
-@property (nonatomic) NSTimeInterval uploadedDate;
-@property (nonatomic) float uploadProgress;
 @property (nonatomic, retain) NSString * thumbnailACL;
 @property (nonatomic, retain) NSString * thumbnailAWSAccessKeyID;
 @property (nonatomic, retain) NSString * thumbnailContentType;
 @property (nonatomic, retain) NSString * thumbnailFilename;
 @property (nonatomic, retain) NSString * thumbnailPolicy;
 @property (nonatomic, retain) NSString * thumbnailSignature;
-@property (nonatomic) int32_t nbComments;
+@property (nonatomic, retain) NSString * thumbnailURL;
+@property (nonatomic) NSTimeInterval uploadedDate;
+@property (nonatomic) float uploadProgress;
+@property (nonatomic) NSTimeInterval updatedAt;
+@property (nonatomic) NSTimeInterval createdAt;
 @property (nonatomic, retain) SWAlbum *album;
 @property (nonatomic, retain) NSSet *comments;
 @property (nonatomic, retain) NSSet *sharedPeople;

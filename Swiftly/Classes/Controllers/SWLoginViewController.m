@@ -56,16 +56,23 @@
     [super viewDidAppear:animated];
     
     // For Dev, instead of having to resubscribe....
-    /*
+    
     KeychainItemWrapper *keychain = [[KeychainItemWrapper alloc] initWithIdentifier:SWIFTLY_APP_ID accessGroup:nil];
     [keychain setObject:@"BFBCC4D1C0C08918CA0AC180EB59F510" forKey:(__bridge id)kSecAttrAccount];
     [keychain setObject:@"3C34D323BA18FD5B755ED282E92BA345" forKey:(__bridge id)kSecValueData];
     
+    int sid = 1;
+    
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:YES forKey:@"account_activated"];
-    [defaults setInteger:1 forKey:@"sid"];
+    [defaults setInteger:sid forKey:@"sid"];
     [defaults synchronize];
-     */
+     
+    SWPerson* user = [SWPerson MR_createEntity];
+    user.serverID       = sid;
+    user.isSelf         = YES;
+    [[NSManagedObjectContext MR_contextForCurrentThread] save:nil];    
+    
     //---------
     
     NSDictionary* dict              = [SWAPIClient userCredentials];

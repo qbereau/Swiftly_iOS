@@ -46,7 +46,7 @@
     if (!self.updated)
     {
         if (!self.thumbnail)
-            [UIImage imageNamed:@"photoDefault.png"];
+            return [UIImage imageNamed:@"photoDefault.png"];
         else
             return self.thumbnail;
     }
@@ -146,16 +146,19 @@
     dateFromString = [dateFormatter dateFromString:[obj valueForKey:@"updated_at"]];    
     self.lastUpdate         = [dateFromString timeIntervalSinceReferenceDate];
 
-    NSString* thumbURL = [obj valueForKey:@"thumbnail_url"];
-    if (!thumbURL || [thumbURL class] == [NSNull class])
-        self.thumbnailURL = nil;
-    else
+    if (!self.isQuickShareAlbum)
     {
-        self.updated = NO;
-        if (![[[self.thumbnailURL componentsSeparatedByString:@"?"] objectAtIndex:0] isEqualToString:[[thumbURL componentsSeparatedByString:@"?"] objectAtIndex:0]] || ( [self.thumbnailURL length] == 0 && [thumbURL length] > 0) )
-            self.updated = YES;
-        
-        self.thumbnailURL = thumbURL;
+        NSString* thumbURL = [obj valueForKey:@"thumbnail_url"];
+        if (!thumbURL || [thumbURL class] == [NSNull class])
+            self.thumbnailURL = nil;
+        else
+        {
+            self.updated = NO;
+            if (![[[self.thumbnailURL componentsSeparatedByString:@"?"] objectAtIndex:0] isEqualToString:[[thumbURL componentsSeparatedByString:@"?"] objectAtIndex:0]] || ( [self.thumbnailURL length] == 0 && [thumbURL length] > 0) )
+                self.updated = YES;
+            
+            self.thumbnailURL = thumbURL;
+        }
     }
 }
 
@@ -210,6 +213,7 @@
                                                                              [NSNumber numberWithBool:YES], @"read", 
                                                                              [NSNumber numberWithBool:self.canAddMedias], @"write", 
                                                                              [NSNumber numberWithBool:self.canEditPeople], @"grant",
+                                                                             [NSNumber numberWithBool:YES], @"recursive", 
                                     nil];
             [dict setObject:[NSArray arrayWithObject:right] forKey:@"rights"];
         }
@@ -232,7 +236,7 @@
 
 + (NSArray*)findAllLinkableAlbums:(NSManagedObjectContext*)context
 {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"canAddMedias = YES OR isOwner = YES OR isQuickShareAlbum = YES"];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(canAddMedias = YES OR isOwner = YES) AND isQuickShareAlbum = NO"];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastUpdate" ascending:NO];
     NSArray *sortDescriptors = [[NSArray alloc] initWithObjects:sortDescriptor, nil];

@@ -380,6 +380,7 @@
                                                  
                                                  SWAlbum* localAlbum = [SWAlbum MR_createInContext:localContext];
                                                  localAlbum.updated = YES;
+                                                 localAlbum.isQuickShareAlbum = YES;
                                                  localAlbum.isLocked = NO;
                                                  [localAlbum updateWithObject:responseObject];
                                                  
@@ -394,7 +395,50 @@
         }
         else 
         {
-            [SWPeopleListViewController synchronize];        
+            // The album was found, so we check if there is an updated quickshared file
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            int user_id = [defaults integerForKey:@"sid"];    
+            [[SWAPIClient sharedClient] getPath:[NSString stringWithFormat:@"/nodes?tags=quickshare&type=data&per_page=1&creator_id=!%d", user_id]
+                                     parameters:nil 
+                                        success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                                            [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+                                                if ([responseObject count] > 0)
+                                                {
+                                                    id obj = [responseObject objectAtIndex:0];
+                                                    if (obj)
+                                                    {
+                                                        [NSDateFormatter setDefaultFormatterBehavior:NSDateFormatterBehavior10_4];
+                                                        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                                                        [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'Z'"];
+                                                        
+                                                        NSTimeInterval ti = [[dateFormatter dateFromString:[obj valueForKey:@"created_at"]] timeIntervalSinceReferenceDate];                                                    
+                                                        
+                                                        SWMedia* m = [SWMedia lastQuickShareMedia];
+                                                        if (m.updatedAt != ti)
+                                                        {
+                                                            SWAlbum* localAlbum = [SWAlbum findQuickShareAlbum:localContext];
+                                                            localAlbum.updated = YES;
+                                                            localAlbum.thumbnailURL = [obj valueForKey:@"thumbnail_url"];
+                                                            SDWebImageDownloader* downloader = [SDWebImageDownloader downloaderWithURL:[NSURL URLWithString:localAlbum.thumbnailURL] delegate:self];
+                                                            downloader.userInfo = [NSDictionary dictionaryWithObject:localAlbum forKey:@"album"];
+                                                        }
+                                                    }    
+                                                }
+                                                else 
+                                                {
+                                                    // No quickshared media. It means we just display an empty image
+                                                    SWAlbum* localAlbum = [SWAlbum findQuickShareAlbum:localContext];
+                                                    localAlbum.updated = NO;
+                                                    localAlbum.thumbnailURL = nil;
+                                                    localAlbum.thumbnail = nil;
+                                                }
+                                            } completion:^{
+                                                [SWPeopleListViewController synchronize];
+                                            }];
+                                        } 
+                                        failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                                            [SWPeopleListViewController synchronize];
+                                        }];
         }        
     }];
 }

@@ -69,17 +69,21 @@
 {
     if (self.localVideoURL)
     {
-        moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:self.localVideoURL];
-        [self addSubview:moviePlayer_.view];    
-        [moviePlayer_ prepareToPlay];
-        [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
-        [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
-        [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
-        [moviePlayer_ play];
-        
-        [spinner_ stopAnimating];
-        
-        [self turnOffZoom];    
+        if (![self.localVideoURL.absoluteString isEqualToString:moviePlayer_.contentURL.absoluteString])
+        {
+            moviePlayer_ = [[MPMoviePlayerController alloc] initWithContentURL:self.localVideoURL];
+            [self addSubview:moviePlayer_.view];    
+            [moviePlayer_ prepareToPlay];
+            [moviePlayer_ setControlStyle:MPMovieControlStyleEmbedded];
+            moviePlayer_.movieSourceType = MPMovieSourceTypeFile;
+            [moviePlayer_ setScalingMode:MPMovieScalingModeAspectFit];
+            [moviePlayer_.view setFrame:CGRectMake(0, 50, [self bounds].size.width, [self bounds].size.height - 100)];
+            [moviePlayer_ play];
+            
+            [spinner_ stopAnimating];
+            
+            [self turnOffZoom];    
+        }
     }
 }
 

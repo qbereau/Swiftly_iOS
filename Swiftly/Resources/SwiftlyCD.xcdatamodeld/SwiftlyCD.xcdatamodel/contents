@@ -32,6 +32,7 @@
     <entity name="SWMedia" representedClassName="SWMedia" syncable="YES">
         <attribute name="assetURL" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="bucketURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="creatorID" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="duration" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="isCancelled" optional="YES" attributeType="Boolean" syncable="YES"/>
@@ -62,6 +63,7 @@
         <attribute name="thumbnailPolicy" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbnailSignature" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="thumbnailURL" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="updatedAt" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="uploadedDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="uploadProgress" optional="YES" attributeType="Float" defaultValueString="0" syncable="YES"/>
         <relationship name="album" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="SWAlbum" inverseName="medias" inverseEntity="SWAlbum" syncable="YES"/>
@@ -94,7 +96,7 @@
         <element name="SWAlbum" positionX="126" positionY="360" width="128" height="270"/>
         <element name="SWComment" positionX="160" positionY="192" width="128" height="120"/>
         <element name="SWGroup" positionX="160" positionY="192" width="128" height="90"/>
-        <element name="SWMedia" positionX="160" positionY="192" width="128" height="495"/>
+        <element name="SWMedia" positionX="160" positionY="192" width="128" height="630"/>
         <element name="SWPerson" positionX="414" positionY="264" width="128" height="255"/>
         <element name="SWPhoneNumber" positionX="160" positionY="192" width="128" height="105"/>
     </elements>

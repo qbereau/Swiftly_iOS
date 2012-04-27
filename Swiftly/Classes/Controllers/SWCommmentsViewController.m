@@ -8,7 +8,10 @@
 
 #import "SWCommmentsViewController.h"
 
-#define MAX_COMMENT_PAGES 3
+#define MAX_COMMENT_PAGES   3
+#define TOOLBAR_Y_PORTRAIT  371
+#define TOOLBAR_Y_LANDSCAPE 223
+#define TOOLBAR_X           0
 
 @implementation SWCommmentsViewController
 
@@ -61,7 +64,7 @@
     self.textfield.backgroundColor = [UIColor blackColor];
     self.textfield.keyboardType = UIKeyboardTypeDefault;
     self.textfield.returnKeyType = UIReturnKeyDone;
-    self.textfield.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.textfield.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     self.textfield.delegate = self;
 
     UIButton* btnSend = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -76,8 +79,8 @@
     self.toolbar = [UIToolbar new];
     self.toolbar.barStyle = UIBarStyleDefault;
     [self.toolbar sizeToFit];
-    self.toolbar.frame = CGRectMake(0, 371, 320, 50);
-    self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    self.toolbar.frame = CGRectMake(TOOLBAR_X, TOOLBAR_Y_PORTRAIT, 320, 50);
+    self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
 
     UIBarButtonItem *textFieldItem = [[UIBarButtonItem alloc] initWithCustomView:self.textfield];
     UIBarButtonItem *btnItem = [[UIBarButtonItem alloc] initWithCustomView:btnSend];
@@ -235,8 +238,16 @@
 
 - (void)viewWillAppear:(BOOL)animated
 {
-    [super viewWillAppear:animated];
+    [super viewWillAppear:animated];    
     
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
+    {
+        self.toolbar.frame = CGRectMake(TOOLBAR_X, TOOLBAR_Y_PORTRAIT, self.view.frame.size.width, 50);
+    }
+    else 
+    {
+        self.toolbar.frame = CGRectMake(TOOLBAR_X, TOOLBAR_Y_LANDSCAPE, self.view.frame.size.width, 50);        
+    }    
     
     [self reload];
 }
@@ -259,7 +270,32 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     // Return YES for supported orientations
-    return YES;
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
+    } else {
+        return YES;
+    }
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation))
+    {
+        self.toolbar.frame = CGRectMake(TOOLBAR_X, TOOLBAR_Y_PORTRAIT, self.view.frame.size.width, 50);
+    }
+    else 
+    {
+        self.toolbar.frame = CGRectMake(TOOLBAR_X, TOOLBAR_Y_LANDSCAPE, self.view.frame.size.width, 50);        
+    }
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    if (self.tableView.contentSize.height > self.view.frame.size.height)
+    {
+        CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
+        [self.tableView setContentOffset:bottomOffset animated:NO];
+    } 
 }
 
 - (void)reload
@@ -274,7 +310,7 @@
         if (self.tableView.contentSize.height > self.view.frame.size.height)
         {
             CGPoint bottomOffset = CGPointMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height);
-            [self.tableView setContentOffset:bottomOffset animated:NO];    
+            [self.tableView setContentOffset:bottomOffset animated:NO];
         }        
     }];
 }

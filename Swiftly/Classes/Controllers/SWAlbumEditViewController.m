@@ -77,7 +77,7 @@
     
     __block SWAlbumEditViewController* blockSelf = self;
     self.genericFailureBlock = ^(AFHTTPRequestOperation *operation, NSError *error) {
-        NSLog(@"Error: %@", [error description]);
+        NSLog(@"Error: %@", [operation responseString]);
         dispatch_async(dispatch_get_main_queue(), ^{
             [MBProgressHUD hideHUDForView:blockSelf.navigationController.view animated:YES];
             UIAlertView* av = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"error", @"error") message:NSLocalizedString(@"generic_error_desc", @"error") delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", @"ok") otherButtonTitles:nil];
@@ -180,7 +180,9 @@ static int processedEntity = 0;
     NSMutableArray* accountIDs = [NSMutableArray array];
     for (SWPerson* p in accounts)
     {
-        if (!p.isSelf)
+        if (p.isSelf)
+            continue;
+        else if (![p isFault] && p.isLinked)
             [accountIDs addObject:[NSNumber numberWithInt:p.serverID]];
     }    
     
@@ -272,26 +274,30 @@ static int processedEntity = 0;
 {
     if (self.mode == SW_ALBUM_MODE_EDIT)
     {
-        self.album.name             = self.originalAlbum.name;
-        self.album.canEditPeople    = self.originalAlbum.canEditPeople;
-        self.album.canAddMedias    = self.originalAlbum.canAddMedias;
-        self.album.canExportMedias  = self.originalAlbum.canExportMedias;
-        self.album.isLocked         = self.originalAlbum.isLocked;
-        
-        [self.album setParticipants:nil];
-        for (SWPerson* p in self.originalAlbum.participants)
-        {
-            [self.album addParticipantsObject:[p MR_inContext:[NSManagedObjectContext MR_contextForCurrentThread]]];
-        }      
-        
-        [self.album setMedias:nil];
-        for (SWMedia* m in self.originalAlbum.medias)
-        {
-            [self.album addMediasObject:[m MR_inContext:[NSManagedObjectContext MR_contextForCurrentThread]]];
-        }      
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            SWAlbum* localAlbum         = [SWAlbum MR_findFirstByAttribute:@"serverID" 
+                                                                 withValue:[NSNumber numberWithInt:self.album.serverID] 
+                                                                 inContext:localContext];
+            localAlbum.name             = self.originalAlbum.name;
+            localAlbum.canEditPeople    = self.originalAlbum.canEditPeople;
+            localAlbum.canAddMedias    = self.originalAlbum.canAddMedias;
+            localAlbum.canExportMedias  = self.originalAlbum.canExportMedias;
+            localAlbum.isLocked         = self.originalAlbum.isLocked;
+            
+            [localAlbum setParticipants:nil];
+            for (SWPerson* p in self.originalAlbum.participants)
+            {
+                [localAlbum addParticipantsObject:[p MR_inContext:localContext]];
+            }      
+            
+        } completion:^{
+            [self.navigationController popViewControllerAnimated:YES];
+        }];     
     }
-    
-    [self.navigationController popViewControllerAnimated:YES];
+    else
+    {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
 }
 
 - (void)done:(id)sender
@@ -1018,16 +1024,39 @@ static int processedEntity = 0;
     }
     else
     {
-        if (self.album.participants)
-            [self.album setParticipants:nil];
-        
-        for (SWPerson* p in arr)
-        {
-            if (p.serverID > 0)
-                [self.album addParticipantsObject:p];
-        }
-        
-        [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];
+        [MRCoreDataAction saveDataInBackgroundWithBlock:^(NSManagedObjectContext *localContext) {
+            SWAlbum* localAlbum = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID] inContext:localContext];
+            
+            NSMutableSet* people = [NSMutableSet set];
+            
+            // Get all participants that the user doesn't "know" (ie. not in the AB)
+            for (SWPerson* p in localAlbum.participants)
+            {
+                SWPerson* localP = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:p.serverID] inContext:localContext];
+                if (localP && !localP.isLinked)
+                {
+                    [people addObject:localP];
+                }
+            }
+            
+            // Now we get all the selected people from the list
+            for (SWPerson* p in arr)
+            {
+                if (p.serverID > 0)
+                {
+                    SWPerson* localP = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:p.serverID] inContext:localContext];
+                    if (localP && localP.isLinked)
+                        [people addObject:localP];
+                }
+            }
+            
+            // Now attach all these people to the album
+            [localAlbum setParticipants:people];
+            
+        } completion:^{
+            self.album = [SWAlbum MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:self.album.serverID]];
+            [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:NO];            
+        }];
     }
 }
 

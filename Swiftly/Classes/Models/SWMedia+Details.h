@@ -17,6 +17,7 @@
 - (void)updateWithObject:(id)obj;
 + (NSArray *)findInProgressObjects;
 + (NSArray *)findRecentObjects;
++ (SWMedia*)lastQuickShareMedia;
 
 // Core Data Helpers
 /*

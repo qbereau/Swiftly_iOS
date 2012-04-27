@@ -206,6 +206,19 @@ static NSInteger nbUploadPeoplePages = 0;
 {
     [super viewDidLoad];
     
+    if (self.selectedContacts)
+    {
+        NSMutableArray* arr = [NSMutableArray array];
+        for (SWPerson* p in self.selectedContacts)
+        {
+            SWPerson* lp = [SWPerson MR_findFirstByAttribute:@"serverID" withValue:[NSNumber numberWithInt:p.serverID] inContext:[NSManagedObjectContext MR_contextForCurrentThread]];
+            [arr addObject:lp];
+        }
+        
+        [self.selectedContacts removeAllObjects];
+        [self.selectedContacts addObjectsFromArray:arr];
+    }
+    
     if (self.mode == PEOPLE_LIST_MULTI_SELECTION_MODE && !self.selectedContacts)
         self.selectedContacts = [NSMutableArray array];
 }
@@ -217,7 +230,7 @@ static NSInteger nbUploadPeoplePages = 0;
     } completion:^{
         self.contacts = [self findPeople];
         [self.tableView reloadData];
-        [self.spinner stopAnimating];
+        [self.spinner stopAnimating];       
     }];
 }
 
